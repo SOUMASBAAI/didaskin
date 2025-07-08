@@ -39,6 +39,9 @@ class Service
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $keywords = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -136,6 +139,18 @@ class Service
     public function setCategory(?Category $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getKeywords(): ?string
+    {
+        return $this->keywords;
+    }
+
+    public function setKeywords(string $keywords): static
+    {
+        $this->keywords = $keywords;
 
         return $this;
     }

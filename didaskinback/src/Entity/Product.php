@@ -35,6 +35,9 @@ class Product
     #[ORM\JoinColumn(nullable: false)]
     private ?User $created_by = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $keywords = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -120,6 +123,18 @@ class Product
     public function setCreatedBy(?User $created_by): static
     {
         $this->created_by = $created_by;
+
+        return $this;
+    }
+
+    public function getKeywords(): ?string
+    {
+        return $this->keywords;
+    }
+
+    public function setKeywords(string $keywords): static
+    {
+        $this->keywords = $keywords;
 
         return $this;
     }
