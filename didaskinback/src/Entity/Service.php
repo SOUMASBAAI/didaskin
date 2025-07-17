@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\ServiceRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 #[ORM\Entity(repositoryClass: ServiceRepository::class)]
 class Service
@@ -13,7 +15,8 @@ class Service
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le label ne doit pas être vide.")]
+    #[Assert\Length(min: 3, max: 255)]
     private ?string $label = null;
 
     #[ORM\Column(length: 255)]

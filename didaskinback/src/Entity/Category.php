@@ -6,6 +6,7 @@ use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\User; // Il faut importer User car tu l'utilises
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 class Category
@@ -24,17 +25,14 @@ class Category
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $relation = null;
-
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $created_by = null;
+    private ?User $createdBy = null; // camelCase recommandé
 
     /**
      * @var Collection<int, Service>
      */
-    #[ORM\OneToMany(targetEntity: Service::class, mappedBy: 'category')]
+    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Service::class)]
     private Collection $services;
 
     public function __construct()
@@ -55,7 +53,6 @@ class Category
     public function setLabel(string $label): static
     {
         $this->label = $label;
-
         return $this;
     }
 
@@ -67,7 +64,6 @@ class Category
     public function setImage(string $image): static
     {
         $this->image = $image;
-
         return $this;
     }
 
@@ -79,19 +75,17 @@ class Category
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
-
         return $this;
     }
 
     public function getCreatedBy(): ?User
     {
-        return $this->created_by;
+        return $this->createdBy;
     }
 
-    public function setCreatedBy(?User $created_by): static
+    public function setCreatedBy(?User $createdBy): static
     {
-        $this->created_by = $created_by;
-
+        $this->createdBy = $createdBy;
         return $this;
     }
 
@@ -124,6 +118,4 @@ class Category
 
         return $this;
     }
-
-  
 }
