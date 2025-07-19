@@ -1,7 +1,7 @@
 {
     "type": "project",
     "license": "proprietary",
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
         "php": ">=8.2",
@@ -17,7 +17,11 @@
         "symfony/flex": "^2",
         "symfony/framework-bundle": "7.3.*",
         "symfony/runtime": "7.3.*",
+        "symfony/twig-bundle": "7.3.*",
+        "symfony/ux-react": "^2.27",
+        "symfony/ux-twig-component": "*",
         "symfony/validator": "7.3.*",
+        "symfony/webpack-encore-bundle": "^2.2",
         "symfony/yaml": "7.3.*"
     },
     "require-dev": {
