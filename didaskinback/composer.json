@@ -1,20 +1,35 @@
 {
     "type": "project",
     "license": "proprietary",
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
         "php": ">=8.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "doctrine/dbal": "^3",
+        "doctrine/doctrine-bundle": "^2.15",
+        "doctrine/doctrine-migrations-bundle": "^3.4",
+        "doctrine/orm": "^3.5",
+        "lexik/jwt-authentication-bundle": "^3.1",
         "symfony/console": "7.3.*",
         "symfony/dotenv": "7.3.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "7.3.*",
         "symfony/runtime": "7.3.*",
+        "symfony/twig-bundle": "7.3.*",
+        "symfony/ux-react": "^2.27",
+        "symfony/ux-twig-component": "*",
+        "symfony/validator": "7.3.*",
+        "symfony/webpack-encore-bundle": "^2.2",
         "symfony/yaml": "7.3.*"
     },
     "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "^4.1",
+        "fakerphp/faker": "^1.24",
+        "phpunit/phpunit": "^12.2",
+        "symfony/browser-kit": "7.3.*",
+        "symfony/maker-bundle": "^1.64"
     },
     "config": {
         "allow-plugins": {
