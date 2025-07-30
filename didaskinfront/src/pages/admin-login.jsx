@@ -1,33 +1,60 @@
-"use client"
 
 import { useState } from "react"
 import { Eye, EyeOff, Lock, Mail } from "lucide-react"
+import Footer from "../components/Footer"
 
 export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("Login attempt:", { email, password })
+    try {
+      // Envoi de la requête POST à ton API Symfony
+      const response = await fetch("http://localhost:8000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Échec de la connexion")
+      }
+
+      const data = await response.json()
+      const token = data.token
+
+      // Stockage du token JWT dans localStorage
+      localStorage.setItem("token", token)
+
+      // Redirection vers la page admin/dashboard (à adapter selon ta route)
+      window.location.href = "/admin/dashboard"
+
+    } catch (error) {
+      console.error("Erreur de connexion:", error)
+      alert("Email ou mot de passe incorrect")
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#F5F1ED]">
-      <div className="w-full max-w-md">
-        {/* Logo/Brand Section */}
+    <div className="min-h-screen flex flex-col justify-between p-4 bg-[#F5F1ED]">
+      <div className="w-full max-w-md mx-auto">
+        {/* Titre */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-light tracking-wider text-gray-800 mb-2">DIDA SKIN</h1>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        {/* Card login */}
+        <div className="bg-white shadow-lg p-8">
           <div className="mb-6">
             <p className="text-center text-gray-600">Accédez à votre espace de gestion</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email */}
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Adresse e-mail
@@ -46,6 +73,7 @@ export default function AdminLogin() {
               </div>
             </div>
 
+            {/* Mot de passe */}
             <div className="space-y-2">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Mot de passe
@@ -71,6 +99,7 @@ export default function AdminLogin() {
               </div>
             </div>
 
+            {/* Options & Mot de passe oublié */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <input
@@ -87,6 +116,7 @@ export default function AdminLogin() {
               </button>
             </div>
 
+            {/* Bouton connexion */}
             <button
               type="submit"
               className="w-full py-2 px-4 bg-[#000] text-white font-medium tracking-wide rounded-md hover:bg-[#292727] transition-colors duration-200"
@@ -99,13 +129,9 @@ export default function AdminLogin() {
             <p className="text-xs text-center text-gray-500">Accès réservé aux administrateurs autorisés</p>
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="text-center mt-8">
-          <p className="text-xs text-gray-500">© 2025 DIDA SKIN. Tous droits réservés.</p>
-        </div>
       </div>
+
+      <Footer />
     </div>
   )
 }
-
