@@ -15,6 +15,67 @@ class ServiceRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Service::class);
     }
+    public function save(Service $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+    public function remove(Service $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->remove($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+    public function update(Service $entity, array $data): Service
+    {
+        if(isset($data['label'])) {
+            $entity->setLabel($data['label']);
+        }
+        if(isset($data['shortDescription'])) {
+            $entity->setShortDescription($data['shortDescription']);
+        }
+        if(isset($data['longDescription'])) {
+            $entity->setLongDescription($data['longDescription']);
+        }
+        if(isset($data['additionalDetails'])) {
+            $entity->setAdditionalDetails($data['AdditionalDuration']);
+        }
+        if(isset($data['serviceDuration'])) {
+            $entity->setServiceDuration($data['ServiceDuration']);
+        }
+        if(isset($data['price'])) {
+            $entity->setPrice($data['price']);
+        }
+        if(isset($data['rank'])) {
+            $entity->setRank($data['rank']);
+        }
+        if(isset($data['image_link'])) {
+            $entity->setImageLink($data['image_link']);
+        }
+        if(isset($data['slug'])) {
+            $entity->setSlug($data['slug']);
+        }
+
+        $this->getEntityManager()->flush();
+        return $entity;
+    }
+     public function findBySubCategoryId(int $subCategoryId): array
+        {
+            return $this->createQueryBuilder('s')
+                ->andWhere('s.subCategory = :subCategoryId')
+                ->setParameter('subCategoryId', $subCategoryId)
+                ->orderBy('s.rank', 'ASC')
+                ->getQuery()
+                ->getResult();
+        }
+    
+    
+    
 
     //    /**
     //     * @return Service[] Returns an array of Service objects

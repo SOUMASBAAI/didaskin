@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\CategoryRepository;
+use App\Repository\SubCategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: CategoryRepository::class)]
-class Category
+#[ORM\Entity(repositoryClass: SubCategoryRepository::class)]
+class SubCategory
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -24,21 +24,22 @@ class Category
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $shortDescription = null;
-
     #[ORM\Column]
     private ?int $rank = null;
 
     /**
-     * @var Collection<int, SubCategory>
+     * @var Collection<int, Service>
      */
-    #[ORM\OneToMany(targetEntity: SubCategory::class, mappedBy: 'category', orphanRemoval: true)]
-    private Collection $subCategories;
+    #[ORM\OneToMany(targetEntity: Service::class, mappedBy: 'subCategory')]
+    private Collection $Services;
+
+    #[ORM\ManyToOne(inversedBy: 'subCategories')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Category $category = null;
 
     public function __construct()
     {
-        $this->subCategories = new ArrayCollection();
+        $this->Services = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -82,18 +83,6 @@ class Category
         return $this;
     }
 
-    public function getShortDescription(): ?string
-    {
-        return $this->shortDescription;
-    }
-
-    public function setShortDescription(string $shortDescription): static
-    {
-        $this->shortDescription = $shortDescription;
-
-        return $this;
-    }
-
     public function getRank(): ?int
     {
         return $this->rank;
@@ -107,31 +96,43 @@ class Category
     }
 
     /**
-     * @return Collection<int, SubCategory>
+     * @return Collection<int, Service>
      */
-    public function getSubCategories(): Collection
+    public function getServices(): Collection
     {
-        return $this->subCategories;
+        return $this->Services;
     }
 
-    public function addSubCategory(SubCategory $subCategory): static
+    public function addService(Service $service): static
     {
-        if (!$this->subCategories->contains($subCategory)) {
-            $this->subCategories->add($subCategory);
-            $subCategory->setCategory($this);
+        if (!$this->Services->contains($service)) {
+            $this->Services->add($service);
+            $service->setSubCategory($this);
         }
 
         return $this;
     }
 
-    public function removeSubCategory(SubCategory $subCategory): static
+    public function removeService(Service $service): static
     {
-        if ($this->subCategories->removeElement($subCategory)) {
+        if ($this->Services->removeElement($service)) {
             // set the owning side to null (unless already changed)
-            if ($subCategory->getCategory() === $this) {
-                $subCategory->setCategory(null);
+            if ($service->getSubCategory() === $this) {
+                $service->setSubCategory(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): static
+    {
+        $this->category = $category;
 
         return $this;
     }

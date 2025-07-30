@@ -16,14 +16,12 @@ class Product
     #[ORM\Column(length: 255)]
     private ?string $label = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $description = null;
-
+   
     #[ORM\Column]
     private ?float $price = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $image = null;
+    private ?string $image_link = null;
 
     #[ORM\Column]
     private ?int $stock_quantity = null;
@@ -31,12 +29,18 @@ class Product
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $created_by = null;
-
+  
     #[ORM\Column(length: 255)]
     private ?string $keywords = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $shortDescription = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $longDescription = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $AdditionalDetails = null;
 
     public function getId(): ?int
     {
@@ -55,18 +59,7 @@ class Product
         return $this;
     }
 
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-
-    public function setDescription(string $description): static
-    {
-        $this->description = $description;
-
-        return $this;
-    }
-
+    
     public function getPrice(): ?float
     {
         return $this->price;
@@ -79,14 +72,14 @@ class Product
         return $this;
     }
 
-    public function getImage(): ?string
+    public function getImage_link(): ?string
     {
-        return $this->image;
+        return $this->image_link;
     }
 
-    public function setImage(string $image): static
+    public function setImage_link(string $image_link): static
     {
-        $this->image = $image;
+        $this->image_link = $image_link;
 
         return $this;
     }
@@ -115,17 +108,6 @@ class Product
         return $this;
     }
 
-    public function getCreatedBy(): ?User
-    {
-        return $this->created_by;
-    }
-
-    public function setCreatedBy(?User $created_by): static
-    {
-        $this->created_by = $created_by;
-
-        return $this;
-    }
 
     public function getKeywords(): ?string
     {
@@ -135,6 +117,42 @@ class Product
     public function setKeywords(string $keywords): static
     {
         $this->keywords = $keywords;
+
+        return $this;
+    }
+
+    public function getShortDescription(): ?string
+    {
+        return $this->shortDescription;
+    }
+
+    public function setShortDescription(string $shortDescription): static
+    {
+        $this->shortDescription = $shortDescription;
+
+        return $this;
+    }
+
+    public function getLongDescription(): ?string
+    {
+        return $this->longDescription;
+    }
+
+    public function setLongDescription(string $longDescription): static
+    {
+        $this->longDescription = $longDescription;
+
+        return $this;
+    }
+
+    public function getAdditionalDetails(): ?string
+    {
+        return $this->AdditionalDetails;
+    }
+
+    public function setAdditionalDetails(string $AdditionalDetails): static
+    {
+        $this->AdditionalDetails = $AdditionalDetails;
 
         return $this;
     }
