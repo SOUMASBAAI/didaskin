@@ -29,10 +29,6 @@ class Product
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
-  
-    #[ORM\Column(length: 255)]
-    private ?string $keywords = null;
-
     #[ORM\Column(length: 255)]
     private ?string $shortDescription = null;
 
@@ -41,6 +37,9 @@ class Product
 
     #[ORM\Column(length: 255)]
     private ?string $AdditionalDetails = null;
+
+    #[ORM\Column]
+    private ?int $rank = null;
 
     public function getId(): ?int
     {
@@ -108,19 +107,6 @@ class Product
         return $this;
     }
 
-
-    public function getKeywords(): ?string
-    {
-        return $this->keywords;
-    }
-
-    public function setKeywords(string $keywords): static
-    {
-        $this->keywords = $keywords;
-
-        return $this;
-    }
-
     public function getShortDescription(): ?string
     {
         return $this->shortDescription;
@@ -153,6 +139,18 @@ class Product
     public function setAdditionalDetails(string $AdditionalDetails): static
     {
         $this->AdditionalDetails = $AdditionalDetails;
+
+        return $this;
+    }
+
+    public function getRank(): ?int
+    {
+        return $this->rank;
+    }
+
+    public function setRank(int $rank): static
+    {
+        $this->rank = $rank;
 
         return $this;
     }

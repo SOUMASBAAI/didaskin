@@ -32,6 +32,9 @@ class Newsletter
     #[ORM\Column(length: 255)]
     private ?string $label = null;
 
+    #[ORM\Column]
+    private ?int $status = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -106,6 +109,18 @@ class Newsletter
     public function setLabel(string $label): static
     {
         $this->label = $label;
+
+        return $this;
+    }
+
+    public function getStatus(): ?int
+    {
+        return $this->status;
+    }
+
+    public function setStatus(int $status): static
+    {
+        $this->status = $status;
 
         return $this;
     }
