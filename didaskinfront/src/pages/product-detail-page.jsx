@@ -1,4 +1,3 @@
-"use client"
 
 import { useState } from "react"
 import { X } from "lucide-react"
@@ -7,7 +6,7 @@ import Header from "../components/Header"
 import Footer from "../components/Footer"
 
 
-export default function ServiceDetailPage() {
+export default function ProductDetailPage() {
   const [showDetailsPanel, setShowDetailsPanel] = useState(false)
 
   const service = {
@@ -18,7 +17,7 @@ export default function ServiceDetailPage() {
     shortDescription: "Un soin revitalisant pour une peau éclatante et hydratée.",
     longDescription:
       "Ce soin du visage complet est conçu pour infuser votre peau d'une hydratation intense, la laissant douce, souple et lumineuse. Il comprend un nettoyage en profondeur, une exfoliation douce, un masque hydratant personnalisé et un massage relaxant du visage, du cou et des épaules. Idéal pour tous les types de peau, en particulier les peaux sèches ou déshydratées.",
-    estimatedDuration: "60 minutes",
+    
     additionalDetails: [
       "Type de peau: Convient à tous les types de peau, idéal pour les peaux sèches et déshydratées.",
       "Bienfaits: Hydratation profonde, amélioration de l'élasticité, réduction des ridules, éclat du teint.",
@@ -55,14 +54,9 @@ export default function ServiceDetailPage() {
 
             <p className="text-base text-gray-700 leading-relaxed mb-8">{service.longDescription}</p>
 
-            <button className="w-full py-3 px-6 bg-black text-white font-medium tracking-wide rounded-none hover:bg-gray-800 transition-colors duration-200 mb-6">
-              PRENDRE UN RENDEZ-VOUS
-            </button>
-
+            
             <div className="space-y-4">
-              <div className="text-sm text-gray-700">
-                <span className="font-medium">DURÉE ESTIMÉE DU SOIN :</span> {service.estimatedDuration}
-              </div>
+             
               <button
                 onClick={() => setShowDetailsPanel(true)}
                 className="text-sm text-gray-700 hover:text-gray-900 transition-colors block text-left"
@@ -109,7 +103,13 @@ export default function ServiceDetailPage() {
         <div className="fixed inset-0 z-40" onClick={() => setShowDetailsPanel(false)} />
       )}
 
-      <Footer />
+      {/* Simple Footer */}
+      <footer className="bg-white border-t border-gray-100 py-6 text-center text-sm text-gray-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p>&copy; {new Date().getFullYear()} Didaskin. Tous droits réservés.</p>
+          <p className="mt-2">Développé avec ❤️ par votre équipe Didaskin</p>
+        </div>  
+      </footer>
     </div>
   )
 }

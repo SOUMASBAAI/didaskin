@@ -1,4 +1,3 @@
-"use client"
 
 import Header from "../components/header"
 import Card from "../components/card"
@@ -9,56 +8,49 @@ export default function ProductPage() {
       imageSrc:
         "https://images.unsplash.com/photo-1580870069867-74c57ee1bb07?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZHVpdCUyMHNraW5jYXJlfGVufDB8fDB8fHww",
       title: "SOIN VISAGE HYDRATANT",
-      description: "Hydratation profonde pour une peau éclatante.",
+    
       price: "85 €",
     },
     {
       imageSrc:
         "https://plus.unsplash.com/premium_photo-1679049600123-23be208ea913?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8cHJvZHVpdCUyMHNraW5jYXJlfGVufDB8fDB8fHww",
       title: "EXTENSION DE CILS VOLUME RUSSE",
-      description: "Volume intense et regard sublimé.",
       price: "120 €",
     },
     {
       imageSrc:
         "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fHByb2R1aXQlMjBza2luY2FyZXxlbnwwfHwwfHx8MA%3D%3D",
       title: "MASSAGE RELAXANT CORPS",
-      description: "Détente absolue et bien-être.",
       price: "95 €",
     },
     {
       imageSrc:
         "https://images.unsplash.com/photo-1670201203150-bf8771401590?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nzh8fHByb2R1aXQlMjBza2luY2FyZXxlbnwwfHwwfHx8MA%3D%3D",
       title: "ÉPILATION LASER JAMBES",
-      description: "Peau lisse durablement.",
       price: "150 €",
     },
     {
       imageSrc:
         "https://images.unsplash.com/photo-1670201202833-b0932731628f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8ODd8fHByb2R1aXQlMjBza2luY2FyZXxlbnwwfHwwfHx8MA%3D%3D",
       title: "MICROBLADING SOURCILS",
-      description: "Sourcils parfaitement dessinés.",
       price: "250 €",
     },
     {
       imageSrc:
         "https://images.unsplash.com/photo-1620916297397-a4a5402a3c6c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2VydW18ZW58MHx8MHx8fDA%3D",
       title: "SÉRUM ANTI-ÂGE LUXE",
-      description: "Réduit les signes du vieillissement.",
       price: "75 €",
     },
     {
       imageSrc:
         "https://images.unsplash.com/photo-1696671296367-1549e8236fe4?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTQwfHxwcm9kdWl0JTIwc2tpbmNhcmV8ZW58MHx8MHx8fDA%3D",
       title: "SOIN ANTI-ACNÉ",
-      description: "Traitement ciblé pour une peau nette.",
       price: "90 €",
     },
     {
       imageSrc:
         "https://plus.unsplash.com/premium_photo-1679448061971-ee0993f0e500?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8ODF8fHByb2R1Y3QlMjBiZWF1dHl8ZW58MHx8MHx8fDA%3D",
       title: "MASQUE DÉTOXIFIANT",
-      description: "Purifie et revitalise la peau.",
       price: "45 €",
     },
   ]
@@ -77,7 +69,6 @@ export default function ProductPage() {
               key={index}
               imageSrc={product.imageSrc}
               title={product.title}
-              description={product.description}
               price={product.price}
             />
           ))}
