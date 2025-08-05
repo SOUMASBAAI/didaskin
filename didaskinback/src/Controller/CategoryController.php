@@ -12,13 +12,19 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
 
 
 #[Route('/categories', name: 'app_categories')]
 class CategoryController extends AbstractController
 
-{   public function __construct(private CategoryRepository $categoryRepository,
-    private EntityManagerInterface $entityManager,private ValidatorInterface $validator)
+{   public function __construct(
+    private CategoryRepository $categoryRepository,
+    private EntityManagerInterface $entityManager,
+    private ValidatorInterface $validator,
+    private SerializerInterface $serializer
+    )
         
     {
  
@@ -30,10 +36,17 @@ class CategoryController extends AbstractController
 
     {
         $categories = $this->categoryRepository->findCategories();
+        
+        $context = (new ObjectNormalizerContextBuilder())
+            ->withGroups('category:read')
+            ->toArray();
+        
+        $data = $this->serializer->serialize($categories, 'json', $context);
+        $data = json_decode($data, true);
        
         return $this->json ([
             'success' => true,
-            'data' => $categories,
+            'data' => $data,
         ]);
     }
 
@@ -63,9 +76,16 @@ class CategoryController extends AbstractController
         $this->entityManager->persist($category);
         $this->entityManager->flush();
 
+        $context = (new ObjectNormalizerContextBuilder())
+            ->withGroups('category:read')
+            ->toArray();
+        
+        $serializedData = $this->serializer->serialize($category, 'json', $context);
+        $serializedData = json_decode($serializedData, true);
+
         return $this->json([
             'success' => true,
-            'data' => $category,
+            'data' => $serializedData,
             'message' => 'Categorie créée avec succès'
         ], Response::HTTP_CREATED);
     }
@@ -80,9 +100,16 @@ class CategoryController extends AbstractController
             return $this->json(['error' => 'Categorie introuvable'], Response::HTTP_NOT_FOUND);
         }
 
+        $context = (new ObjectNormalizerContextBuilder())
+            ->withGroups('category:read')
+            ->toArray();
+        
+        $data = $this->serializer->serialize($category, 'json', $context);
+        $data = json_decode($data, true);
+
         return $this->json([
             'success' => true,
-            'data' => $category,
+            'data' => $data,
         ]);
     }
 
@@ -98,9 +125,16 @@ class CategoryController extends AbstractController
 
         $category = $this->categoryRepository->update($category, $data);
         
+        $context = (new ObjectNormalizerContextBuilder())
+            ->withGroups('category:read')
+            ->toArray();
+        
+        $serializedData = $this->serializer->serialize($category, 'json', $context);
+        $serializedData = json_decode($serializedData, true);
+
         return $this->json([
             'success' => true,
-            'data' => $category,
+            'data' => $serializedData,
             'message' => 'Categorie mise à jour avec succès'
         ]);
     }
