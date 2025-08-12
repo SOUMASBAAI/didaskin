@@ -25,6 +25,7 @@ class UserController extends AbstractController
     ) {
     }
 
+
     // === GESTION DES UTILISATEURS ===
 
     #[Route('', name: 'list_users', methods: ['GET'])]
@@ -43,6 +44,68 @@ class UserController extends AbstractController
             'success' => true,
             'data' => $data,
         ]);
+    }
+
+    #[Route('/create', name: 'create_user', methods: ['POST'])]
+    public function createUser(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        // Validation des données
+        if (!$data || !isset($data['firstName'], $data['lastName'], $data['email'], $data['phoneNumber'])) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Données manquantes'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Vérifier si l'email existe déjà
+        $existingUser = $this->userRepository->findByEmail($data['email']);
+        if ($existingUser) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Un utilisateur avec cet email existe déjà'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Créer le nouvel utilisateur
+        $user = new User();
+        $user->setFirstName($data['firstName']);
+        $user->setLastName($data['lastName']);
+        $user->setEmail($data['email']);
+        $user->setPhoneNumber($data['phoneNumber']);
+        $user->setRole($data['role'] ?? 'ROLE_USER');
+        $user->setIsSubscribed($data['is_subscribed'] ?? false);
+        $user->setPassword('temporary_password_' . uniqid());
+        $user->setCreatedAt(new \DateTimeImmutable());
+        $user->setUpdatedAt(new \DateTimeImmutable());
+
+        // Valider l'entité
+        $errors = $this->validator->validate($user);
+        if (count($errors) > 0) {
+            return $this->json([
+                'success' => false,
+                'errors' => $this->getErrorsFromValidator($errors)
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Persister l'utilisateur
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        // Sérialiser la réponse
+        $context = (new ObjectNormalizerContextBuilder())
+            ->withGroups('user:read')
+            ->toArray();
+        
+        $serializedData = $this->serializer->serialize($user, 'json', $context);
+        $serializedData = json_decode($serializedData, true);
+
+        return $this->json([
+            'success' => true,
+            'data' => $serializedData,
+            'message' => 'Utilisateur créé avec succès'
+        ], Response::HTTP_CREATED);
     }
 
     #[Route('/{id}', name: 'show_user', methods: ['GET'])]

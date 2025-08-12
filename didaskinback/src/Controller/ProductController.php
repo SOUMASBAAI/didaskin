@@ -7,7 +7,7 @@ use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,7 +22,7 @@ class ProductController extends AbstractController
         private ValidatorInterface $validator
     ) {}
 
-    #[Route('/products', name: 'product_index', methods: ['GET'])]
+    #[Route('', name: 'product_index', methods: ['GET'])]
     public function index(): JsonResponse
     {
         $products = $this->productRepository->findProducts();
@@ -32,7 +32,7 @@ class ProductController extends AbstractController
         ]);
     }
 
-    #[Route('/products', name: 'product_create', methods: ['POST'])]
+    #[Route('', name: 'product_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -66,7 +66,7 @@ class ProductController extends AbstractController
         ], Response::HTTP_CREATED);
     }
 
-    #[Route('/products/{id}', name: 'product_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'product_show', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
         $product = $this->productRepository->find($id);
@@ -81,7 +81,7 @@ class ProductController extends AbstractController
         ]);
     }
 
-    #[Route('/products/{id}', name: 'product_update', methods: ['PUT'])]
+    #[Route('/{id}', name: 'product_update', methods: ['PUT'])]
     public function update(Request $request, int $id): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -91,8 +91,46 @@ class ProductController extends AbstractController
             return $this->json(['error' => 'Produit introuvable'], Response::HTTP_NOT_FOUND);
         }
 
-        $product = $this->productRepository->update($product, $data);
+                // Mettre à jour les propriétés du produit
+        if (isset($data['label'])) {
+            $product->setLabel($data['label']);
+        }
+        if (isset($data['shortDescription'])) {
+            $product->setShortDescription($data['shortDescription']);
+        }
+        if (isset($data['longDescription'])) {
+            $product->setLongDescription($data['longDescription']);
+        }
+        if (isset($data['additionalDetails'])) {
+            $product->setAdditionalDetails($data['additionalDetails']);
+        }
+        if (isset($data['price'])) {
+            $product->setPrice($data['price']);
+        }
+        if (isset($data['rank'])) {
+            $product->setRank($data['rank']);
+        }
+        if (isset($data['image_link'])) {
+            $product->setImage_link($data['image_link']);
+        }
+        if (isset($data['stock_quantity'])) {
+            $product->setStockQuantity($data['stock_quantity']);
+        }
+        if (isset($data['slug'])) {
+            $product->setSlug($data['slug']);
+        }
 
+        // Valider l'entité
+        $errors = $this->validator->validate($product);
+        if (count($errors) > 0) {
+            return $this->json([
+                'success' => false,
+                'errors' => $this->getErrorsFromValidator($errors),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Persister les modifications
+        $this->entityManager->flush();
         return $this->json([
             'success' => true,
             'data' => $product,
@@ -100,7 +138,7 @@ class ProductController extends AbstractController
         ]);
     }
 
-    #[Route('/products/{id}', name: 'product_delete', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'product_delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
         $product = $this->productRepository->find($id);

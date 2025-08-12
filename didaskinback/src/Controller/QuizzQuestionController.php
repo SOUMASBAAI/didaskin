@@ -22,21 +22,19 @@ class QuizzQuestionController extends AbstractController
         private ValidatorInterface $validator
     ) {}
     
-     #[Route('s', name: 'list', methods: ['GET'])]
+    #[Route('', name: 'list', methods: ['GET'])]
     public function index(): JsonResponse
-
-    
     {
         $quizzQuestions = $this->quizzQuestionRepository->findQuizzQuestions();
        
-        return $this->json ([
+        return $this->json([
             'success' => true,
             'data' => $quizzQuestions,
         ]);
     }
 
     
-     #[Route('/new', name: 'create', methods: ['POST'])]
+     #[Route('/create', name: 'create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -70,7 +68,7 @@ class QuizzQuestionController extends AbstractController
             'message' => 'Quizz crée avec succès'
         ], Response::HTTP_CREATED);
     }
-    #[Route('/show/{id}', name: 'show', methods: ['GET'])]
+    #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
        $quizzQuestion = $this->quizzQuestionRepository->find($id);
@@ -85,7 +83,7 @@ class QuizzQuestionController extends AbstractController
         ]);
     }
 
-     #[Route('/update/{id}', name: 'update', methods: ['PUT'])]
+     #[Route('/{id}/edit', name: 'update', methods: ['PUT'])]
     public function update(Request $request, int $id): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -103,7 +101,7 @@ class QuizzQuestionController extends AbstractController
             'message' => 'quizz mis à jour avec succès'
         ]);
     }
-    #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
+    #[Route('/{id}/delete', name: 'delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
         $quizzQuestion = $this->quizzQuestionRepository->find($id);
