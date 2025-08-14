@@ -43,10 +43,10 @@ class ServiceRepository extends ServiceEntityRepository
             $entity->setLongDescription($data['longDescription']);
         }
         if(isset($data['additionalDetails'])) {
-            $entity->setAdditionalDetails($data['AdditionalDuration']);
+            $entity->setAdditionalDetails($data['additionalDetails']);
         }
         if(isset($data['serviceDuration'])) {
-            $entity->setServiceDuration($data['ServiceDuration']);
+            $entity->setServiceDuration($data['serviceDuration']);
         }
         if(isset($data['price'])) {
             $entity->setPrice($data['price']);
@@ -64,16 +64,16 @@ class ServiceRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
         return $entity;
     }
-     public function findBySubCategoryId(int $subCategoryId): array
-        {
-            return $this->createQueryBuilder('s')
-                ->andWhere('s.subCategory = :subCategoryId')
-                ->setParameter('subCategoryId', $subCategoryId)
-                ->orderBy('s.rank', 'ASC')
-                ->getQuery()
-                ->getResult();
-        }
-    
+    public function findBySubCategoryId(int $subCategoryId): array
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.subCategory = :subCategoryId')
+            ->setParameter('subCategoryId', $subCategoryId)
+            ->orderBy('s.rank', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     
     
 

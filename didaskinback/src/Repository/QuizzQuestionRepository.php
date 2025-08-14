@@ -23,6 +23,14 @@ class QuizzQuestionRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+     public function findQuizzQuestions():array
+    {
+        return $this->createQueryBuilder('q')
+            ->orderBy('q.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
 
     public function remove(QuizzQuestion $entity, bool $flush = false): void
     {

@@ -4,6 +4,8 @@ import AdminLogin from "./pages/admin-login";
 import ServicePage from "./pages/service-page";
 import ProductPage from "./pages/product-page";
 import ServiceDetailPage from "./pages/service-detail-page";
+import CategoryPage from "./pages/category-page";
+import ProductDetailPage from "./pages/product-detail-page";
 import LandingPage from "./pages/landing-page";
 import "./index.css";
 
@@ -14,8 +16,10 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/services" element={<ServicePage />} />
+        <Route path="/categories" element={<CategoryPage />} />
         <Route path="/products" element={<ProductPage />} />
         <Route path="/service/:id" element={<ServiceDetailPage />} />
+        <Route path="/product/:id" element={<ProductDetailPage />} />
         
        
         

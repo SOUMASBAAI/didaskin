@@ -31,21 +31,20 @@ class NewsletterRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
-      public function findNewsletter():array
+    public function findNewsletters(): array
     {
         return $this->createQueryBuilder('n')
-            ->orderBy('n.rank', 'ASC')
+            ->orderBy('n.id', 'ASC')
             ->getQuery()
             ->getResult();
     }
     public function update(Newsletter $entity, array $data): Newsletter
     {
         if(isset($data['label'])) {
-            $entity->setlabel($data['email']);
+            $entity->setLabel($data['label']);
         }
         if(isset($data['shortDescription'])) {
             $entity->setShortDescription($data['shortDescription']);
-        
         }
         if(isset($data['image_link'])) {
             $entity->setImageLink($data['image_link']);

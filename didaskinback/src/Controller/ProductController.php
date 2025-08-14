@@ -75,9 +75,23 @@ class ProductController extends AbstractController
             return $this->json(['error' => 'Produit introuvable'], Response::HTTP_NOT_FOUND);
         }
 
+        // Return the same data structure as the index method
+        $productData = [
+            'id' => $product->getId(),
+            'label' => $product->getLabel(),
+            'price' => $product->getPrice(),
+            'stock_quantity' => $product->getStockQuantity(),
+            'slug' => $product->getSlug(),
+            'shortDescription' => $product->getShortDescription(),
+            'longDescription' => $product->getLongDescription(),
+            'AdditionalDetails' => $product->getAdditionalDetails(),
+            'rank' => $product->getRank(),
+            'image_link' => $product->getImage_link(),
+        ];
+
         return $this->json([
             'success' => true,
-            'data' => $product,
+            'data' => $productData,
         ]);
     }
 
@@ -91,7 +105,7 @@ class ProductController extends AbstractController
             return $this->json(['error' => 'Produit introuvable'], Response::HTTP_NOT_FOUND);
         }
 
-                // Mettre à jour les propriétés du produit
+        // Mettre à jour les propriétés du produit
         if (isset($data['label'])) {
             $product->setLabel($data['label']);
         }
@@ -131,6 +145,7 @@ class ProductController extends AbstractController
 
         // Persister les modifications
         $this->entityManager->flush();
+
         return $this->json([
             'success' => true,
             'data' => $product,

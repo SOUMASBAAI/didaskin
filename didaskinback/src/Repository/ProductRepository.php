@@ -35,6 +35,7 @@ class ProductRepository extends ServiceEntityRepository
      public function findProducts():array
     {
         return $this->createQueryBuilder('p')
+            ->select('p.id, p.label, p.price, p.stock_quantity, p.slug, p.shortDescription, p.longDescription, p.AdditionalDetails, p.rank, p.image_link')
             ->orderBy('p.rank', 'ASC')
             ->getQuery()
             ->getResult();
@@ -62,13 +63,13 @@ class ProductRepository extends ServiceEntityRepository
             $entity->setRank($data['rank']);
         }
         if(isset($data['image_link'])) {
-            $entity->setImage_Link($data['image_link']);
+            $entity->setImage_link($data['image_link']);
         }
         if(isset($data['slug'])) {
             $entity->setSlug($data['slug']);
         }
         if(isset($data['stock_quantity'])) {
-            $entity->setstockQuantity($data['stock_quantity']);
+            $entity->setStockQuantity($data['stock_quantity']);
         }
 
         $this->getEntityManager()->flush();

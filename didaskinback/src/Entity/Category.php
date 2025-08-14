@@ -6,6 +6,8 @@ use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 class Category
@@ -13,27 +15,34 @@ class Category
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['category:read', 'subcategory:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['category:read', 'subcategory:read'])]
     private ?string $label = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['category:read'])]
     private ?string $image_link = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['category:read'])]
     private ?string $slug = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['category:read'])]
     private ?string $shortDescription = null;
 
     #[ORM\Column]
+    #[Groups(['category:read'])]
     private ?int $rank = null;
 
     /**
      * @var Collection<int, SubCategory>
      */
     #[ORM\OneToMany(targetEntity: SubCategory::class, mappedBy: 'category', orphanRemoval: true)]
+    #[Groups(['category:read'])]
     private Collection $subCategories;
 
     public function __construct()

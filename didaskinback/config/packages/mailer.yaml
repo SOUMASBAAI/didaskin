@@ -1,0 +1,3 @@
+framework:
+  mailer:
+    dsn: "smtps://soumiaasbaai@gmail.com:ooobyqncpbgoccyf@smtp.gmail.com:465"

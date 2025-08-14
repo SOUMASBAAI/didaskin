@@ -8,6 +8,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: NewsletterRepository::class)]
 class Newsletter
 {
+    // Status constants
+    public const STATUS_DRAFT = 0;
+    public const STATUS_PUBLISHED = 1;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

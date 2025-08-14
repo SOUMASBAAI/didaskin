@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\ServiceRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: ServiceRepository::class)]
 class Service
@@ -11,36 +13,47 @@ class Service
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['service:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['service:read'])]
     private ?string $label = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['service:read'])]
     private ?string $shortDescription = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['service:read'])]
     private ?string $longDescription = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['service:read'])]
     private ?string $additionalDetails = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['service:read'])]
     private ?float $ServiceDuration = null;
 
     #[ORM\Column]
+    #[Groups(['service:read'])]
     private ?float $price = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['service:read'])]
     private ?string $image_link = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['service:read'])]
     private ?string $slug = null;
 
     #[ORM\ManyToOne(inversedBy: 'Services')]
+    #[Groups(['service:read'])]
     private ?SubCategory $subCategory = null;
 
     #[ORM\Column]
+    #[Groups(['service:read'])]
     private ?int $rank = null;
 
     public function getId(): ?int
