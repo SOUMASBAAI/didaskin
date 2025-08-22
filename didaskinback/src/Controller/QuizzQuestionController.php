@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 
 #[Route('/quizzquestion', name: 'app_quizz_question')]
@@ -35,6 +36,7 @@ class QuizzQuestionController extends AbstractController
 
     
      #[Route('/create', name: 'create', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function create(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -84,6 +86,7 @@ class QuizzQuestionController extends AbstractController
     }
 
      #[Route('/{id}/edit', name: 'update', methods: ['PUT'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function update(Request $request, int $id): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -102,6 +105,7 @@ class QuizzQuestionController extends AbstractController
         ]);
     }
     #[Route('/{id}/delete', name: 'delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(int $id): JsonResponse
     {
         $quizzQuestion = $this->quizzQuestionRepository->find($id);

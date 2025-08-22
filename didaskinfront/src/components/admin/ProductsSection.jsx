@@ -3,8 +3,12 @@
 import { useState, useEffect } from "react";
 import { Pencil, Trash } from "lucide-react";
 import ImageUpload from "../ui/ImageUpload";
+import { useAuth } from "../../hooks/useAuth";
+import { RESOURCE_ENDPOINTS } from "../../config/apiConfig";
 
 export default function ProductsSection() {
+  const { getAuthHeaders, isAuthenticated, isLoading, handleApiResponse } =
+    useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,7 +19,6 @@ export default function ProductsSection() {
     longDescription: "",
     additionalDetails: "",
     price: "",
-    rank: 0,
     image_link: "",
     stock_quantity: "",
     slug: "",
@@ -27,21 +30,28 @@ export default function ProductsSection() {
     longDescription: "",
     additionalDetails: "",
     price: "",
-    rank: 0,
     image_link: "",
     stock_quantity: "",
     slug: "",
   });
 
-  // Configuration de l'API
-  const API_BASE_URL = "http://localhost:8000";
-
   // Récupérer tous les produits
   const fetchProducts = async () => {
+    // Don't fetch if not authenticated
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/products`);
-      const result = await response.json();
+      setError(null);
+
+      const response = await fetch(RESOURCE_ENDPOINTS.PRODUCTS, {
+        headers: getAuthHeaders(),
+      });
+
+      const result = await handleApiResponse(response);
 
       if (result.success) {
         setProducts(result.data);
@@ -49,7 +59,13 @@ export default function ProductsSection() {
         setError("Erreur lors de la récupération des produits");
       }
     } catch (error) {
-      setError("Erreur de connexion au serveur");
+      if (error.message === "SESSION_EXPIRED") {
+        setError("Session expirée. Veuillez vous reconnecter.");
+      } else if (error.message === "INVALID_RESPONSE") {
+        setError("Réponse invalide du serveur");
+      } else {
+        setError("Erreur de connexion au serveur");
+      }
       console.error("Erreur:", error);
     } finally {
       setLoading(false);
@@ -58,8 +74,10 @@ export default function ProductsSection() {
 
   // Charger les produits au montage du composant
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    if (isAuthenticated && !isLoading) {
+      fetchProducts();
+    }
+  }, [isAuthenticated, isLoading]);
 
   // Ajouter un nouveau produit
   const handleAddProduct = async (e) => {
@@ -70,10 +88,11 @@ export default function ProductsSection() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/products`, {
+      const response = await fetch(RESOURCE_ENDPOINTS.PRODUCTS, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({
           label: newProduct.label,
@@ -81,7 +100,6 @@ export default function ProductsSection() {
           longDescription: newProduct.longDescription,
           additionalDetails: newProduct.additionalDetails,
           price: parseFloat(newProduct.price),
-          rank: newProduct.rank,
           image_link: newProduct.image_link,
           stock_quantity: newProduct.stock_quantity,
           slug:
@@ -90,7 +108,7 @@ export default function ProductsSection() {
         }),
       });
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
 
       if (result.success) {
         // Recharger la liste des produits
@@ -103,7 +121,6 @@ export default function ProductsSection() {
           longDescription: "",
           additionalDetails: "",
           price: "",
-          rank: 0,
           image_link: "",
           stock_quantity: "",
           slug: "",
@@ -126,7 +143,6 @@ export default function ProductsSection() {
       longDescription: product.longDescription || "",
       additionalDetails: product.AdditionalDetails || "", // Correction: AdditionalDetails avec A majuscule
       price: product.price ? product.price.toString() : "",
-      rank: product.rank || 0,
       image_link: product.image_link || product.imageLink || "",
       stock_quantity: product.stock_quantity || product.stockQuantity || "",
       slug: product.slug || "",
@@ -138,11 +154,12 @@ export default function ProductsSection() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/products/${editProductId}`,
+        `${RESOURCE_ENDPOINTS.PRODUCTS}/${editProductId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            ...getAuthHeaders(),
           },
           body: JSON.stringify({
             label: editProduct.label,
@@ -150,7 +167,6 @@ export default function ProductsSection() {
             longDescription: editProduct.longDescription,
             additionalDetails: editProduct.additionalDetails,
             price: parseFloat(editProduct.price),
-            rank: editProduct.rank,
             image_link: editProduct.image_link,
             stock_quantity: editProduct.stock_quantity,
             slug: editProduct.slug,
@@ -158,7 +174,7 @@ export default function ProductsSection() {
         }
       );
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
 
       if (result.success) {
         // Recharger la liste des produits
@@ -172,7 +188,6 @@ export default function ProductsSection() {
           longDescription: "",
           additionalDetails: "",
           price: "",
-          rank: 0,
           image_link: "",
           stock_quantity: "",
           slug: "",
@@ -193,11 +208,12 @@ export default function ProductsSection() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+      const response = await fetch(`${RESOURCE_ENDPOINTS.PRODUCTS}/${id}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
       });
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
 
       if (result.success) {
         // Recharger la liste des produits
@@ -219,13 +235,24 @@ export default function ProductsSection() {
   };
   const handleProductDrop = (index) => {
     if (draggedProductIndex === null || draggedProductIndex === index) return;
+    let newOrderIds = [];
     setProducts((prev) => {
       const arr = [...prev];
       const [removed] = arr.splice(draggedProductIndex, 1);
       arr.splice(index, 0, removed);
+      newOrderIds = arr.map((p) => p.id);
       return arr;
     });
     setDraggedProductIndex(null);
+    (async () => {
+      try {
+        await fetch(`${RESOURCE_ENDPOINTS.PRODUCTS}/reorder`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ ids: newOrderIds }),
+        });
+      } catch {}
+    })();
   };
 
   // Cloudinary upload options for products
@@ -263,6 +290,16 @@ export default function ProductsSection() {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
         <div className="text-center">Chargement des produits...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+        <div className="text-center text-gray-600">
+          Veuillez vous connecter pour accéder à cette section.
+        </div>
       </div>
     );
   }
@@ -502,23 +539,6 @@ export default function ProductsSection() {
                 }
               />
             </div>
-            <div className="mb-2">
-              <label className="block text-xs font-light text-gray-700 mb-1">
-                Rang
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                value={newProduct.rank}
-                onChange={(e) =>
-                  setNewProduct((p) => ({
-                    ...p,
-                    rank: parseInt(e.target.value) || 0,
-                  }))
-                }
-              />
-            </div>
             <button
               type="submit"
               className="w-full py-1 px-2 border border-gray-300 rounded text-gray-700 text-sm font-light hover:bg-gray-100 transition"
@@ -659,23 +679,6 @@ export default function ProductsSection() {
                   setEditProduct((p) => ({
                     ...p,
                     stock_quantity: e.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div className="mb-2">
-              <label className="block text-xs font-light text-gray-700 mb-1">
-                Rang
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                value={editProduct.rank}
-                onChange={(e) =>
-                  setEditProduct((p) => ({
-                    ...p,
-                    rank: parseInt(e.target.value) || 0,
                   }))
                 }
               />

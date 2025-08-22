@@ -1,196 +1,163 @@
 "use client";
 
-import {
-  Calendar,
-  Users,
-  FileText,
-  ExternalLink,
-  Clock,
-  Mail,
-  TrendingUp,
-} from "lucide-react";
-import StatsCards from "../stats-cards";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Menu, Minus, Plus } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import { RESOURCE_ENDPOINTS } from "../../config/apiConfig";
 
 export default function DashboardSection() {
-  // Données mock pour les RDV (à remplacer par Planity API)
-  const [appointments] = useState([
-    {
-      id: 1,
-      client: "Marie Dubois",
-      service: "Soin Hydratant",
-      time: "14:00",
-      status: "confirmé",
-    },
-    {
-      id: 2,
-      client: "Sophie Martin",
-      service: "Massage",
-      time: "16:30",
-      status: "confirmé",
-    },
-    {
-      id: 3,
-      client: "Emma Laurent",
-      service: "Manucure",
-      time: "18:00",
-      status: "en attente",
-    },
-  ]);
+  const { getAuthHeaders, handleApiResponse } = useAuth();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [updatingId, setUpdatingId] = useState(null);
 
-  const todayAppointments = appointments.filter(
-    (apt) => apt.status === "confirmé"
-  );
-  const pendingAppointments = appointments.filter(
-    (apt) => apt.status === "en attente"
-  );
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const resp = await fetch(RESOURCE_ENDPOINTS.PRODUCTS, {
+        headers: getAuthHeaders(),
+      });
+      const json = await handleApiResponse(resp);
+      if (json?.success) setProducts(json.data || []);
+      else setError("Erreur lors de la récupération des produits");
+    } catch (e) {
+      setError("Erreur de connexion au serveur");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const quickActions = [
-    {
-      title: "Nouveau rendez-vous",
-      description: "Créer un RDV sur Planity",
-      icon: Calendar,
-      color: "bg-blue-500",
-      action: () =>
-        window.open("https://app.planity.com/center-beauty", "_blank"),
-    },
-    {
-      title: "Gérer les RDV",
-      description: "Accéder au calendrier Planity",
-      icon: Clock,
-      color: "bg-green-500",
-      action: () =>
-        window.open("https://app.planity.com/center-beauty/calendar", "_blank"),
-    },
-    {
-      title: "Rapport mensuel",
-      description: "Générer le rapport du mois",
-      icon: FileText,
-      color: "bg-[#D4A574]",
-      action: () => console.log("Générer rapport"),
-    },
-  ];
+  useEffect(() => {
+    fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleAdjustStock = async (product, delta) => {
+    const current = Number(
+      product.stock_quantity ?? product.stockQuantity ?? 0
+    );
+    const next = Math.max(0, current + delta);
+    if (next === current) return;
+
+    try {
+      setUpdatingId(product.id);
+      const resp = await fetch(`${RESOURCE_ENDPOINTS.PRODUCTS}/${product.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ stock_quantity: next }),
+      });
+      const json = await handleApiResponse(resp);
+      if (json?.success) {
+        setProducts((prev) =>
+          prev.map((p) =>
+            p.id === product.id ? { ...p, stock_quantity: next } : p
+          )
+        );
+      } else {
+        setError(json?.error || "Mise à jour du stock échouée");
+      }
+    } catch (e) {
+      setError("Erreur de connexion au serveur");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+        <div className="text-center">Chargement des produits...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+        <div className="text-red-600 mb-4">{error}</div>
+        <button
+          onClick={() => setError(null)}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <>
-      {/* Stats Cards avec métriques Planity */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center">
-            <div className="p-2 rounded-lg bg-blue-500 mr-4">
-              <Calendar className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">
-                RDV Aujourd'hui
-              </p>
-              <p className="text-2xl font-bold text-gray-900">
-                {todayAppointments.length}
-              </p>
-            </div>
-          </div>
+    <div className="bg-transparent">
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+        Stock produits
+      </h2>
+      {products.length === 0 ? (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8 text-center text-gray-500">
+          Aucun produit trouvé
         </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center">
-            <div className="p-2 rounded-lg bg-orange-500 mr-4">
-              <TrendingUp className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Traffic</p>
-              <p className="text-2xl font-bold text-gray-900">1,247</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center">
-            <div className="p-2 rounded-lg bg-green-500 mr-4">
-              <Mail className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">
-                Nouveaux Abonnés Newsletter
-              </p>
-              <p className="text-2xl font-bold text-gray-900">12</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Quick Actions */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Actions rapides
-            </h3>
-            <div className="space-y-3">
-              {quickActions.map((action, index) => (
-                <button
-                  key={index}
-                  onClick={action.action}
-                  className="w-full flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors duration-200 group"
-                >
-                  <div className={`p-2 rounded-lg ${action.color} mr-3`}>
-                    <action.icon className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="text-left flex-1">
-                    <p className="font-medium text-gray-800">{action.title}</p>
-                    <p className="text-xs text-gray-600">
-                      {action.description}
-                    </p>
-                  </div>
-                  <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Widget Planity */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Calendrier Planity
-              </h3>
-              <button
-                onClick={() =>
-                  window.open("https://app.planity.com/center-beauty", "_blank")
-                }
-                className="flex items-center text-sm text-[#D4A574] hover:text-[#b88b5c] transition-colors"
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {products.map((product) => {
+            const qty = Number(
+              product.stock_quantity ?? product.stockQuantity ?? 0
+            );
+            const disabled = updatingId === product.id;
+            return (
+              <div
+                key={product.id}
+                className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 flex flex-col"
               >
-                <span>Ouvrir Planity</span>
-                <ExternalLink className="h-4 w-4 ml-1" />
-              </button>
-            </div>
-
-            {/* Widget Planity (iframe ou placeholder) */}
-            <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300">
-              <div className="text-center">
-                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600 mb-2">Widget Planity</p>
-                <p className="text-sm text-gray-500 mb-4">
-                  Intégration du calendrier Planity en cours
-                </p>
-                <button
-                  onClick={() =>
-                    window.open(
-                      "https://app.planity.com/center-beauty/calendar",
-                      "_blank"
-                    )
-                  }
-                  className="inline-flex items-center px-4 py-2 bg-[#D4A574] text-white rounded-lg hover:bg-[#b88b5c] transition-colors"
-                >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Voir le calendrier
-                </button>
+                <div className="text-sm text-gray-500 mb-1">
+                  ID: {product.id}
+                </div>
+                {(product.image_link || product.imageLink) && (
+                  <div className="w-full h-32 mb-2 overflow-hidden rounded">
+                    <img
+                      src={product.image_link || product.imageLink}
+                      alt={product.label}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="text-lg font-medium text-gray-900 mb-2 line-clamp-2">
+                  {product.label}
+                </div>
+                <div className="flex items-center justify-between mt-auto">
+                  <button
+                    onClick={() => handleAdjustStock(product, +1)}
+                    disabled={disabled}
+                    className={`p-2 rounded border border-gray-300 hover:bg-gray-100 transition ${
+                      disabled ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    title="Augmenter"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                  <div className="text-xl font-semibold text-gray-800">
+                    {qty}
+                  </div>
+                  <button
+                    onClick={() => handleAdjustStock(product, -1)}
+                    disabled={disabled || qty === 0}
+                    className={`p-2 rounded border border-gray-300 hover:bg-gray-100 transition ${
+                      disabled || qty === 0
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
+                    title="Diminuer"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 }

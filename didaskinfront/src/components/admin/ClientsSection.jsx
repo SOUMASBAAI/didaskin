@@ -2,8 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Pencil } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import { RESOURCE_ENDPOINTS } from "../../config/apiConfig";
 
 export default function ClientsSection() {
+  const { getAuthHeaders, isAuthenticated, isLoading, handleApiResponse } =
+    useAuth();
   const [showAddClient, setShowAddClient] = useState(false);
   const [newClient, setNewClient] = useState({
     firstName: "",
@@ -24,15 +28,38 @@ export default function ClientsSection() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Configuration de l'API
-  const API_BASE_URL = "http://localhost:8000";
-
   // Récupérer tous les clients
   const fetchClients = async () => {
+    // Don't fetch if not authenticated
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/users`);
-      const result = await response.json();
+      setError(null);
+
+      const response = await fetch(RESOURCE_ENDPOINTS.USERS, {
+        headers: getAuthHeaders(),
+      });
+
+      // Handle 401 Unauthorized
+      if (response.status === 401) {
+        setError("Session expirée. Veuillez vous reconnecter.");
+        setLoading(false);
+        return;
+      }
+
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        setError("Réponse invalide du serveur");
+        setLoading(false);
+        return;
+      }
+
+      const result = await handleApiResponse(response);
 
       if (result.success) {
         setClients(result.data);
@@ -40,7 +67,13 @@ export default function ClientsSection() {
         setError("Erreur lors de la récupération des clients");
       }
     } catch (error) {
-      setError("Erreur de connexion au serveur");
+      if (error.message === "SESSION_EXPIRED") {
+        setError("Session expirée. Veuillez vous reconnecter.");
+      } else if (error.message === "INVALID_RESPONSE") {
+        setError("Réponse invalide du serveur");
+      } else {
+        setError("Erreur de connexion au serveur");
+      }
       console.error("Erreur:", error);
     } finally {
       setLoading(false);
@@ -49,8 +82,10 @@ export default function ClientsSection() {
 
   // Charger les clients au montage du composant
   useEffect(() => {
-    fetchClients();
-  }, []);
+    if (isAuthenticated && !isLoading) {
+      fetchClients();
+    }
+  }, [isAuthenticated, isLoading]);
 
   // Ajouter un nouveau client
   const handleAddClient = async (e) => {
@@ -66,10 +101,11 @@ export default function ClientsSection() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/users/create`, {
+      const response = await fetch(`${RESOURCE_ENDPOINTS.USERS}/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({
           firstName: newClient.firstName,
@@ -81,7 +117,7 @@ export default function ClientsSection() {
         }),
       });
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
 
       if (result.success) {
         // Recharger la liste des clients
@@ -100,7 +136,13 @@ export default function ClientsSection() {
         setError(result.error || "Erreur lors de l'ajout du client");
       }
     } catch (error) {
-      setError("Erreur de connexion au serveur");
+      if (error.message === "SESSION_EXPIRED") {
+        setError("Session expirée. Veuillez vous reconnecter.");
+      } else if (error.message === "INVALID_RESPONSE") {
+        setError("Réponse invalide du serveur");
+      } else {
+        setError("Erreur de connexion au serveur");
+      }
       console.error("Erreur:", error);
     }
   };
@@ -121,15 +163,19 @@ export default function ClientsSection() {
     e.preventDefault();
 
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${editClientId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editClient),
-      });
+      const response = await fetch(
+        `${RESOURCE_ENDPOINTS.USERS}/${editClientId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
+          body: JSON.stringify(editClient),
+        }
+      );
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
 
       if (result.success) {
         // Recharger la liste des clients
@@ -148,7 +194,13 @@ export default function ClientsSection() {
         setError(result.error || "Erreur lors de la modification du client");
       }
     } catch (error) {
-      setError("Erreur de connexion au serveur");
+      if (error.message === "SESSION_EXPIRED") {
+        setError("Session expirée. Veuillez vous reconnecter.");
+      } else if (error.message === "INVALID_RESPONSE") {
+        setError("Réponse invalide du serveur");
+      } else {
+        setError("Erreur de connexion au serveur");
+      }
       console.error("Erreur:", error);
     }
   };
@@ -159,14 +211,18 @@ export default function ClientsSection() {
       const endpoint = currentStatus
         ? "unsubscribe-newsletter"
         : "subscribe-newsletter";
-      const response = await fetch(`${API_BASE_URL}/users/${id}/${endpoint}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${RESOURCE_ENDPOINTS.USERS}/${id}/${endpoint}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
+        }
+      );
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
 
       if (result.success) {
         // Recharger la liste des clients
@@ -177,7 +233,13 @@ export default function ClientsSection() {
         );
       }
     } catch (error) {
-      setError("Erreur de connexion au serveur");
+      if (error.message === "SESSION_EXPIRED") {
+        setError("Session expirée. Veuillez vous reconnecter.");
+      } else if (error.message === "INVALID_RESPONSE") {
+        setError("Réponse invalide du serveur");
+      } else {
+        setError("Erreur de connexion au serveur");
+      }
       console.error("Erreur:", error);
     }
   };
@@ -189,11 +251,12 @@ export default function ClientsSection() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${id}`, {
+      const response = await fetch(`${RESOURCE_ENDPOINTS.USERS}/${id}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
       });
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
 
       if (result.success) {
         // Recharger la liste des clients
@@ -202,7 +265,13 @@ export default function ClientsSection() {
         setError(result.error || "Erreur lors de la suppression du client");
       }
     } catch (error) {
-      setError("Erreur de connexion au serveur");
+      if (error.message === "SESSION_EXPIRED") {
+        setError("Session expirée. Veuillez vous reconnecter.");
+      } else if (error.message === "INVALID_RESPONSE") {
+        setError("Réponse invalide du serveur");
+      } else {
+        setError("Erreur de connexion au serveur");
+      }
       console.error("Erreur:", error);
     }
   };
@@ -211,6 +280,16 @@ export default function ClientsSection() {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
         <div className="text-center">Chargement des clients...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+        <div className="text-center text-gray-600">
+          Veuillez vous connecter pour accéder à cette section.
+        </div>
       </div>
     );
   }

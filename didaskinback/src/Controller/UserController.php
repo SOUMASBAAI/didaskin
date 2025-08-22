@@ -13,6 +13,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Entity\Notification;
+use App\Repository\UserRepository as RepoUserRepository;
 
 #[Route('/users', name: 'app_users')]
 class UserController extends AbstractController
@@ -47,6 +50,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/create', name: 'create_user', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function createUser(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -93,6 +97,23 @@ class UserController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
+        // Notifier les admins si l'utilisateur est créé en tant qu'abonné
+        if ($user->isSubscribed()) {
+            $admins = $this->userRepository->findByRole('ROLE_ADMIN');
+            if (!empty($admins)) {
+                $notification = (new Notification())
+                    ->setSlug('newsletter_subscribe')
+                    ->setLabel('Nouvelle inscription newsletter')
+                    ->setMessage(sprintf('%s %s s\'est inscrit(e) à la newsletter', $user->getFirstName(), $user->getLastName()))
+                    ->setIsRead(false);
+                foreach ($admins as $admin) {
+                    $notification->addReceiver($admin);
+                }
+                $this->entityManager->persist($notification);
+                $this->entityManager->flush();
+            }
+        }
+
         // Sérialiser la réponse
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
@@ -134,6 +155,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/{id}', name: 'update_user', methods: ['PUT'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function updateUser(Request $request, int $id): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -157,8 +179,26 @@ class UserController extends AbstractController
             }
         }
 
+        $wasSubscribed = $user->isSubscribed();
         $user->setUpdatedAt(new \DateTimeImmutable());
         $user = $this->userRepository->update($user, $data);
+
+        // If subscription turned on now, notify admins
+        if (!$wasSubscribed && $user->isSubscribed()) {
+            $admins = $this->userRepository->findByRole('ROLE_ADMIN');
+            if (!empty($admins)) {
+                $notification = (new Notification())
+                    ->setSlug('newsletter_subscribe')
+                    ->setLabel('Nouvelle inscription newsletter')
+                    ->setMessage(sprintf('%s %s s\'est inscrit(e) à la newsletter', $user->getFirstName(), $user->getLastName()))
+                    ->setIsRead(false);
+                foreach ($admins as $admin) {
+                    $notification->addReceiver($admin);
+                }
+                $this->entityManager->persist($notification);
+                $this->entityManager->flush();
+            }
+        }
         
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
@@ -175,6 +215,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete_user', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function deleteUser(int $id): JsonResponse
     {
         $user = $this->userRepository->find($id);
@@ -211,6 +252,21 @@ class UserController extends AbstractController
         $user->setIsSubscribed(true);
         $user->setUpdatedAt(new \DateTimeImmutable());
         $this->entityManager->flush();
+
+        // Create notification for admins
+        $admins = $this->userRepository->findByRole('ROLE_ADMIN');
+        if (!empty($admins)) {
+            $notification = (new Notification())
+                ->setSlug('newsletter_subscribe')
+                ->setLabel('Nouvelle inscription newsletter')
+                ->setMessage(sprintf('%s %s s\'est inscrit(e) à la newsletter', $user->getFirstName(), $user->getLastName()))
+                ->setIsRead(false);
+            foreach ($admins as $admin) {
+                $notification->addReceiver($admin);
+            }
+            $this->entityManager->persist($notification);
+            $this->entityManager->flush();
+        }
 
         return $this->json([
             'success' => true,

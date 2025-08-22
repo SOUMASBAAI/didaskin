@@ -35,10 +35,19 @@ class ProductRepository extends ServiceEntityRepository
      public function findProducts():array
     {
         return $this->createQueryBuilder('p')
-            ->select('p.id, p.label, p.price, p.stock_quantity, p.slug, p.shortDescription, p.longDescription, p.AdditionalDetails, p.rank, p.image_link')
+            ->select('p.id, p.label, p.price, p.stock_quantity, p.slug, p.shortDescription, p.longDescription, p.additionalDetails, p.rank, p.image_link')
             ->orderBy('p.rank', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function getNextRank(): int
+    {
+        $max = (int)($this->createQueryBuilder('p')
+            ->select('MAX(p.rank) as maxRank')
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0);
+        return $max + 1;
     }
 
     public function update(Product $entity, array $data): Product
@@ -53,7 +62,7 @@ class ProductRepository extends ServiceEntityRepository
             $entity->setLongDescription($data['longDescription']);
         }
         if(isset($data['additionalDetails'])) {
-            $entity->setAdditionalDetails($data['AdditionalDuration']);
+            $entity->setAdditionalDetails($data['additionalDetails']);
         }
         
         if(isset($data['price'])) {
@@ -63,7 +72,7 @@ class ProductRepository extends ServiceEntityRepository
             $entity->setRank($data['rank']);
         }
         if(isset($data['image_link'])) {
-            $entity->setImage_link($data['image_link']);
+            $entity->setImageLink($data['image_link']);
         }
         if(isset($data['slug'])) {
             $entity->setSlug($data['slug']);

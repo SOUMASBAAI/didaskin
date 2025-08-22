@@ -14,8 +14,9 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
-#[Route('/auth', name: 'app_auth')]
+#[Route('/api', name: 'app_auth')]
 class AuthenticationController extends AbstractController
 {
     public function __construct(
@@ -23,7 +24,8 @@ class AuthenticationController extends AbstractController
         private EntityManagerInterface $entityManager,
         private ValidatorInterface $validator,
         private UserPasswordHasherInterface $passwordHasher,
-        private SerializerInterface $serializer
+        private SerializerInterface $serializer,
+        private JWTTokenManagerInterface $jwtManager
     ) {
     }
 
@@ -75,8 +77,8 @@ class AuthenticationController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        // Générer un token JWT simple (sans bundle pour l'instant)
-        $token = $this->generateSimpleJWT($user);
+        // Générer un token JWT avec Lexik bundle
+        $token = $this->generateJWT($user);
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
@@ -98,7 +100,7 @@ class AuthenticationController extends AbstractController
 
     // === CONNEXION UTILISATEUR ===
 
-    #[Route('/auth/login', name: 'login', methods: ['POST'])]
+    #[Route('/login', name: 'user_login', methods: ['POST'])]
     public function login(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -112,8 +114,8 @@ class AuthenticationController extends AbstractController
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Générer un token JWT simple
-        $token = $this->generateSimpleJWT($user);
+        // Générer un token JWT avec Lexik bundle
+        $token = $this->generateJWT($user);
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
@@ -181,8 +183,8 @@ class AuthenticationController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        // Générer un token JWT simple
-        $token = $this->generateSimpleJWT($user);
+        // Générer un token JWT avec Lexik bundle
+        $token = $this->generateJWT($user);
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
@@ -226,8 +228,8 @@ class AuthenticationController extends AbstractController
             ], Response::HTTP_FORBIDDEN);
         }
 
-        // Générer un token JWT simple
-        $token = $this->generateSimpleJWT($user);
+        // Générer un token JWT avec Lexik bundle
+        $token = $this->generateJWT($user);
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
@@ -293,7 +295,7 @@ class AuthenticationController extends AbstractController
         }
 
         // Générer un nouveau token
-        $token = $this->generateSimpleJWT($user);
+        $token = $this->generateJWT($user);
 
         return $this->json([
             'success' => true,
@@ -318,29 +320,11 @@ class AuthenticationController extends AbstractController
         ]);
     }
 
-    // === GÉNÉRATION JWT SIMPLE ===
+    // === GÉNÉRATION JWT AVEC LEXIK BUNDLE ===
 
-    private function generateSimpleJWT(User $user): string
+    private function generateJWT(User $user): string
     {
-        // JWT simple sans bundle pour l'instant
-        $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
-        $payload = json_encode([
-            'user_id' => $user->getId(),
-            'email' => $user->getEmail(),
-            'role' => $user->getRole(),
-            'iat' => time(),
-            'exp' => time() + 3600 // 1 heure
-        ]);
-
-        $base64Header = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
-        $base64Payload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
-
-        // Clé secrète simple (à changer en production)
-        $secret = 'your-secret-key-change-in-production';
-        $signature = hash_hmac('sha256', $base64Header . "." . $base64Payload, $secret, true);
-        $base64Signature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
-
-        return $base64Header . "." . $base64Payload . "." . $base64Signature;
+        return $this->jwtManager->create($user);
     }
 
     private function getErrorsFromValidator($errors): array

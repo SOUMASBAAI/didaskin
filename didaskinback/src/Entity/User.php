@@ -172,8 +172,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        // Retourne un tableau avec le rôle (ou ROLE_USER par défaut)
-        return [$this->role ?? 'ROLE_USER'];
+        // Ensure we always return an array and handle the role properly
+        $roles = [];
+        
+        if ($this->role) {
+            $roles[] = $this->role;
+        }
+        
+        // Always add ROLE_USER as a base role
+        if (!in_array('ROLE_USER', $roles)) {
+            $roles[] = 'ROLE_USER';
+        }
+        
+        return array_unique($roles);
     }
 
     public function eraseCredentials(): void

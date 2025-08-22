@@ -56,6 +56,14 @@ class Service
     #[Groups(['service:read'])]
     private ?int $rank = null;
 
+    #[ORM\Column(options: ["default" => false])]
+    #[Groups(['service:read'])]
+    private bool $featuredLanding = false;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(['service:read'])]
+    private ?int $featuredRank = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -178,6 +186,28 @@ class Service
     {
         $this->rank = $rank;
 
+        return $this;
+    }
+
+    public function isFeaturedLanding(): bool
+    {
+        return (bool)$this->featuredLanding;
+    }
+
+    public function setFeaturedLanding(bool $v): static
+    {
+        $this->featuredLanding = $v;
+        return $this;
+    }
+
+    public function getFeaturedRank(): ?int
+    {
+        return $this->featuredRank;
+    }
+
+    public function setFeaturedRank(?int $v): static
+    {
+        $this->featuredRank = $v;
         return $this;
     }
 }

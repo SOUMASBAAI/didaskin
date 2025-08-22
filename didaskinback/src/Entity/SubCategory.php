@@ -38,7 +38,6 @@ class SubCategory
      * @var Collection<int, Service>
      */
     #[ORM\OneToMany(targetEntity: Service::class, mappedBy: 'subCategory')]
-    #[Groups(['subcategory:read'])]
     private Collection $Services;
 
     #[ORM\ManyToOne(inversedBy: 'subCategories')]

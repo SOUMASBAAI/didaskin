@@ -11,7 +11,9 @@ import {
   X,
   FileText,
   Folder,
+  TrendingUp,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Sidebar({
   isOpen,
@@ -19,6 +21,11 @@ export default function Sidebar({
   activeSection,
   onSectionChange,
 }) {
+  const navigate = useNavigate();
+
+  const handleLogoClick = () => {
+    navigate("/");
+  };
   const menuItems = [
     { icon: BarChart3, label: "Tableau de bord", section: "dashboard" },
     { icon: Users, label: "Clients", section: "clients" },
@@ -27,6 +34,8 @@ export default function Sidebar({
     { icon: DollarSign, label: "Produits", section: "products" },
     { icon: Bell, label: "Newsletter", section: "newsletter" },
     { icon: FileText, label: "Quiz", section: "quiz" },
+    { icon: TrendingUp, label: "Analytics", section: "analytics" },
+    { icon: Settings, label: "Paramètres", section: "settings" },
   ];
 
   return (
@@ -48,11 +57,15 @@ export default function Sidebar({
         {/* Header */}
         <div className="p-6 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-light tracking-wider text-gray-800">
-                DIDA SKIN
-              </h2>
-              <p className="text-xs text-gray-500 mt-1">Administration</p>
+            <div
+              onClick={handleLogoClick}
+              className="cursor-pointer hover:opacity-80 transition-opacity duration-200 flex justify-center"
+            >
+              <img
+                src="/assets/logo-dida.png"
+                alt="DIDA SKIN"
+                className="h-16 w-auto"
+              />
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -85,23 +98,6 @@ export default function Sidebar({
             ))}
           </ul>
         </nav>
-
-        {/* User section - Fixed at bottom */}
-        <div className="p-4 border-t border-gray-100 flex-shrink-0">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-[#D4A574] rounded-full flex items-center justify-center">
-              <span className="text-white font-medium">AD</span>
-            </div>
-            <div>
-              <p className="font-medium text-gray-800">Admin</p>
-              <p className="text-xs text-gray-500">admin@didaskin.com</p>
-            </div>
-          </div>
-          <button className="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-colors">
-            <LogOut className="h-4 w-4" />
-            <span className="text-sm">Déconnexion</span>
-          </button>
-        </div>
       </div>
     </>
   );

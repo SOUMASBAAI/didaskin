@@ -4,8 +4,12 @@ import { useState, useEffect } from "react";
 import { Pencil, Trash } from "lucide-react";
 import ImageUpload from "../ui/ImageUpload";
 import { getPresetImageUrl } from "../../lib/cloudinary";
+import { useAuth } from "../../hooks/useAuth";
+import { RESOURCE_ENDPOINTS } from "../../config/apiConfig";
 
 export default function ServicesSection() {
+  const { getAuthHeaders, isAuthenticated, isLoading, handleApiResponse } =
+    useAuth();
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +26,8 @@ export default function ServicesSection() {
     price: "",
     image_link: "",
     slug: "",
-    rank: 0,
+    featuredLanding: false,
+    featuredRank: 0,
   });
   const [editServiceId, setEditServiceId] = useState(null);
   const [editService, setEditService] = useState({
@@ -36,16 +41,67 @@ export default function ServicesSection() {
     price: "",
     image_link: "",
     slug: "",
-    rank: 0,
+    featuredLanding: false,
+    featuredRank: 0,
   });
 
-  // Configuration de l'API
-  const API_BASE_URL = "http://localhost:8000";
+  // DnD for services list (optional; existing table drag wires)
+  const [draggedServiceIndex, setDraggedServiceIndex] = useState(null);
+  const handleServiceDragStart = (index) => setDraggedServiceIndex(index);
+  const handleServiceDragOver = (e) => e.preventDefault();
+  const handleServiceDrop = (index) => {
+    if (draggedServiceIndex === null || draggedServiceIndex === index) return;
+    let newOrderIds = [];
+    setServices((prev) => {
+      const arr = [...prev];
+      const [removed] = arr.splice(draggedServiceIndex, 1);
+      arr.splice(index, 0, removed);
+      newOrderIds = arr.map((s) => s.id);
+      return arr;
+    });
+    setDraggedServiceIndex(null);
+    // Persist order
+    (async () => {
+      try {
+        await fetch(`${RESOURCE_ENDPOINTS.SERVICES}/reorder`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ ids: newOrderIds }),
+        });
+      } catch {}
+    })();
+  };
+
+  // DnD for featured services list
+  const [featuredDragIndex, setFeaturedDragIndex] = useState(null);
 
   // Récupérer toutes les catégories avec leurs sous-catégories
   const fetchCategories = async () => {
+    // Don't fetch if not authenticated
+    if (!isAuthenticated) {
+      return;
+    }
+
     try {
-      const response = await fetch(`${API_BASE_URL}/categories`);
+      setError(null);
+
+      const response = await fetch(RESOURCE_ENDPOINTS.CATEGORIES, {
+        headers: getAuthHeaders(),
+      });
+
+      // Handle 401 Unauthorized
+      if (response.status === 401) {
+        setError("Session expirée. Veuillez vous reconnecter.");
+        return;
+      }
+
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        setError("Réponse invalide du serveur");
+        return;
+      }
+
       const result = await response.json();
 
       if (result.success) {
@@ -54,8 +110,20 @@ export default function ServicesSection() {
           result.data.map(async (category) => {
             try {
               const subResponse = await fetch(
-                `${API_BASE_URL}/subcategories/category/${category.id}`
+                `${RESOURCE_ENDPOINTS.SUBCATEGORIES}/category/${category.id}`,
+                {
+                  headers: getAuthHeaders(),
+                }
               );
+
+              // Handle 401 for subcategories
+              if (subResponse.status === 401) {
+                return {
+                  ...category,
+                  subcategories: [],
+                };
+              }
+
               const subResult = await subResponse.json();
               return {
                 ...category,
@@ -87,41 +155,19 @@ export default function ServicesSection() {
   const fetchServices = async () => {
     try {
       setLoading(true);
-      // Pour l'instant, on récupère les services par sous-catégorie
-      // car il n'y a pas d'endpoint pour tous les services
-      const allServices = [];
-
-      // Récupérer les services de chaque sous-catégorie
-      for (const category of categories) {
-        for (const subcategory of category.subcategories) {
-          try {
-            const response = await fetch(
-              `${API_BASE_URL}/services/subcategory/${subcategory.id}`
-            );
-            const result = await response.json();
-            if (result.success && result.data.length > 0) {
-              // Ajouter les informations de catégorie et sous-catégorie
-              const servicesWithContext = result.data.map((service) => ({
-                ...service,
-                categoryId: category.id,
-                subcategoryId: subcategory.id,
-                categoryName: category.label,
-                subcategoryName: subcategory.label,
-              }));
-              allServices.push(...servicesWithContext);
-            }
-          } catch (error) {
-            console.error(
-              `Erreur lors de la récupération des services pour la sous-catégorie ${subcategory.id}:`,
-              error
-            );
-          }
-        }
-      }
-
-      setServices(allServices);
+      const response = await fetch(`${RESOURCE_ENDPOINTS.SERVICES}/all`, {
+        headers: getAuthHeaders(),
+      });
+      const result = await handleApiResponse(response);
+      if (result.success) setServices(result.data);
     } catch (error) {
-      setError("Erreur de connexion au serveur");
+      if (error.message === "SESSION_EXPIRED") {
+        setError("Session expirée. Veuillez vous reconnecter.");
+      } else if (error.message === "INVALID_RESPONSE") {
+        setError("Réponse invalide du serveur");
+      } else {
+        setError("Erreur de connexion au serveur");
+      }
       console.error("Erreur:", error);
     } finally {
       setLoading(false);
@@ -130,11 +176,13 @@ export default function ServicesSection() {
 
   // Charger les données au montage du composant
   useEffect(() => {
-    const loadData = async () => {
-      await fetchCategories();
-    };
-    loadData();
-  }, []);
+    if (isAuthenticated && !isLoading) {
+      const loadData = async () => {
+        await fetchCategories();
+      };
+      loadData();
+    }
+  }, [isAuthenticated, isLoading]);
 
   // Recharger les services quand les catégories changent
   useEffect(() => {
@@ -146,18 +194,20 @@ export default function ServicesSection() {
   // Ajouter un nouveau service
   const handleAddService = async (e) => {
     e.preventDefault();
-    if (!newService.label || !newService.subcategory_id || !newService.price)
-      return;
+    if (!newService.label || !newService.price) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/services`, {
+      const response = await fetch(RESOURCE_ENDPOINTS.SERVICES, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({
           label: newService.label,
-          subcategory_id: parseInt(newService.subcategory_id),
+          subcategory_id: newService.subcategory_id
+            ? parseInt(newService.subcategory_id)
+            : null,
           shortDescription: newService.shortDescription,
           longDescription: newService.longDescription,
           additionalDetails: newService.additionalDetails,
@@ -167,7 +217,8 @@ export default function ServicesSection() {
           slug:
             newService.slug ||
             newService.label.toLowerCase().replace(/\s+/g, "-"),
-          rank: newService.rank,
+          featuredLanding: !!newService.featuredLanding,
+          featuredRank: parseInt(newService.featuredRank) || 0,
         }),
       });
 
@@ -189,7 +240,8 @@ export default function ServicesSection() {
           price: "",
           image_link: "",
           slug: "",
-          rank: 0,
+          featuredLanding: false,
+          featuredRank: 0,
         });
         setShowAddService(false);
       } else {
@@ -203,7 +255,6 @@ export default function ServicesSection() {
 
   // Modifier un service
   const handleEditServiceClick = (service) => {
-    console.log("Service data for edit:", service); // Debug: voir les données reçues
     setEditServiceId(service.id);
     setEditService({
       label: service.label || "",
@@ -216,7 +267,8 @@ export default function ServicesSection() {
       price: service.price ? service.price.toString() : "",
       image_link: service.image_link || service.imageLink || "",
       slug: service.slug || "",
-      rank: service.rank || 0,
+      featuredLanding: !!service.featuredLanding,
+      featuredRank: service.featuredRank || 0,
     });
   };
 
@@ -225,15 +277,18 @@ export default function ServicesSection() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/services/${editServiceId}`,
+        `${RESOURCE_ENDPOINTS.SERVICES}/${editServiceId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            ...getAuthHeaders(),
           },
           body: JSON.stringify({
             label: editService.label,
-            subcategory_id: parseInt(editService.subcategory_id),
+            subcategory_id: editService.subcategory_id
+              ? parseInt(editService.subcategory_id)
+              : null,
             shortDescription: editService.shortDescription,
             longDescription: editService.longDescription,
             additionalDetails: editService.additionalDetails,
@@ -241,7 +296,8 @@ export default function ServicesSection() {
             price: parseFloat(editService.price),
             image_link: editService.image_link,
             slug: editService.slug,
-            rank: editService.rank,
+            featuredLanding: !!editService.featuredLanding,
+            featuredRank: parseInt(editService.featuredRank) || 0,
           }),
         }
       );
@@ -265,7 +321,8 @@ export default function ServicesSection() {
           price: "",
           image_link: "",
           slug: "",
-          rank: 0,
+          featuredLanding: false,
+          featuredRank: 0,
         });
       } else {
         setError(result.error || "Erreur lors de la modification du service");
@@ -283,8 +340,9 @@ export default function ServicesSection() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/services/${id}`, {
+      const response = await fetch(`${RESOURCE_ENDPOINTS.SERVICES}/${id}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
       });
 
       const result = await response.json();
@@ -302,23 +360,6 @@ export default function ServicesSection() {
   };
 
   // Pour le drag & drop des services
-  const [draggedServiceIndex, setDraggedServiceIndex] = useState(null);
-  const handleServiceDragStart = (index) => setDraggedServiceIndex(index);
-  const handleServiceDragOver = (e) => {
-    e.preventDefault();
-  };
-  const handleServiceDrop = (index) => {
-    if (draggedServiceIndex === null || draggedServiceIndex === index) return;
-    setServices((prev) => {
-      const arr = [...prev];
-      const [removed] = arr.splice(draggedServiceIndex, 1);
-      arr.splice(index, 0, removed);
-      return arr;
-    });
-    setDraggedServiceIndex(null);
-  };
-
-  // Pour la durée (picker heures/minutes)
   const hoursOptions = Array.from({ length: 13 }, (_, i) => i); // 0 à 12h
   const minutesOptions = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
@@ -344,13 +385,24 @@ export default function ServicesSection() {
   // Cloudinary upload options for services
   const getUploadOptions = (type, id = null) => ({
     folder: type === "services" ? "didaskin/services" : `didaskin/${type}`,
-    public_id: id ? `${type}_${id}` : undefined,
+    // Remove public_id to let Cloudinary generate unique IDs automatically
+    // This prevents image caching issues when updating
   });
 
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
         <div className="text-center">Chargement des services...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+        <div className="text-center text-gray-600">
+          Veuillez vous connecter pour accéder à cette section.
+        </div>
       </div>
     );
   }
@@ -381,6 +433,68 @@ export default function ServicesSection() {
           +
         </button>
       </h2>
+      {/* Featured services reorder */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-medium text-gray-800">
+            Mise en avant (Accueil)
+          </h3>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {services
+            .filter((s) => s.featuredLanding)
+            .sort((a, b) => (a.featuredRank || 0) - (b.featuredRank || 0))
+            .map((s, idx, arr) => (
+              <div
+                key={s.id}
+                draggable
+                onDragStart={() => setFeaturedDragIndex(idx)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => {
+                  if (featuredDragIndex === null || featuredDragIndex === idx)
+                    return;
+                  const current = services.slice();
+                  const featured = current
+                    .filter((t) => t.featuredLanding)
+                    .sort(
+                      (a, b) => (a.featuredRank || 0) - (b.featuredRank || 0)
+                    );
+                  const [removed] = featured.splice(featuredDragIndex, 1);
+                  featured.splice(idx, 0, removed);
+                  // reassign featuredRank locally
+                  let rank = 1;
+                  const newMap = new Map(featured.map((x) => [x.id, rank++]));
+                  const merged = current.map((it) =>
+                    newMap.has(it.id)
+                      ? { ...it, featuredRank: newMap.get(it.id) }
+                      : it
+                  );
+                  setServices(merged);
+                  setFeaturedDragIndex(null);
+                }}
+                onDragEnd={() => setFeaturedDragIndex(null)}
+                className={`bg-white border border-gray-200 rounded p-3 flex items-center gap-3 ${
+                  featuredDragIndex === idx ? "ring-2 ring-[#D4A574]" : ""
+                }`}
+                style={{ cursor: "grab" }}
+              >
+                <img
+                  src={getPresetImageUrl(s.image_link, "thumbnail")}
+                  alt={s.label}
+                  className="w-12 h-12 object-cover rounded"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-900 truncate">
+                    {s.label}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Ordre: {s.featuredRank || 0}
+                  </div>
+                </div>
+              </div>
+            ))}
+        </div>
+      </div>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead>
@@ -517,7 +631,6 @@ export default function ServicesSection() {
                     subcategory_id: "",
                   }))
                 }
-                required
               >
                 <option value="">Sélectionner</option>
                 {categories.map((cat) => (
@@ -533,14 +646,13 @@ export default function ServicesSection() {
               </label>
               <select
                 className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                value={newService.subcategory_id}
+                value={newService.subcategory_id || ""}
                 onChange={(e) =>
                   setNewService((s) => ({
                     ...s,
                     subcategory_id: e.target.value,
                   }))
                 }
-                required
                 disabled={!newService.categoryId}
               >
                 <option value="">Sélectionner</option>
@@ -658,23 +770,6 @@ export default function ServicesSection() {
             </div>
             <div className="mb-2">
               <label className="block text-xs font-light text-gray-700 mb-1">
-                Rang
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                value={newService.rank}
-                onChange={(e) =>
-                  setNewService((s) => ({
-                    ...s,
-                    rank: parseInt(e.target.value) || 0,
-                  }))
-                }
-              />
-            </div>
-            <div className="mb-2">
-              <label className="block text-xs font-light text-gray-700 mb-1">
                 Slug
               </label>
               <input
@@ -703,6 +798,22 @@ export default function ServicesSection() {
                 maxSize={5}
                 className="mb-2"
               />
+            </div>
+            {/* Featured toggles */}
+            <div className="mb-2">
+              <label className="inline-flex items-center space-x-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={newService.featuredLanding}
+                  onChange={(e) =>
+                    setNewService((s) => ({
+                      ...s,
+                      featuredLanding: e.target.checked,
+                    }))
+                  }
+                />
+                <span>Mettre en avant sur l'accueil</span>
+              </label>
             </div>
             <button
               type="submit"
@@ -737,7 +848,7 @@ export default function ServicesSection() {
               </label>
               <select
                 className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                value={editService.categoryId}
+                value={editService.categoryId || ""}
                 onChange={(e) =>
                   setEditService((s) => ({
                     ...s,
@@ -745,7 +856,6 @@ export default function ServicesSection() {
                     subcategory_id: "",
                   }))
                 }
-                required
               >
                 <option value="">Sélectionner</option>
                 {categories.map((cat) => (
@@ -761,14 +871,13 @@ export default function ServicesSection() {
               </label>
               <select
                 className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                value={editService.subcategory_id}
+                value={editService.subcategory_id || ""}
                 onChange={(e) =>
                   setEditService((s) => ({
                     ...s,
                     subcategory_id: e.target.value,
                   }))
                 }
-                required
                 disabled={!editService.categoryId}
               >
                 <option value="">Sélectionner</option>
@@ -886,23 +995,6 @@ export default function ServicesSection() {
             </div>
             <div className="mb-2">
               <label className="block text-xs font-light text-gray-700 mb-1">
-                Rang
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                value={editService.rank}
-                onChange={(e) =>
-                  setEditService((s) => ({
-                    ...s,
-                    rank: parseInt(e.target.value) || 0,
-                  }))
-                }
-              />
-            </div>
-            <div className="mb-2">
-              <label className="block text-xs font-light text-gray-700 mb-1">
                 Slug
               </label>
               <input
@@ -931,6 +1023,22 @@ export default function ServicesSection() {
                 maxSize={5}
                 className="mb-2"
               />
+            </div>
+            {/* Featured toggles edit */}
+            <div className="mb-2">
+              <label className="inline-flex items-center space-x-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={editService.featuredLanding}
+                  onChange={(e) =>
+                    setEditService((s) => ({
+                      ...s,
+                      featuredLanding: e.target.checked,
+                    }))
+                  }
+                />
+                <span>Mettre en avant sur l'accueil</span>
+              </label>
             </div>
             <button
               type="submit"

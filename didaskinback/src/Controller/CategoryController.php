@@ -14,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 
 #[Route('/categories', name: 'app_categories')]
@@ -51,6 +52,7 @@ class CategoryController extends AbstractController
     }
 
      #[Route('', name: 'create', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function create(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -58,7 +60,12 @@ class CategoryController extends AbstractController
         $category = new Category();
         $category->setLabel($data['label'] ?? '');
         $category->setShortDescription($data['shortDescription'] ?? '');
-        $category->setRank($data['rank'] ?? 0);
+        // Assign last rank automatically
+        $maxRank = (int)($this->categoryRepository->createQueryBuilder('c')
+            ->select('MAX(c.rank)')
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0);
+        $category->setRank($maxRank + 1);
         $category->setImageLink($data['image_link'] ?? '');
         $category->setSlug($data['slug'] ?? '');
 
@@ -114,6 +121,7 @@ class CategoryController extends AbstractController
     }
 
     #[Route('/{id}', name: 'update', methods: ['PUT'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function update(Request $request, int $id): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -140,6 +148,7 @@ class CategoryController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(int $id): JsonResponse
     {
         $category = $this->categoryRepository->find($id);
@@ -154,6 +163,26 @@ class CategoryController extends AbstractController
             'success' => true,
             'message' => 'Categorie supprimée avec succès'
         ]);
+    }
+
+    #[Route('/reorder', name: 'reorder', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function reorder(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $ids = $data['ids'] ?? [];
+        if (!is_array($ids) || empty($ids)) {
+            return $this->json(['success' => false, 'error' => 'Liste invalide'], Response::HTTP_BAD_REQUEST);
+        }
+        // Reassign rank based on provided order (1-based)
+        foreach ($ids as $index => $id) {
+            $cat = $this->categoryRepository->find($id);
+            if ($cat) {
+                $cat->setRank($index + 1);
+            }
+        }
+        $this->entityManager->flush();
+        return $this->json(['success' => true]);
     }
 private function getErrorsFromValidator($errors): array
     {

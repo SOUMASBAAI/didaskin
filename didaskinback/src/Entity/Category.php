@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 class Category
@@ -20,22 +20,27 @@ class Category
 
     #[ORM\Column(length: 255)]
     #[Groups(['category:read', 'subcategory:read'])]
+    #[Assert\NotBlank(message: 'Le label ne doit pas être vide')]
     private ?string $label = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['category:read'])]
+    #[Assert\NotBlank(message: 'L’image ne doit pas être vide')]
     private ?string $image_link = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['category:read'])]
+    #[Assert\NotBlank(message: 'Le slug ne doit pas être vide')]
     private ?string $slug = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['category:read'])]
+    #[Assert\NotBlank(message: 'La description courte ne doit pas être vide')]
     private ?string $shortDescription = null;
 
     #[ORM\Column]
     #[Groups(['category:read'])]
+    #[Assert\NotNull(message: 'Le rang ne doit pas être nul')]
     private ?int $rank = null;
 
     /**
@@ -63,7 +68,6 @@ class Category
     public function setLabel(string $label): static
     {
         $this->label = $label;
-
         return $this;
     }
 
@@ -75,7 +79,6 @@ class Category
     public function setImageLink(string $image_link): static
     {
         $this->image_link = $image_link;
-
         return $this;
     }
 
@@ -87,7 +90,6 @@ class Category
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
-
         return $this;
     }
 
@@ -99,7 +101,6 @@ class Category
     public function setShortDescription(string $shortDescription): static
     {
         $this->shortDescription = $shortDescription;
-
         return $this;
     }
 
@@ -111,7 +112,6 @@ class Category
     public function setRank(int $rank): static
     {
         $this->rank = $rank;
-
         return $this;
     }
 
@@ -129,19 +129,16 @@ class Category
             $this->subCategories->add($subCategory);
             $subCategory->setCategory($this);
         }
-
         return $this;
     }
 
     public function removeSubCategory(SubCategory $subCategory): static
     {
         if ($this->subCategories->removeElement($subCategory)) {
-            // set the owning side to null (unless already changed)
             if ($subCategory->getCategory() === $this) {
                 $subCategory->setCategory(null);
             }
         }
-
         return $this;
     }
 }

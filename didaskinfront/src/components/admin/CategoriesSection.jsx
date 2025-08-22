@@ -4,8 +4,12 @@ import { useState, useEffect } from "react";
 import { Pencil, Trash } from "lucide-react";
 import ImageUpload from "../ui/ImageUpload";
 import { getPresetImageUrl } from "../../lib/cloudinary";
+import { useAuth } from "../../hooks/useAuth";
+import { RESOURCE_ENDPOINTS } from "../../config/apiConfig";
 
 export default function CategoriesSection() {
+  const { getAuthHeaders, isAuthenticated, isLoading, handleApiResponse } =
+    useAuth();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,7 +17,6 @@ export default function CategoriesSection() {
   const [newCategory, setNewCategory] = useState({
     label: "",
     shortDescription: "",
-    rank: 0,
     image_link: "",
     slug: "",
   });
@@ -29,7 +32,6 @@ export default function CategoriesSection() {
   const [editCategory, setEditCategory] = useState({
     label: "",
     shortDescription: "",
-    rank: 0,
     image_link: "",
     slug: "",
   });
@@ -43,15 +45,23 @@ export default function CategoriesSection() {
     category_id: null,
   });
 
-  // Configuration de l'API
-  const API_BASE_URL = "http://localhost:8000";
-
   // Récupérer toutes les catégories avec leurs sous-catégories
   const fetchCategories = async () => {
+    // Don't fetch if not authenticated
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/categories`);
-      const result = await response.json();
+      setError(null);
+
+      const response = await fetch(RESOURCE_ENDPOINTS.CATEGORIES, {
+        headers: getAuthHeaders(),
+      });
+
+      const result = await handleApiResponse(response);
 
       if (result.success) {
         // Pour chaque catégorie, récupérer ses sous-catégories
@@ -59,22 +69,28 @@ export default function CategoriesSection() {
           result.data.map(async (category) => {
             try {
               const subResponse = await fetch(
-                `${API_BASE_URL}/subcategories/category/${category.id}`
+                `${RESOURCE_ENDPOINTS.SUBCATEGORIES}/category/${category.id}`,
+                {
+                  headers: getAuthHeaders(),
+                }
               );
-              const subResult = await subResponse.json();
+              const subResult = await handleApiResponse(subResponse);
               return {
                 ...category,
                 subcategories: subResult.success ? subResult.data : [],
               };
             } catch (error) {
+              if (
+                error.message === "SESSION_EXPIRED" ||
+                error.message === "INVALID_RESPONSE"
+              ) {
+                return { ...category, subcategories: [] };
+              }
               console.error(
                 `Erreur lors de la récupération des sous-catégories pour ${category.id}:`,
                 error
               );
-              return {
-                ...category,
-                subcategories: [],
-              };
+              return { ...category, subcategories: [] };
             }
           })
         );
@@ -83,7 +99,13 @@ export default function CategoriesSection() {
         setError("Erreur lors de la récupération des catégories");
       }
     } catch (error) {
-      setError("Erreur de connexion au serveur");
+      if (error.message === "SESSION_EXPIRED") {
+        setError("Session expirée. Veuillez vous reconnecter.");
+      } else if (error.message === "INVALID_RESPONSE") {
+        setError("Réponse invalide du serveur");
+      } else {
+        setError("Erreur de connexion au serveur");
+      }
       console.error("Erreur:", error);
     } finally {
       setLoading(false);
@@ -92,8 +114,10 @@ export default function CategoriesSection() {
 
   // Charger les catégories au montage du composant
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    if (isAuthenticated && !isLoading) {
+      fetchCategories();
+    }
+  }, [isAuthenticated, isLoading]);
 
   // Ajouter une nouvelle catégorie
   const handleAddCategory = async (e) => {
@@ -101,15 +125,12 @@ export default function CategoriesSection() {
     if (!newCategory.label) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/categories`, {
+      const response = await fetch(`${RESOURCE_ENDPOINTS.CATEGORIES}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           label: newCategory.label,
           shortDescription: newCategory.shortDescription,
-          rank: newCategory.rank,
           image_link: newCategory.image_link,
           slug:
             newCategory.slug ||
@@ -117,7 +138,7 @@ export default function CategoriesSection() {
         }),
       });
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
 
       if (result.success) {
         // Recharger la liste des catégories
@@ -127,7 +148,6 @@ export default function CategoriesSection() {
         setNewCategory({
           label: "",
           shortDescription: "",
-          rank: 0,
           image_link: "",
           slug: "",
         });
@@ -136,7 +156,13 @@ export default function CategoriesSection() {
         setError(result.error || "Erreur lors de l'ajout de la catégorie");
       }
     } catch (error) {
-      setError("Erreur de connexion au serveur");
+      if (error.message === "SESSION_EXPIRED") {
+        setError("Session expirée. Veuillez vous reconnecter.");
+      } else if (error.message === "INVALID_RESPONSE") {
+        setError("Réponse invalide du serveur");
+      } else {
+        setError("Erreur de connexion au serveur");
+      }
       console.error("Erreur:", error);
     }
   };
@@ -147,11 +173,9 @@ export default function CategoriesSection() {
     if (!newSubCategory.label || addSubCategoryFor == null) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/subcategories`, {
+      const response = await fetch(`${RESOURCE_ENDPOINTS.SUBCATEGORIES}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           label: newSubCategory.label,
           image_link: newSubCategory.image_link,
@@ -163,7 +187,7 @@ export default function CategoriesSection() {
         }),
       });
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
 
       if (result.success) {
         // Recharger la liste des catégories
@@ -182,7 +206,13 @@ export default function CategoriesSection() {
         setError(result.error || "Erreur lors de l'ajout de la sous-catégorie");
       }
     } catch (error) {
-      setError("Erreur de connexion au serveur");
+      if (error.message === "SESSION_EXPIRED") {
+        setError("Session expirée. Veuillez vous reconnecter.");
+      } else if (error.message === "INVALID_RESPONSE") {
+        setError("Réponse invalide du serveur");
+      } else {
+        setError("Erreur de connexion au serveur");
+      }
       console.error("Erreur:", error);
     }
   };
@@ -193,8 +223,7 @@ export default function CategoriesSection() {
     setEditCategory({
       label: cat.label || "",
       shortDescription: cat.shortDescription || "",
-      rank: cat.rank || 0,
-      image_link: cat.imageLink || "",
+      image_link: cat.image_link || cat.imageLink || "",
       slug: cat.slug || "",
     });
   };
@@ -204,23 +233,20 @@ export default function CategoriesSection() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/categories/${editCategoryId}`,
+        `${RESOURCE_ENDPOINTS.CATEGORIES}/${editCategoryId}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify({
             label: editCategory.label,
             shortDescription: editCategory.shortDescription,
-            rank: editCategory.rank,
             image_link: editCategory.image_link,
             slug: editCategory.slug,
           }),
         }
       );
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
 
       if (result.success) {
         // Recharger la liste des catégories
@@ -231,7 +257,6 @@ export default function CategoriesSection() {
         setEditCategory({
           label: "",
           shortDescription: "",
-          rank: 0,
           image_link: "",
           slug: "",
         });
@@ -253,9 +278,13 @@ export default function CategoriesSection() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/categories/${catId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${RESOURCE_ENDPOINTS.CATEGORIES}/${catId}`,
+        {
+          method: "DELETE",
+          headers: getAuthHeaders(),
+        }
+      );
 
       const result = await response.json();
 
@@ -279,7 +308,7 @@ export default function CategoriesSection() {
       catId,
       subId: sub.id,
       label: sub.label || "",
-      image_link: sub.imageLink || "",
+      image_link: sub.image_link || sub.imageLink || "",
       slug: sub.slug || "",
       rank: sub.rank || 0,
       category_id: catId,
@@ -291,12 +320,10 @@ export default function CategoriesSection() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/subcategories/${editSubCategory.subId}`,
+        `${RESOURCE_ENDPOINTS.SUBCATEGORIES}/${editSubCategory.subId}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify({
             label: editSubCategory.label,
             image_link: editSubCategory.image_link,
@@ -341,9 +368,13 @@ export default function CategoriesSection() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/subcategories/${subId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${RESOURCE_ENDPOINTS.SUBCATEGORIES}/${subId}`,
+        {
+          method: "DELETE",
+          headers: getAuthHeaders(),
+        }
+      );
 
       const result = await response.json();
 
@@ -367,27 +398,49 @@ export default function CategoriesSection() {
   const handleDragOver = (e) => {
     e.preventDefault();
   };
-  const handleDrop = (index) => {
+  const handleDrop = async (index) => {
     if (draggedCatIndex === null || draggedCatIndex === index) return;
+    let newOrder;
     setCategories((prev) => {
       const arr = [...prev];
       const [removed] = arr.splice(draggedCatIndex, 1);
       arr.splice(index, 0, removed);
+      newOrder = arr.map((c) => c.id);
       return arr;
     });
     setDraggedCatIndex(null);
+    try {
+      await fetch(`${RESOURCE_ENDPOINTS.CATEGORIES}/reorder`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ ids: newOrder }),
+      });
+    } catch (e) {
+      // ignore network error; UI already reflects order
+    }
   };
 
   // Cloudinary upload options for categories and subcategories
   const getUploadOptions = (type, id = null) => ({
     folder: `didaskin/${type}`,
-    public_id: id ? `${type}_${id}` : undefined,
+    // Remove public_id to let Cloudinary generate unique IDs automatically
+    // This prevents image caching issues when updating
   });
 
   if (loading) {
     return (
       <div className="bg-white rounded border border-gray-200 p-6">
         <div className="text-center">Chargement des catégories...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="bg-white rounded border border-gray-200 p-6">
+        <div className="text-center text-gray-600">
+          Veuillez vous connecter pour accéder à cette section.
+        </div>
       </div>
     );
   }
@@ -573,23 +626,6 @@ export default function CategoriesSection() {
             </div>
             <div className="mb-2">
               <label className="block text-xs font-light text-gray-700 mb-1">
-                Rang
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                value={newCategory.rank}
-                onChange={(e) =>
-                  setNewCategory((c) => ({
-                    ...c,
-                    rank: parseInt(e.target.value) || 0,
-                  }))
-                }
-              />
-            </div>
-            <div className="mb-2">
-              <label className="block text-xs font-light text-gray-700 mb-1">
                 Slug
               </label>
               <input
@@ -755,23 +791,6 @@ export default function CategoriesSection() {
                   setEditCategory((c) => ({
                     ...c,
                     shortDescription: e.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div className="mb-2">
-              <label className="block text-xs font-light text-gray-700 mb-1">
-                Rang
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                value={editCategory.rank}
-                onChange={(e) =>
-                  setEditCategory((c) => ({
-                    ...c,
-                    rank: parseInt(e.target.value) || 0,
                   }))
                 }
               />

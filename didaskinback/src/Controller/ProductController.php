@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/products', name: 'app_products')]
 class ProductController extends AbstractController
@@ -33,6 +33,7 @@ class ProductController extends AbstractController
     }
 
     #[Route('', name: 'product_create', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function create(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -43,8 +44,9 @@ class ProductController extends AbstractController
         $product->setLongDescription($data['longDescription'] ?? '');
         $product->setAdditionalDetails($data['additionalDetails'] ?? '');
         $product->setPrice($data['price'] ?? 0);
-        $product->setRank($data['rank'] ?? 0);
-        $product->setImage_link($data['image_link'] ?? '');
+        // Auto rank to last
+        $product->setRank($this->productRepository->getNextRank());
+        $product->setImageLink($data['image_link'] ?? '');
         $product->setStockQuantity($data['stock_quantity'] ?? '');
         $product->setSlug($data['slug'] ?? '');
 
@@ -86,7 +88,7 @@ class ProductController extends AbstractController
             'longDescription' => $product->getLongDescription(),
             'AdditionalDetails' => $product->getAdditionalDetails(),
             'rank' => $product->getRank(),
-            'image_link' => $product->getImage_link(),
+            'image_link' => $product->getImageLink(),
         ];
 
         return $this->json([
@@ -96,6 +98,7 @@ class ProductController extends AbstractController
     }
 
     #[Route('/{id}', name: 'product_update', methods: ['PUT'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function update(Request $request, int $id): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -118,17 +121,17 @@ class ProductController extends AbstractController
         if (isset($data['additionalDetails'])) {
             $product->setAdditionalDetails($data['additionalDetails']);
         }
-        if (isset($data['price'])) {
-            $product->setPrice($data['price']);
+        if (array_key_exists('price', $data) && $data['price'] !== null && $data['price'] !== '') {
+            $product->setPrice((float) $data['price']);
         }
         if (isset($data['rank'])) {
             $product->setRank($data['rank']);
         }
         if (isset($data['image_link'])) {
-            $product->setImage_link($data['image_link']);
+            $product->setImageLink($data['image_link']);
         }
-        if (isset($data['stock_quantity'])) {
-            $product->setStockQuantity($data['stock_quantity']);
+        if (array_key_exists('stock_quantity', $data) && $data['stock_quantity'] !== null && $data['stock_quantity'] !== '') {
+            $product->setStockQuantity((int) $data['stock_quantity']);
         }
         if (isset($data['slug'])) {
             $product->setSlug($data['slug']);
@@ -154,6 +157,7 @@ class ProductController extends AbstractController
     }
 
     #[Route('/{id}', name: 'product_delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(int $id): JsonResponse
     {
         $product = $this->productRepository->find($id);
@@ -168,6 +172,26 @@ class ProductController extends AbstractController
             'success' => true,
             'message' => 'Produit supprimé avec succès'
         ]);
+    }
+
+    #[Route('/reorder', name: 'product_reorder', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function reorder(Request $request): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true);
+        $ids = $payload['ids'] ?? [];
+        if (!is_array($ids) || empty($ids)) {
+            return $this->json(['success' => false, 'error' => 'Invalid ids'], Response::HTTP_BAD_REQUEST);
+        }
+        $rank = 1;
+        foreach ($ids as $id) {
+            $prod = $this->productRepository->find($id);
+            if ($prod) {
+                $prod->setRank($rank++);
+            }
+        }
+        $this->entityManager->flush();
+        return $this->json(['success' => true]);
     }
 
     private function getErrorsFromValidator($errors): array

@@ -60,6 +60,12 @@ class ServiceRepository extends ServiceEntityRepository
         if(isset($data['slug'])) {
             $entity->setSlug($data['slug']);
         }
+        if(array_key_exists('featuredLanding', $data)) {
+            $entity->setFeaturedLanding((bool)$data['featuredLanding']);
+        }
+        if(array_key_exists('featuredRank', $data)) {
+            $entity->setFeaturedRank($data['featuredRank'] !== null ? (int)$data['featuredRank'] : null);
+        }
 
         $this->getEntityManager()->flush();
         return $entity;
@@ -72,6 +78,40 @@ class ServiceRepository extends ServiceEntityRepository
             ->orderBy('s.rank', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+      public function findAllWithSubcategory(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->leftJoin('s.subCategory', 'sc')
+            ->addSelect('sc')
+            ->orderBy('sc.label', 'ASC')
+            ->addOrderBy('s.rank', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findFeaturedForLanding(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.featuredLanding = :f')
+            ->setParameter('f', true)
+            ->orderBy('s.featuredRank', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getNextRankForSubcategory(?int $subCategoryId): int
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->select('MAX(s.rank) as maxRank');
+        if ($subCategoryId === null) {
+            $qb->andWhere('s.subCategory IS NULL');
+        } else {
+            $qb->andWhere('s.subCategory = :sid')->setParameter('sid', $subCategoryId);
+        }
+        $max = (int)($qb->getQuery()->getSingleScalarResult() ?? 0);
+        return $max + 1;
     }
 
     

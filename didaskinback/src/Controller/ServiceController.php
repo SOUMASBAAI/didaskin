@@ -15,6 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/services', name: 'app_services')]
 class ServiceController extends AbstractController
@@ -28,20 +29,40 @@ class ServiceController extends AbstractController
     ) {
     }
 
-    
+        #[Route('/all', name: 'list_all', methods: ['GET'])]
+    public function listAll(): JsonResponse
+    {
+        $services = $this->serviceRepository->findAllWithSubcategory();
+        
+        $context = (new ObjectNormalizerContextBuilder())
+            ->withGroups('service:read')
+            ->toArray();
+        
+        $data = $this->serializer->serialize($services, 'json', $context);
+        $data = json_decode($data, true);
+       
+        return $this->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+    }
 
     #[Route('', name: 'create', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function create(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-
-        // Validate that subcategory exists
-        $subCategory = $this->subCategoryRepository->find($data['subcategory_id'] ?? null);
-        if (!$subCategory) {
-            return $this->json([
-                'success' => false,
-                'error' => 'SubCategory not found'
-            ], Response::HTTP_BAD_REQUEST);
+        $subCategory = null;
+        if (isset($data['subcategory_id'])) {
+            if ($data['subcategory_id'] !== null && $data['subcategory_id'] !== '') {
+                $subCategory = $this->subCategoryRepository->find($data['subcategory_id']);
+                if (!$subCategory) {
+                    return $this->json([
+                        'success' => false,
+                        'error' => 'SubCategory not found'
+                    ], Response::HTTP_BAD_REQUEST);
+                }
+            }
         }
 
         $service = new Service();
@@ -53,7 +74,15 @@ class ServiceController extends AbstractController
         $service->setPrice($data['price'] ?? 0);
         $service->setImageLink($data['image_link'] ?? '');
         $service->setSlug($data['slug'] ?? '');
-        $service->setRank($data['rank'] ?? 0);
+        // Auto-assign rank to last position within the same subcategory (or null group)
+        $nextRank = $this->serviceRepository->getNextRankForSubcategory($subCategory?->getId());
+        $service->setRank($nextRank);
+        if (array_key_exists('featuredLanding', $data)) {
+            $service->setFeaturedLanding((bool)$data['featuredLanding']);
+        }
+        if (array_key_exists('featuredRank', $data)) {
+            $service->setFeaturedRank($data['featuredRank'] !== null ? (int)$data['featuredRank'] : null);
+        }
         $service->setSubCategory($subCategory);
 
         $errors = $this->validator->validate($service);
@@ -81,7 +110,7 @@ class ServiceController extends AbstractController
         ], Response::HTTP_CREATED);
     }
 
-    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\\d+'])]
     public function show(int $id): JsonResponse
     {
         $service = $this->serviceRepository->find($id);
@@ -106,7 +135,8 @@ class ServiceController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT'])]
+    #[Route('/{id}', name: 'update', methods: ['PUT'], requirements: ['id' => '\\d+'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function update(Request $request, int $id): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -119,16 +149,19 @@ class ServiceController extends AbstractController
             ], Response::HTTP_NOT_FOUND);
         }
 
-        // Update subcategory if provided
-        if (isset($data['subcategory_id'])) {
-            $subCategory = $this->subCategoryRepository->find($data['subcategory_id']);
-            if (!$subCategory) {
-                return $this->json([
-                    'success' => false,
-                    'error' => 'SubCategory not found'
-                ], Response::HTTP_BAD_REQUEST);
+        if (array_key_exists('subcategory_id', $data)) {
+            if ($data['subcategory_id'] === null || $data['subcategory_id'] === '') {
+                $service->setSubCategory(null);
+            } else {
+                $subCategory = $this->subCategoryRepository->find($data['subcategory_id']);
+                if (!$subCategory) {
+                    return $this->json([
+                        'success' => false,
+                        'error' => 'SubCategory not found'
+                    ], Response::HTTP_BAD_REQUEST);
+                }
+                $service->setSubCategory($subCategory);
             }
-            $service->setSubCategory($subCategory);
         }
 
         $service = $this->serviceRepository->update($service, $data);
@@ -147,7 +180,8 @@ class ServiceController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '\\d+'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(int $id): JsonResponse
     {
         $service = $this->serviceRepository->find($id);
@@ -183,6 +217,94 @@ class ServiceController extends AbstractController
             'success' => true,
             'data' => $data,
         ]);
+    }
+
+    #[Route('/featured', name: 'featured', methods: ['GET'])]
+    public function featured(): JsonResponse
+    {
+        try {
+            $services = $this->serviceRepository->findFeaturedForLanding();
+            $data = array_map(function ($s) {
+                return [
+                    'id' => $s->getId(),
+                    'label' => $s->getLabel(),
+                    'price' => $s->getPrice(),
+                    'image_link' => $s->getImageLink(),
+                    'featuredRank' => $s->getFeaturedRank(),
+                ];
+            }, $services);
+            return $this->json(['success' => true, 'data' => $data]);
+        } catch (\Throwable $e) {
+            // Fallback to raw SQL to bypass ORM mapping issues
+            try {
+                $conn = $this->entityManager->getConnection();
+                // Check if the featured columns exist; if not, return empty list gracefully
+                try {
+                    $schemaManager = method_exists($conn, 'createSchemaManager')
+                        ? $conn->createSchemaManager()
+                        : $conn->getSchemaManager();
+                    $columns = $schemaManager->listTableColumns('service');
+                    $hasFeaturedLanding = isset($columns['featured_landing']);
+                    $hasFeaturedRank = isset($columns['featured_rank']);
+                    if (!$hasFeaturedLanding || !$hasFeaturedRank) {
+                        return $this->json(['success' => true, 'data' => [], 'note' => 'featured columns missing']);
+                    }
+                } catch (\Throwable $_) {
+                    // If schema check itself fails, still attempt query, and handle below
+                }
+                $rows = $conn->executeQuery(
+                    'SELECT id, label, price, image_link, featured_rank FROM service WHERE featured_landing = 1 ORDER BY featured_rank ASC'
+                )->fetchAllAssociative();
+                return $this->json(['success' => true, 'data' => $rows, 'fallback' => true]);
+            } catch (\Throwable $inner) {
+                // Last resort: never 500, return empty list with diagnostic note
+                return $this->json([
+                    'success' => true,
+                    'data' => [],
+                    'note' => 'featured fetch failed: ' . $inner->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    #[Route('/featured/reorder', name: 'featured_reorder', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function reorderFeatured(Request $request): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true);
+        $ids = $payload['ids'] ?? [];
+        if (!is_array($ids) || empty($ids)) {
+            return $this->json(['success' => false, 'error' => 'Invalid ids'], Response::HTTP_BAD_REQUEST);
+        }
+        $rank = 1;
+        foreach ($ids as $id) {
+            $svc = $this->serviceRepository->find($id);
+            if ($svc && $svc->isFeaturedLanding()) {
+                $svc->setFeaturedRank($rank++);
+            }
+        }
+        $this->entityManager->flush();
+        return $this->json(['success' => true]);
+    }
+
+    #[Route('/reorder', name: 'reorder', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function reorder(Request $request): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true);
+        $ids = $payload['ids'] ?? [];
+        if (!is_array($ids) || empty($ids)) {
+            return $this->json(['success' => false, 'error' => 'Invalid ids'], Response::HTTP_BAD_REQUEST);
+        }
+        $rank = 1;
+        foreach ($ids as $id) {
+            $svc = $this->serviceRepository->find($id);
+            if ($svc) {
+                $svc->setRank($rank++);
+            }
+        }
+        $this->entityManager->flush();
+        return $this->json(['success' => true]);
     }
 
     

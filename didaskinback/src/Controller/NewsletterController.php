@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 
 #[Route('/newsletters', name: 'app_newsletters')]
@@ -39,6 +40,7 @@ class NewsletterController extends AbstractController
     }
     
      #[Route('/new', name: 'create', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function create(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -105,6 +107,7 @@ class NewsletterController extends AbstractController
     }
 
      #[Route('/{id}', name: 'update', methods: ['PUT'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function update(Request $request, int $id): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -143,6 +146,7 @@ class NewsletterController extends AbstractController
     }
 
     #[Route('/{id}/send', name: 'send_newsletter', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function sendNewsletter(int $id): JsonResponse
     {
         $newsletter = $this->newsletterRepository->find($id);
@@ -168,6 +172,7 @@ class NewsletterController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(int $id): JsonResponse
     {
         $newsletter = $this->newsletterRepository->find($id);
