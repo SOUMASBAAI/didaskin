@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import PlanityWidget from "../components/PlanityWidget";
 import { getPlanityConfig } from "../config/planity";
 
@@ -154,22 +155,11 @@ export default function BookingPage() {
             />
           </div>
 
-          {/* Back button */}
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => navigate(-1)}
-              className="px-8 py-3 bg-gray-200 text-gray-800 font-medium rounded-none hover:bg-gray-300 transition-colors"
-            >
-              Retour au service
-            </button>
-          </div>
+         
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 py-6 text-center text-sm text-gray-600">
-        <p>© 2024 DIDA SKIN. Tous droits réservés.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

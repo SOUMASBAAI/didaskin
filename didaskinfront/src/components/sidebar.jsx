@@ -62,7 +62,7 @@ export default function Sidebar({
               className="cursor-pointer hover:opacity-80 transition-opacity duration-200 flex justify-center"
             >
               <img
-                src="/assets/logo-dida.png"
+                src="/src/assets/logo-dida.png"
                 alt="DIDA SKIN"
                 className="h-16 w-auto"
               />

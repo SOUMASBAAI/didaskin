@@ -32,7 +32,7 @@ security:
 
         # Routes d'authentification (pas de JWT requis)
         auth:
-            pattern: ^/api/(login|register|admin/register)$
+            pattern: ^/api/(login|register|admin/register|forgot-password|reset-password)$
             stateless: true
             security: false
 
@@ -52,6 +52,8 @@ security:
         - { path: ^/api/login$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/register$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/admin/register$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/forgot-password$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/reset-password$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         # Public read-only access for landing page
         - {
               path: ^/(categories|products|services|subcategories)(/.*)?$,

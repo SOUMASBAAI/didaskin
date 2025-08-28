@@ -73,7 +73,9 @@ export default function LandingPage() {
             const transformedQuestions = result.data.map((q) => ({
               id: q.id,
               question: q.question,
-              options: [q.choiceA, q.choiceB, q.choiceC, q.choiceD],
+              options: [q.choiceA, q.choiceB, q.choiceC, q.choiceD]
+                .map((text, idx) => ({ text, originalIndex: idx }))
+                .filter((opt) => opt.text && String(opt.text).trim() !== ""),
               correctAnswer: q.correctAnswer,
               explanation: q.explanation,
             }));
@@ -100,7 +102,7 @@ export default function LandingPage() {
 
   // Hero content
   const [hero, setHero] = useState({
-    title: "BIENVENUE CHEZ DIDA SKIN",
+    title: "BIENVENUE DIDA SKIN",
     description: "Votre sanctuaire de beauté et de bien-être.",
     image: null,
     cta: "DÉCOUVRIR NOS SERVICES",
@@ -153,15 +155,13 @@ export default function LandingPage() {
   // Subscription modal state for form success/errors handled in component
   const [showSubscribe, setShowSubscribe] = useState(false);
   useEffect(() => {
-    const seen = localStorage.getItem("seen_subscribe_modal");
-    const lastSeen = localStorage.getItem("seen_subscribe_modal_timestamp");
-    const now = Date.now();
-    const oneDay = 24 * 60 * 60 * 1000; // 24 heures en millisecondes
-
-    if (!seen || (lastSeen && now - parseInt(lastSeen) > oneDay)) {
-      setTimeout(() => setShowSubscribe(true), 800);
-      localStorage.setItem("seen_subscribe_modal", "1");
-      localStorage.setItem("seen_subscribe_modal_timestamp", now.toString());
+    const hasShown = sessionStorage.getItem("subscribe_modal_shown") === "1";
+    if (!hasShown) {
+      const timer = setTimeout(() => {
+        setShowSubscribe(true);
+        sessionStorage.setItem("subscribe_modal_shown", "1");
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, []);
 
@@ -176,6 +176,46 @@ export default function LandingPage() {
       } catch {}
     };
     fetchFeatured();
+  }, []);
+
+  // Catalogue content (image) for landing catalogue section
+  const [catalogueContent, setCatalogueContent] = useState({ image: null });
+  useEffect(() => {
+    const fetchCatalogue = async () => {
+      try {
+        const r = await fetch("http://localhost:8000/site-content/catalogue");
+        if (r.ok) {
+          const j = await r.json();
+          if (j?.success && j?.data) {
+            setCatalogueContent({ image: j.data.image || null });
+          }
+        }
+      } catch {}
+    };
+    fetchCatalogue();
+  }, []);
+
+  // About content (image) for landing about section
+  const [aboutContent, setAboutContent] = useState({
+    image: null,
+    description: null,
+  });
+  useEffect(() => {
+    const fetchAbout = async () => {
+      try {
+        const r = await fetch("http://localhost:8000/site-content/about");
+        if (r.ok) {
+          const j = await r.json();
+          if (j?.success && j?.data) {
+            setAboutContent({
+              image: j.data.image || null,
+              description: j.data.description || null,
+            });
+          }
+        }
+      } catch {}
+    };
+    fetchAbout();
   }, []);
 
   // Create sections: first section + categories + quiz + footer
@@ -235,6 +275,31 @@ export default function LandingPage() {
       callToAction: "VOIR LE SERVICE",
       serviceId: s.id,
     })),
+    // Section: Explorer catalogue produits
+    {
+      title: "CATALOGUE PRODUIT",
+      description: "Découvrez notre sélection de produits de soin.",
+      imageSrc:
+        catalogueContent.image ||
+        "https://images.unsplash.com/photo-1556228724-4d8760c3d640?q=80&w=1600&auto=format&fit=crop",
+      callToAction: "VOIR TOUS LES PRODUITS",
+      navigateTo: "/products",
+    },
+    // Section: À propos du centre
+    {
+      title: "À PROPOS DU CENTRE",
+      description: "",
+      imageSrc: "none",
+      isAbout: true,
+      aboutImage:
+        aboutContent.image ||
+        "https://images.unsplash.com/photo-1551361983-f9cbd3a8a9b2?q=80&w=1600&auto=format&fit=crop",
+      aboutText:
+        aboutContent.description ||
+        "Qui sommes-nous ? Dida Skin est un centre dédié au bien-être et à la beauté, où expertise et douceur se rencontrent pour révéler l'éclat naturel de votre peau.",
+      callToAction: "PRENDRE UN RENDEZ-VOUS",
+      navigateTo: "/booking",
+    },
     // Section 4: Quiz (ne pas toucher)
     {
       title: "Quiz Dida Skin",
@@ -244,7 +309,7 @@ export default function LandingPage() {
       isQuiz: true,
       categoryId: null, // Pas de catégorie pour le quiz
     },
-    // Section 5: Footer (ne pas toucher)
+    // Section 5: Footer 
     {
       title: "CONTACTEZ-NOUS",
       description:
@@ -420,13 +485,17 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-black">
+   <div className="landing-root relative h-screen w-screen overflow-hidden bg-transparent">
       <Header />
       {/* Render the current section as fixed background */}
       <div
         className={`fixed top-0 left-0 h-screen w-full flex flex-col bg-cover bg-center pt-[80px] ${
           sections[isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex]
             .isQuiz
+            ? "items-center justify-center px-4 py-8 md:p-12 text-center"
+            : sections[
+                isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
+              ].isAbout
             ? "items-center justify-center p-12 text-center"
             : sections[
                 isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
@@ -460,7 +529,7 @@ export default function LandingPage() {
               isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
             ].imageSrc === "none"
               ? "bg-[#F5F1ED]"
-              : "bg-black opacity-20"
+              : "bg-transparent"
           }`}
         ></div>
         <div
@@ -476,15 +545,18 @@ export default function LandingPage() {
               : "mb-12"
           }`}
         >
-          {/* Affichage conditionnel : Titre et description seulement si pas sur la section Quiz ou Footer */}
+          {/* Affichage conditionnel : Titre et description seulement si pas sur la section Quiz, Footer ou About */}
           {!sections[
             isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
           ].isQuiz &&
             !sections[
               isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
-            ].isFooter && (
+            ].isFooter &&
+            !sections[
+              isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
+            ].isAbout && (
               <>
-                <h2 className="text-4xl md:text-5xl font-light tracking-wider mb-4 drop-shadow-lg">
+                <h2 className="text-3xl md:text-4xl font-light tracking-wider mb-4 drop-shadow-lg">
                   {
                     sections[
                       isReverse && activeIndex > 0
@@ -505,10 +577,72 @@ export default function LandingPage() {
               </>
             )}
 
-          {/* Affichage conditionnel : Quiz, Footer ou bouton normal */}
+          {/* Affichage conditionnel : About, Quiz, Footer ou bouton normal */}
           {sections[
             isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
-          ].isQuiz ? (
+          ].isAbout ? (
+            <div className="flex items-center justify-center px-4 py-8 md:p-12">
+              <div className="bg-[#F5F1ED] rounded-lg my-6 md:my-10 p-4 md:p-8 max-w-5xl mx-auto text-gray-800">
+                <div className="grid md:grid-cols-2 gap-6 items-center">
+                  <div className="relative w-full h-[60vh] md:h-[70vh] overflow-hidden">
+                    <img
+                      src={
+                        sections[
+                          isReverse && activeIndex > 0
+                            ? activeIndex - 1
+                            : activeIndex
+                        ].aboutImage
+                      }
+                      alt="Centre Dida Skin"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-x-0 bottom-4 flex justify-center md:hidden">
+                      <button
+                        className="px-6 py-2 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                        onClick={() => navigate("/booking")}
+                      >
+                        {
+                          sections[
+                            isReverse && activeIndex > 0
+                              ? activeIndex - 1
+                              : activeIndex
+                          ].callToAction
+                        }
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3">L'INSTITUT</h3>
+                    <p className="text-sm md:text-base text-gray-700 leading-relaxed">
+                      {
+                        sections[
+                          isReverse && activeIndex > 0
+                            ? activeIndex - 1
+                            : activeIndex
+                        ].aboutText
+                      }
+                    </p>
+                    <div className="mt-6 text-center hidden md:block">
+                      <button
+                        className="px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                        onClick={() => navigate("/booking")}
+                      >
+                        {
+                          sections[
+                            isReverse && activeIndex > 0
+                              ? activeIndex - 1
+                              : activeIndex
+                          ].callToAction
+                        }
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : sections[
+              isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
+            ].isQuiz ? (
             // Section Quiz - Afficher le quiz directement
             <div className="bg-[#F5F1ED] rounded-lg p-4 max-w-2xl mx-auto text-gray-800">
               {quizLoading ? (
@@ -542,7 +676,7 @@ export default function LandingPage() {
               ) : quizState === "playing" ? (
                 <div className="space-y-4">
                   <div className="text-center mb-6">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
                       Question {currentQuestionIndex + 1} sur{" "}
                       {quizQuestions.length}
                     </h3>
@@ -558,15 +692,16 @@ export default function LandingPage() {
                         const questionId =
                           quizQuestions[currentQuestionIndex]?.id;
                         const isCorrect =
-                          index ===
+                          option.originalIndex ===
                           quizQuestions[currentQuestionIndex]?.correctAnswer;
-                        const isSelected = userAnswers[questionId] === index;
+                        const isSelected =
+                          userAnswers[questionId] === option.originalIndex;
                         const showFeedbackForThisQuestion =
                           showFeedback &&
                           lastAnsweredQuestion?.id === questionId;
 
                         let buttonClass =
-                          "w-full min-w-[600px] p-4 text-left rounded-lg border transition-colors ";
+                          "w-full p-3 md:p-4 text-left rounded-lg border transition-colors break-words ";
 
                         if (showFeedbackForThisQuestion) {
                           if (isCorrect) {
@@ -593,12 +728,15 @@ export default function LandingPage() {
                           <button
                             key={index}
                             onClick={() =>
-                              handleAnswerSelect(questionId, index)
+                              handleAnswerSelect(
+                                questionId,
+                                option.originalIndex
+                              )
                             }
                             disabled={showFeedbackForThisQuestion}
                             className={buttonClass}
                           >
-                            {option}
+                            {option.text}
                           </button>
                         );
                       }
@@ -639,18 +777,18 @@ export default function LandingPage() {
                     <button
                       onClick={handlePreviousQuestion}
                       disabled={currentQuestionIndex === 0}
-                      className="flex-1 px-10 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Précédent
                     </button>
-                    <div className="w-2"></div>
+                    <div className="h-2 md:h-0 md:w-2"></div>
                     <button
                       onClick={handleNextQuestion}
                       disabled={
                         userAnswers[quizQuestions[currentQuestionIndex]?.id] ===
                         undefined
                       }
-                      className="flex-1 px-10 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {currentQuestionIndex === quizQuestions.length - 1
                         ? "Terminer"
@@ -661,30 +799,28 @@ export default function LandingPage() {
               ) : quizState === "results" ? (
                 <div className="text-center space-y-6">
                   <div className="mb-8">
-                    <div className="text-6xl font-bold text-[#000000] mb-4">
+                    <div className="text-4xl md:text-6xl font-bold text-[#D4A574] mb-4">
                       {Math.round(
                         (calculateScore() / quizQuestions.length) * 100
                       )}
                       %
                     </div>
-                    <h3 className="text-2xl font-semibold text-[#000000] mb-2">
+                    <h3 className="text-2xl font-semibold text-gray-800 mb-2">
                       Résultats du Quiz
                     </h3>
-                    <p className="text-lg text-[#000000]">
+                    <p className="text-lg text-gray-600">
                       {calculateScore()} bonnes réponses sur{" "}
                       {quizQuestions.length} questions
                     </p>
                   </div>
 
                   {/* Message de félicitations basé sur le score */}
-                  <div className="bg-gradient-to-r from-[#F5F1ED] to-[#E8E0D8] rounded-lg p-6 border border-[#000000] text-[#000000]">
+                  <div className="bg-gradient-to-r from-[#F5F1ED] to-[#E8E0D8] rounded-lg p-6 border border-[#D4A574]">
                     {Math.round(
                       (calculateScore() / quizQuestions.length) * 100
                     ) >= 80 ? (
-                      <div className="text-[#000000]">
-                        <div className="text-2xl mb-2 font-semibold">
-                          Excellent !
-                        </div>
+                      <div className="text-green-700">
+                        <div className="text-2xl mb-2">🎉 Excellent !</div>
                         <p className="text-sm">
                           Vous maîtrisez parfaitement les bases du skincare.
                           Continuez comme ça !
@@ -693,10 +829,8 @@ export default function LandingPage() {
                     ) : Math.round(
                         (calculateScore() / quizQuestions.length) * 100
                       ) >= 60 ? (
-                      <div className="text-[#000000]">
-                        <div className="text-2xl mb-2 font-semibold">
-                          Bien joué !
-                        </div>
+                      <div className="text-blue-700">
+                        <div className="text-2xl mb-2">👍 Bien joué !</div>
                         <p className="text-sm">
                           Vous avez de bonnes connaissances. Quelques révisions
                           et vous serez parfait !
@@ -705,20 +839,16 @@ export default function LandingPage() {
                     ) : Math.round(
                         (calculateScore() / quizQuestions.length) * 100
                       ) >= 40 ? (
-                      <div className="text-[#000000]">
-                        <div className="text-2xl mb-2 font-semibold">
-                          Pas mal !
-                        </div>
+                      <div className="text-orange-700">
+                        <div className="text-2xl mb-2">📚 Pas mal !</div>
                         <p className="text-sm">
                           Vous avez les bases, mais il y a encore des choses à
                           apprendre. Continuez à vous informer !
                         </p>
                       </div>
                     ) : (
-                      <div className="text-[#000000]">
-                        <div className="text-2xl mb-2 font-semibold">
-                          À améliorer !
-                        </div>
+                      <div className="text-red-700">
+                        <div className="text-2xl mb-2">💡 À améliorer !</div>
                         <p className="text-sm">
                           Pas de panique ! Le skincare s'apprend. N'hésitez pas
                           à consulter nos conseils experts.
@@ -728,37 +858,37 @@ export default function LandingPage() {
                   </div>
 
                   {/* Statistiques détaillées */}
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-white rounded-lg p-4 border border-[#000000]">
-                      <div className="text-2xl font-bold text-[#000000]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div className="bg-white rounded-lg p-4 border border-gray-200">
+                      <div className="text-2xl font-bold text-[#D4A574]">
                         {calculateScore()}
                       </div>
-                      <div className="text-sm text-[#000000]">
+                      <div className="text-sm text-gray-600">
                         Bonnes réponses
                       </div>
                     </div>
-                    <div className="bg-white rounded-lg p-4 border border-[#000000]">
-                      <div className="text-2xl font-bold text-[#000000]">
+                    <div className="bg-white rounded-lg p-4 border border-gray-200">
+                      <div className="text-2xl font-bold text-gray-400">
                         {quizQuestions.length - calculateScore()}
                       </div>
-                      <div className="text-sm text-[#000000]">
+                      <div className="text-sm text-gray-600">
                         Réponses incorrectes
                       </div>
                     </div>
                   </div>
 
                   {/* Boutons d'action */}
-                  <div className="flex justify-between items-center mt-6">
+                  <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 mt-6">
                     <button
                       onClick={handleRestartQuiz}
-                      className="flex-1 px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                      className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
                     >
                       Recommencer le Quiz
                     </button>
-                    <div className="w-2"></div>
+                    <div className="h-2 md:h-0 md:w-2"></div>
                     <button
                       onClick={() => (window.location.href = "/services")}
-                      className="flex-1 px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                      className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
                     >
                       Découvrir nos Services
                     </button>
@@ -810,18 +940,18 @@ export default function LandingPage() {
                   </h3>
                   <div className="space-y-1">
                     <div
-                      className="text-xs text-black hover:text-[#c6b8a7] cursor-pointer transition-colors"
+                      className="text-xs text-black hover:text-[#D4A574] cursor-pointer transition-colors"
                       onClick={handleOpenNewsletter}
                     >
                       Souscrire newsletter
                     </div>
-                    <div className="text-xs text-black hover:text-[#c6b8a7] cursor-pointer transition-colors">
+                    <div className="text-xs text-black hover:text-[#D4A574] cursor-pointer transition-colors">
                       Politique de confidentialité
                     </div>
-                    <div className="text-xs text-black hover:text-[#c6b8a7] cursor-pointer transition-colors">
+                    <div className="text-xs text-black hover:text-[#D4A574] cursor-pointer transition-colors">
                       Conditions générales de vente
                     </div>
-                    <div className="text-xs text-black hover:text-[#c6b8a7] cursor-pointer transition-colors">
+                    <div className="text-xs text-black hover:text-[#D4A574] cursor-pointer transition-colors">
                       Mentions légales
                     </div>
                   </div>
@@ -833,10 +963,10 @@ export default function LandingPage() {
                     RÉSEAUX SOCIAUX
                   </h3>
                   <div className="flex space-x-4">
-                    <div className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer hover:bg-[#c6b8a7] hover:border-[#c6b8a7] transition-colors">
+                    <div className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer hover:bg-[#D4A574] hover:border-[#D4A574] transition-colors">
                       <Facebook className="w-3 h-3 text-black" />
                     </div>
-                    <div className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer hover:bg-[#c6b8a7] hover:border-[#c6b8a7] transition-colors">
+                    <div className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer hover:bg-[#D4A574] hover:border-[#D4A574] transition-colors">
                       <Instagram className="w-3 h-3 text-black" />
                     </div>
                   </div>
@@ -864,10 +994,12 @@ export default function LandingPage() {
                         ? activeIndex - 1
                         : activeIndex
                     ];
-                  if (sec.serviceId) {
+                  if (sec && sec.navigateTo) {
+                    navigate(sec.navigateTo);
+                  } else if (sec && sec.serviceId) {
                     navigate(`/service/${sec.serviceId}`);
                   } else {
-                    handleCategoryClick(sec.categoryId);
+                    handleCategoryClick(sec && sec.categoryId);
                   }
                 })()
               }
@@ -898,6 +1030,9 @@ export default function LandingPage() {
               className={`fixed top-0 left-0 h-screen w-full flex flex-col bg-cover bg-center pt-[80px] ${
                 sections[isReverse ? activeIndex : overlayIndex] &&
                 sections[isReverse ? activeIndex : overlayIndex].isQuiz
+                  ? "items-center justify-center p-12 text-center"
+                  : sections[isReverse ? activeIndex : overlayIndex] &&
+                    sections[isReverse ? activeIndex : overlayIndex].isAbout
                   ? "items-center justify-center p-12 text-center"
                   : sections[isReverse ? activeIndex : overlayIndex] &&
                     sections[isReverse ? activeIndex : overlayIndex].isFooter
@@ -931,7 +1066,7 @@ export default function LandingPage() {
                     sections[isReverse ? activeIndex : overlayIndex]
                       .imageSrc) === "none"
                     ? "bg-[#F5F1ED]"
-                    : "bg-black opacity-20"
+                    : "bg-transparent"
                 }`}
               ></div>
               <div
@@ -945,39 +1080,58 @@ export default function LandingPage() {
                     : "mb-12"
                 }`}
               >
-                {/* Affichage conditionnel : Titre et description seulement si pas sur la section Quiz ou Footer */}
+                {/* Affichage conditionnel : About, Quiz, Footer ou bouton normal */}
                 {sections[isReverse ? activeIndex : overlayIndex] &&
-                !sections[isReverse ? activeIndex : overlayIndex].isQuiz &&
-                !sections[isReverse ? activeIndex : overlayIndex].isFooter ? (
-                  <>
-                    <h2 className="text-4xl md:text-5xl font-light tracking-wider mb-4 drop-shadow-lg">
-                      {sections[isReverse ? activeIndex : overlayIndex] &&
-                        sections[isReverse ? activeIndex : overlayIndex].title}
-                    </h2>
-                    <p className="text-lg md:text-xl mb-8 drop-shadow-lg">
-                      {sections[isReverse ? activeIndex : overlayIndex] &&
-                        sections[isReverse ? activeIndex : overlayIndex]
-                          .description}
-                    </p>
-                    <button
-                      className="px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
-                      onClick={() =>
-                        (() => {
-                          const sec =
-                            sections[isReverse ? activeIndex : overlayIndex];
-                          if (sec.serviceId) {
-                            navigate(`/service/${sec.serviceId}`);
-                          } else {
-                            handleCategoryClick(sec.categoryId);
-                          }
-                        })()
-                      }
-                    >
-                      {sections[isReverse ? activeIndex : overlayIndex] &&
-                        sections[isReverse ? activeIndex : overlayIndex]
-                          .callToAction}
-                    </button>
-                  </>
+                sections[isReverse ? activeIndex : overlayIndex].isAbout ? (
+                  <div className="flex items-center justify-center px-4 py-8 md:p-12">
+                    <div className="bg-[#F5F1ED] rounded-lg my-6 md:my-10 p-4 md:p-8 max-w-5xl mx-auto text-gray-800">
+                      <div className="grid md:grid-cols-2 gap-6 items-center">
+                        <div className="relative w-full h-[60vh] md:h-[70vh] overflow-hidden">
+                          <img
+                            src={
+                              sections[isReverse ? activeIndex : overlayIndex]
+                                .aboutImage
+                            }
+                            alt="Centre Dida Skin"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-x-0 bottom-4 flex justify-center md:hidden">
+                            <button
+                              className="px-6 py-2 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                              onClick={() => navigate("/booking")}
+                            >
+                              {
+                                sections[isReverse ? activeIndex : overlayIndex]
+                                  .callToAction
+                              }
+                            </button>
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-semibold mb-3">
+                            L'INSTITUT
+                          </h3>
+                          <p className="text-sm md:text-base text-gray-700 leading-relaxed">
+                            {
+                              sections[isReverse ? activeIndex : overlayIndex]
+                                .aboutText
+                            }
+                          </p>
+                          <div className="mt-6 text-center hidden md:block">
+                            <button
+                              className="px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                              onClick={() => navigate("/booking")}
+                            >
+                              {
+                                sections[isReverse ? activeIndex : overlayIndex]
+                                  .callToAction
+                              }
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ) : sections[isReverse ? activeIndex : overlayIndex] &&
                   sections[isReverse ? activeIndex : overlayIndex].isQuiz ? (
                   // Section Quiz - Afficher le quiz directement
@@ -1031,18 +1185,18 @@ export default function LandingPage() {
                                 onClick={() =>
                                   handleAnswerSelect(
                                     quizQuestions[currentQuestionIndex].id,
-                                    index
+                                    option.originalIndex
                                   )
                                 }
-                                className={`w-full min-w-[600px] p-4 text-left rounded-lg border transition-colors ${
+                                className={`w-full p-3 md:p-4 text-left rounded-lg border transition-colors break-words ${
                                   userAnswers[
                                     quizQuestions[currentQuestionIndex]?.id
-                                  ] === index
+                                  ] === option.originalIndex
                                     ? "border-[#D4A574] bg-[#D4A574] text-white"
                                     : "border-gray-300 hover:border-[#D4A574] hover:bg-gray-50"
                                 }`}
                               >
-                                {option}
+                                {option.text}
                               </button>
                             )
                           )}
@@ -1089,11 +1243,11 @@ export default function LandingPage() {
                           <button
                             onClick={handlePreviousQuestion}
                             disabled={currentQuestionIndex === 0}
-                            className="flex-1 px-10 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             Précédent
                           </button>
-                          <div className="w-2"></div>
+                          <div className="h-2 md:h-0 md:w-2"></div>
                           <button
                             onClick={handleNextQuestion}
                             disabled={
@@ -1101,7 +1255,7 @@ export default function LandingPage() {
                                 quizQuestions[currentQuestionIndex]?.id
                               ] === undefined
                             }
-                            className="flex-1 px-10 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {currentQuestionIndex === quizQuestions.length - 1
                               ? "Terminer"
@@ -1112,29 +1266,29 @@ export default function LandingPage() {
                     ) : quizState === "results" ? (
                       <div className="text-center space-y-6">
                         <div className="mb-8">
-                          <div className="text-6xl font-bold text-[#000000] mb-4">
+                          <div className="text-4xl md:text-6xl font-bold text-[#D4A574] mb-4">
                             {Math.round(
                               (calculateScore() / quizQuestions.length) * 100
                             )}
                             %
                           </div>
-                          <h3 className="text-2xl font-semibold text-[#000000] mb-2">
+                          <h3 className="text-2xl font-semibold text-gray-800 mb-2">
                             Résultats du Quiz
                           </h3>
-                          <p className="text-lg text-[#000000]">
+                          <p className="text-lg text-gray-600">
                             {calculateScore()} bonnes réponses sur{" "}
                             {quizQuestions.length} questions
                           </p>
                         </div>
 
                         {/* Message de félicitations basé sur le score */}
-                        <div className="bg-gradient-to-r from-[#F5F1ED] to-[#E8E0D8] rounded-lg p-6 border border-[#000000] text-[#000000]">
+                        <div className="bg-gradient-to-r from-[#F5F1ED] to-[#E8E0D8] rounded-lg p-6 border border-[#D4A574]">
                           {Math.round(
                             (calculateScore() / quizQuestions.length) * 100
                           ) >= 80 ? (
-                            <div className="text-[#000000]">
-                              <div className="text-2xl mb-2 font-semibold">
-                                Excellent !
+                            <div className="text-green-700">
+                              <div className="text-2xl mb-2">
+                                🎉 Excellent !
                               </div>
                               <p className="text-sm">
                                 Vous maîtrisez parfaitement les bases du
@@ -1144,9 +1298,9 @@ export default function LandingPage() {
                           ) : Math.round(
                               (calculateScore() / quizQuestions.length) * 100
                             ) >= 60 ? (
-                            <div className="text-[#000000]">
-                              <div className="text-2xl mb-2 font-semibold">
-                                Bien joué !
+                            <div className="text-blue-700">
+                              <div className="text-2xl mb-2">
+                                👍 Bien joué !
                               </div>
                               <p className="text-sm">
                                 Vous avez de bonnes connaissances. Quelques
@@ -1156,19 +1310,17 @@ export default function LandingPage() {
                           ) : Math.round(
                               (calculateScore() / quizQuestions.length) * 100
                             ) >= 40 ? (
-                            <div className="text-[#000000]">
-                              <div className="text-2xl mb-2 font-semibold">
-                                Pas mal !
-                              </div>
+                            <div className="text-orange-700">
+                              <div className="text-2xl mb-2">📚 Pas mal !</div>
                               <p className="text-sm">
                                 Vous avez les bases, mais il y a encore des
                                 choses à apprendre. Continuez à vous informer !
                               </p>
                             </div>
                           ) : (
-                            <div className="text-[#000000]">
-                              <div className="text-2xl mb-2 font-semibold">
-                                À améliorer !
+                            <div className="text-red-700">
+                              <div className="text-2xl mb-2">
+                                💡 À améliorer !
                               </div>
                               <p className="text-sm">
                                 Pas de panique ! Le skincare s'apprend.
@@ -1179,37 +1331,37 @@ export default function LandingPage() {
                         </div>
 
                         {/* Statistiques détaillées */}
-                        <div className="grid grid-cols-2 gap-4 mb-6">
-                          <div className="bg-white rounded-lg p-4 border border-[#000000]">
-                            <div className="text-2xl font-bold text-[#000000]">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <div className="text-2xl font-bold text-[#D4A574]">
                               {calculateScore()}
                             </div>
-                            <div className="text-sm text-[#000000]">
+                            <div className="text-sm text-gray-600">
                               Bonnes réponses
                             </div>
                           </div>
-                          <div className="bg-white rounded-lg p-4 border border-[#000000]">
-                            <div className="text-2xl font-bold text-[#000000]">
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <div className="text-2xl font-bold text-gray-400">
                               {quizQuestions.length - calculateScore()}
                             </div>
-                            <div className="text-sm text-[#000000]">
+                            <div className="text-sm text-gray-600">
                               Réponses incorrectes
                             </div>
                           </div>
                         </div>
 
                         {/* Boutons d'action */}
-                        <div className="flex justify-between items-center mt-6">
+                        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 mt-6">
                           <button
                             onClick={handleRestartQuiz}
-                            className="flex-1 px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                            className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
                           >
                             Recommencer le Quiz
                           </button>
-                          <div className="w-2"></div>
+                          <div className="h-2 md:h-0 md:w-2"></div>
                           <button
                             onClick={() => (window.location.href = "/services")}
-                            className="flex-1 px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                            className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
                           >
                             Découvrir nos Services
                           </button>
@@ -1217,7 +1369,8 @@ export default function LandingPage() {
                       </div>
                     ) : null}
                   </div>
-                ) : (
+                ) : sections[isReverse ? activeIndex : overlayIndex] &&
+                  sections[isReverse ? activeIndex : overlayIndex].isFooter ? (
                   // Section Footer - Afficher le footer directement
                   <div className="w-full max-w-6xl mx-auto text-black text-left">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
@@ -1260,16 +1413,16 @@ export default function LandingPage() {
                           INFOS
                         </h3>
                         <div className="space-y-1">
-                          <div className="text-xs text-black hover:text-[#c6b8a7] cursor-pointer transition-colors">
+                          <div className="text-xs text-black hover:text-[#D4A574] cursor-pointer transition-colors">
                             Souscrire newsletter
                           </div>
-                          <div className="text-xs text-black hover:text-[#c6b8a7] cursor-pointer transition-colors">
+                          <div className="text-xs text-black hover:text-[#D4A574] cursor-pointer transition-colors">
                             Politique de confidentialité
                           </div>
-                          <div className="text-xs text-black hover:text-[#c6b8a7] cursor-pointer transition-colors">
+                          <div className="text-xs text-black hover:text-[#D4A574] cursor-pointer transition-colors">
                             Conditions générales de vente
                           </div>
-                          <div className="text-xs text-black hover:text-[#c6b8a7] cursor-pointer transition-colors">
+                          <div className="text-xs text-black hover:text-[#D4A574] cursor-pointer transition-colors">
                             Mentions légales
                           </div>
                         </div>
@@ -1281,10 +1434,10 @@ export default function LandingPage() {
                           RÉSEAUX SOCIAUX
                         </h3>
                         <div className="flex space-x-4">
-                          <div className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer hover:bg-[#c6b8a7] hover:border-[#c6b8a7] transition-colors">
+                          <div className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer hover:bg-[#D4A574] hover:border-[#D4A574] transition-colors">
                             <Facebook className="w-3 h-3 text-black" />
                           </div>
-                          <div className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer hover:bg-[#c6b8a7] hover:border-[#c6b8a7] transition-colors">
+                          <div className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer hover:bg-[#D4A574] hover:border-[#D4A574] transition-colors">
                             <Instagram className="w-3 h-3 text-black" />
                           </div>
                         </div>
@@ -1300,6 +1453,38 @@ export default function LandingPage() {
                       </div>
                     </div>
                   </div>
+                ) : (
+                  <>
+                    <h2 className="text-3xl md:text-4xl font-light tracking-wider mb-4 drop-shadow-lg">
+                      {sections[isReverse ? activeIndex : overlayIndex] &&
+                        sections[isReverse ? activeIndex : overlayIndex].title}
+                    </h2>
+                    <p className="text-lg md:text-xl mb-8 drop-shadow-lg">
+                      {sections[isReverse ? activeIndex : overlayIndex] &&
+                        sections[isReverse ? activeIndex : overlayIndex]
+                          .description}
+                    </p>
+                    <button
+                      className="px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                      onClick={() =>
+                        (() => {
+                          const sec =
+                            sections[isReverse ? activeIndex : overlayIndex];
+                          if (sec && sec.navigateTo) {
+                            navigate(sec.navigateTo);
+                          } else if (sec && sec.serviceId) {
+                            navigate(`/service/${sec.serviceId}`);
+                          } else {
+                            handleCategoryClick(sec && sec.categoryId);
+                          }
+                        })()
+                      }
+                    >
+                      {sections[isReverse ? activeIndex : overlayIndex] &&
+                        sections[isReverse ? activeIndex : overlayIndex]
+                          .callToAction}
+                    </button>
+                  </>
                 )}
               </div>
             </motion.section>

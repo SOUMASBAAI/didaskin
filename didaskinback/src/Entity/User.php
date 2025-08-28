@@ -57,6 +57,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read'])]
     private ?bool $is_subscribed = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $reset_token = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $reset_token_expires_at = null;
+
     // --- Getters / Setters ---
 
     public function getId(): ?int
@@ -163,6 +169,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getResetToken(): ?string
+    {
+        return $this->reset_token;
+    }
+
+    public function setResetToken(?string $reset_token): static
+    {
+        $this->reset_token = $reset_token;
+        return $this;
+    }
+
+    public function getResetTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->reset_token_expires_at;
+    }
+
+    public function setResetTokenExpiresAt(?\DateTimeImmutable $expiresAt): static
+    {
+        $this->reset_token_expires_at = $expiresAt;
+        return $this;
+    }
+
     // --- Implémentation des interfaces UserInterface et PasswordAuthenticatedUserInterface ---
 
     public function getUserIdentifier(): string
@@ -192,3 +220,4 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // Pas d'infos sensibles à effacer ici
     }
 }
+

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Header from "../components/header";
+import Footer from "../components/Footer";
 import Card from "../components/card";
 import { Link } from "react-router-dom";
 
@@ -69,7 +70,7 @@ export default function ProductPage() {
 
       <main className="pt-24 pb-12 px-2 md:px-4">
         <h2 className="text-lg font-light text-gray-800 text-left mb-1 tracking-wide px-2 md:px-4">
-          {"NOS SOINS & PRODUITS"}
+          {"NOS PRODUITS"}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-[3px] gap-y-[3px]">
           {products.map((product) => (
@@ -89,10 +90,7 @@ export default function ProductPage() {
         </div>
       </main>
 
-      {/* Simple Footer */}
-      <footer className="bg-white border-t border-gray-100 py-6 text-center text-sm text-gray-600">
-        <p>© 2024 DIDA SKIN. Tous droits réservés.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import { X } from "lucide-react";
 
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 export default function ProductDetailPage() {
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
@@ -176,10 +177,7 @@ export default function ProductDetailPage() {
         />
       )}
 
-      {/* Simple Footer */}
-      <footer className="bg-white border-t border-gray-100 py-6 text-center text-sm text-gray-600">
-        <p>© 2024 DIDA SKIN. Tous droits réservés.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

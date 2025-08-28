@@ -52,7 +52,7 @@ export default function Navbar({ isOpen, setIsOpen }) {
           <div className="flex items-center justify-between">
             <div>
               <img
-                src="/assets/logo-didaskin.png"
+                src="/src/assets/logo-didaskin.png"
                 alt="DIDA SKIN"
                 className="h-8 w-auto"
               />

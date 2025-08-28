@@ -14,7 +14,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 #[Route('/api', name: 'app_auth')]
 class AuthenticationController extends AbstractController
@@ -25,7 +26,7 @@ class AuthenticationController extends AbstractController
         private ValidatorInterface $validator,
         private UserPasswordHasherInterface $passwordHasher,
         private SerializerInterface $serializer,
-        private JWTTokenManagerInterface $jwtManager
+        private MailerInterface $mailer
     ) {
     }
 
@@ -77,8 +78,8 @@ class AuthenticationController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        // Générer un token JWT avec Lexik bundle
-        $token = $this->generateJWT($user);
+        // Générer un token JWT simple (sans bundle pour l'instant)
+        $token = $this->generateSimpleJWT($user);
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
@@ -114,8 +115,8 @@ class AuthenticationController extends AbstractController
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Générer un token JWT avec Lexik bundle
-        $token = $this->generateJWT($user);
+        // Générer un token JWT simple
+        $token = $this->generateSimpleJWT($user);
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
@@ -183,8 +184,8 @@ class AuthenticationController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        // Générer un token JWT avec Lexik bundle
-        $token = $this->generateJWT($user);
+        // Générer un token JWT simple
+        $token = $this->generateSimpleJWT($user);
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
@@ -228,8 +229,8 @@ class AuthenticationController extends AbstractController
             ], Response::HTTP_FORBIDDEN);
         }
 
-        // Générer un token JWT avec Lexik bundle
-        $token = $this->generateJWT($user);
+        // Générer un token JWT simple
+        $token = $this->generateSimpleJWT($user);
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
@@ -295,7 +296,7 @@ class AuthenticationController extends AbstractController
         }
 
         // Générer un nouveau token
-        $token = $this->generateJWT($user);
+        $token = $this->generateSimpleJWT($user);
 
         return $this->json([
             'success' => true,
@@ -320,11 +321,106 @@ class AuthenticationController extends AbstractController
         ]);
     }
 
-    // === GÉNÉRATION JWT AVEC LEXIK BUNDLE ===
+    // === MOT DE PASSE OUBLIÉ ===
 
-    private function generateJWT(User $user): string
+    #[Route('/forgot-password', name: 'forgot_password', methods: ['POST'])]
+    public function forgotPassword(Request $request): JsonResponse
     {
-        return $this->jwtManager->create($user);
+        $data = json_decode($request->getContent(), true);
+        $email = $data['email'] ?? '';
+        if (!$email) {
+            return $this->json(['success' => false, 'error' => 'Email requis'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user = $this->userRepository->findByEmail($email);
+        if (!$user) {
+            // Ne pas divulguer l'existence de l'email
+            return $this->json(['success' => true, 'message' => 'Si un compte existe, un email a été envoyé']);
+        }
+
+        // Générer un token aléatoire et une expiration (1h)
+        $token = bin2hex(random_bytes(32));
+        $user->setResetToken($token);
+        $user->setResetTokenExpiresAt((new \DateTimeImmutable())->modify('+1 hour'));
+        $this->entityManager->flush();
+
+        // Lien de réinitialisation (frontend)
+        $frontendUrl = $_ENV['FRONTEND_URL'] ?? 'http://localhost:5173';
+        // Lien direct vers la page de réinitialisation de mot de passe
+        $resetUrl = sprintf('%s/admin-reset-password?token=%s', rtrim($frontendUrl, '/'), urlencode($token));
+
+        // Envoyer email (via Symfony Mailer)
+        try {
+            $textMessage = sprintf("Bonjour,\n\nPour réinitialiser votre mot de passe, cliquez sur le lien: %s\n\nCe lien expirera dans 1 heure.", $resetUrl);
+            $emailMessage = (new Email())
+                ->from('soumiaasbaai@gmail.com')
+                ->to($email)
+                ->subject('Réinitialisation de votre mot de passe')
+                ->html(sprintf('<p>Bonjour,</p><p>Pour réinitialiser votre mot de passe, cliquez sur le lien suivant:</p><p><a href="%s">Réinitialiser mon mot de passe</a></p><p>Ce lien expirera dans 1 heure.</p>', htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8')))
+                ->text($textMessage);
+            $this->mailer->send($emailMessage);
+        } catch (\Throwable $e) {
+            // Ne pas échouer bruyamment: on journalise mais on renvoie un succès générique pour ne pas divulguer d'infos
+            // log optionnel: $this->get('logger')->error($e->getMessage());
+        }
+
+        return $this->json(['success' => true, 'message' => 'Si un compte existe, un email a été envoyé']);
+    }
+
+    #[Route('/reset-password', name: 'reset_password', methods: ['POST'])]
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $token = $data['token'] ?? '';
+        $newPassword = $data['password'] ?? '';
+
+        if (!$token || !$newPassword) {
+            return $this->json(['success' => false, 'error' => 'Token et nouveau mot de passe requis'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user = $this->userRepository->findOneBy(['reset_token' => $token]);
+        if (!$user) {
+            return $this->json(['success' => false, 'error' => 'Token invalide'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $expiresAt = $user->getResetTokenExpiresAt();
+        if (!$expiresAt || $expiresAt < new \DateTimeImmutable()) {
+            return $this->json(['success' => false, 'error' => 'Token expiré'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Mettre à jour le mot de passe et invalider le token
+        $hashed = $this->passwordHasher->hashPassword($user, $newPassword);
+        $user->setPassword($hashed);
+        $user->setResetToken(null);
+        $user->setResetTokenExpiresAt(null);
+        $this->entityManager->flush();
+
+        return $this->json(['success' => true, 'message' => 'Mot de passe réinitialisé avec succès']);
+    }
+
+    // === GÉNÉRATION JWT SIMPLE ===
+
+    private function generateSimpleJWT(User $user): string
+    {
+        // JWT simple sans bundle pour l'instant
+        $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
+        $payload = json_encode([
+            'user_id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'role' => $user->getRole(),
+            'iat' => time(),
+            'exp' => time() + 3600 // 1 heure
+        ]);
+
+        $base64Header = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
+        $base64Payload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
+
+        // Clé secrète simple (à changer en production)
+        $secret = 'your-secret-key-change-in-production';
+        $signature = hash_hmac('sha256', $base64Header . "." . $base64Payload, $secret, true);
+        $base64Signature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
+
+        return $base64Header . "." . $base64Payload . "." . $base64Signature;
     }
 
     private function getErrorsFromValidator($errors): array

@@ -3,6 +3,7 @@
 import { Search, ShoppingBag, Calendar, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
+import logo from "../assets/logo-didaskin.png";
 
 export default function Header() {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -16,6 +17,7 @@ export default function Header() {
   const headerRef = useRef(null);
   const closeTimerRef = useRef(null);
   const [headerHeight, setHeaderHeight] = useState(72);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
     { name: "NOS SERVICES", href: "/services" },
@@ -26,6 +28,7 @@ export default function Header() {
   useEffect(() => {
     setIsSearchExpanded(false);
     setSearchQuery("");
+    setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
   // Measure header height for fixed mega menu top
@@ -39,6 +42,18 @@ export default function Header() {
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
   }, []);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
 
   // Fetch categories for Services dropdown
   useEffect(() => {
@@ -94,7 +109,10 @@ export default function Header() {
       if (!menuRef.current.contains(e.target)) setShowServicesMenu(false);
     };
     const onKey = (e) => {
-      if (e.key === "Escape") setShowServicesMenu(false);
+      if (e.key === "Escape") {
+        setShowServicesMenu(false);
+        setIsMobileMenuOpen(false);
+      }
     };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
@@ -180,7 +198,11 @@ export default function Header() {
       {/* Mobile: sandwich + logo + search in one row */}
       <div className="flex items-center justify-between w-full lg:hidden">
         {/* Sandwich */}
-        <button className="text-gray-700">
+        <button
+          className="text-gray-700"
+          onClick={() => setIsMobileMenuOpen(true)}
+          aria-label="Ouvrir le menu"
+        >
           <svg
             className="h-6 w-6"
             fill="none"
@@ -199,11 +221,7 @@ export default function Header() {
         {/* Logo */}
         <div className="text-center pt-2">
           <Link to="/" className="block">
-            <img
-              src="/src/assets/logo-didaskin.png"
-              alt="DIDA SKIN"
-              className="h-8 w-auto mx-auto"
-            />
+            <img src={logo} alt="DIDA SKIN" className="h-8 w-auto mx-auto" />
           </Link>
         </div>
         {/* Search */}
@@ -211,6 +229,60 @@ export default function Header() {
           <Search className="h-5 w-5" />
         </button>
       </div>
+
+      {/* Mobile slide-over menu */}
+      {isMobileMenuOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+            onClick={() => setIsMobileMenuOpen(false)}
+          ></div>
+          <div className="fixed top-0 left-0 h-full w-80 max-w-[85%] bg-[#F5F1ED] z-50 shadow-xl lg:hidden flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+              <span className="text-sm font-semibold tracking-wide text-gray-900">
+                Menu
+              </span>
+              <button
+                className="text-gray-600 hover:text-gray-800"
+                onClick={() => setIsMobileMenuOpen(false)}
+                aria-label="Fermer le menu"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <nav className="p-4 space-y-2 overflow-y-auto">
+              <Link
+                to="/"
+                className="block px-3 py-2 rounded text-gray-800 hover:bg-gray-100"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Accueil
+              </Link>
+              <Link
+                to="/services"
+                className="block px-3 py-2 rounded text-gray-800 hover:bg-gray-100"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Nos services
+              </Link>
+              <Link
+                to="/products"
+                className="block px-3 py-2 rounded text-gray-800 hover:bg-gray-100"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Nos produits
+              </Link>
+              <Link
+                to="/booking"
+                className="block px-3 py-2 rounded text-gray-800 hover:bg-gray-100"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Réserver un soin
+              </Link>
+            </nav>
+          </div>
+        </>
+      )}
 
       {/* Desktop center logo and right actions */}
       <div className="hidden lg:flex items-center justify-between w-full">
@@ -222,9 +294,12 @@ export default function Header() {
             onMouseEnter={openMenu}
             onMouseLeave={scheduleCloseMenu}
           >
-            <button className="text-sm font-medium text-gray-800 hover:text-black transition-colors tracking-wide whitespace-nowrap">
+            <a
+              href="#"
+              className="text-sm font-medium text-gray-800 hover:text-black transition-colors tracking-wide whitespace-nowrap"
+            >
               NOS SERVICES
-            </button>
+            </a>
             {showServicesMenu && (
               <div
                 ref={menuRef}
@@ -281,13 +356,9 @@ export default function Header() {
         </div>
 
         {/* Center Logo - Vraiment centré */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 pt-2">
+        <div className="absolute left-1/2 transform -translate-x-1/2 pt-3">
           <Link to="/" className="block">
-            <img
-              src="/src/assets/logo-didaskin.png"
-              alt="DIDA SKIN"
-              className="h-8 w-auto"
-            />
+            <img src={logo} alt="DIDA SKIN" className="h-8 w-auto" />
           </Link>
         </div>
 

@@ -22,7 +22,7 @@ class UserFixtures extends Fixture
         // Admin user
         $admin = new User();
         $admin
-            ->setEmail('admin@admin.com')
+            ->setEmail('soumiaasbaai@gmail.com')
             ->setPhoneNumber($faker->phoneNumber())
             ->setFirstName('Admin')
             ->setLastName('User')

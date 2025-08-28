@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { useParams } from "react-router-dom";
 
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import BookingButton from "../components/booking-button";
 
 export default function ServiceDetailPage() {
@@ -189,10 +190,7 @@ export default function ServiceDetailPage() {
         />
       )}
 
-      {/* Simple Footer */}
-      <footer className="bg-white border-t border-gray-100 py-6 text-center text-sm text-gray-600">
-        <p>© 2024 DIDA SKIN. Tous droits réservés.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, Link } from "react-router-dom";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import Card from "../components/card";
 
 export default function SearchResults() {
@@ -254,10 +255,7 @@ export default function SearchResults() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 py-6 text-center text-sm text-gray-600">
-        <p>© 2025 DIDA SKIN. Tous droits réservés.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

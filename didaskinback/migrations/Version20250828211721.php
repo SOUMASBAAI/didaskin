@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250820095749 extends AbstractMigration
+final class Version20250828211721 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -36,7 +36,8 @@ final class Version20250820095749 extends AbstractMigration
         $this->addSql('CREATE TABLE trafic (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, nb_visits INTEGER NOT NULL, date DATETIME NOT NULL)');
         $this->addSql('CREATE TABLE "user" (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, last_name VARCHAR(50) NOT NULL, first_name VARCHAR(50) NOT NULL, email VARCHAR(180) NOT NULL, password VARCHAR(80) NOT NULL, phone_number VARCHAR(20) NOT NULL, role VARCHAR(50) NOT NULL, created_at DATETIME DEFAULT NULL --(DC2Type:datetime_immutable)
         , updated_at DATETIME DEFAULT NULL --(DC2Type:datetime_immutable)
-        , is_subscribed BOOLEAN DEFAULT NULL)');
+        , is_subscribed BOOLEAN DEFAULT NULL, reset_token VARCHAR(255) DEFAULT NULL, reset_token_expires_at DATETIME DEFAULT NULL --(DC2Type:datetime_immutable)
+        )');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_IDENTIFIER_EMAIL ON "user" (email)');
     }
 

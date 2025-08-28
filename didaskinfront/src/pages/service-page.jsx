@@ -1,6 +1,7 @@
 "use client";
 
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import Card from "../components/card";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
@@ -162,12 +163,12 @@ export default function ServicePage() {
           </div>
         )}
 
-        <h2 className="text-lg font-light text-gray-800 text-left mb-1 tracking-wide px-2 md:px-4">
+        <h2 className="text-lg font-light text-gray-800 text-left mb-0 tracking-wide px-2 md:px-4">
           {searchQuery
             ? `RECHERCHE - "${searchQuery}"`
             : subcategoryId
             ? `SERVICES - ${subcategoryName || "SOUS-CATÉGORIE"}`
-            : "NOS SOINS & PRODUITS"}
+            : "NOS SOINS"}
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[3px] gap-y-[3px]">
@@ -212,10 +213,7 @@ export default function ServicePage() {
         )}
       </main>
 
-      {/* Simple Footer */}
-      <footer className="bg-white border-t border-gray-100 py-6 text-center text-sm text-gray-600">
-        <p>© 2025 DIDA SKIN. Tous droits réservés.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -194,7 +195,7 @@ export default function CategoryPage() {
 
       <main className="flex-grow pt-[100px] pb-12 px-4 md:px-8 lg:px-12">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-light text-gray-800 mb-12 tracking-wide text-left">
+          <h2 className="text-xl md:text-2xl font-light text-gray-800 mb-2 tracking-wide text-left">
             {categoryName || ""}
           </h2>
 
@@ -237,7 +238,7 @@ export default function CategoryPage() {
                       />
                     </div>
                   </button>
-                  <h3 className="text-xs font-bold text-gray-800 mt-4 group-hover:text-gray-900 transition-colors">
+                  <h3 className="text-xs font-light text-gray-800 mt-4 group-hover:text-gray-900 transition-colors">
                     {subcategory.label}
                   </h3>
                 </div>
@@ -284,7 +285,7 @@ export default function CategoryPage() {
                       />
                     </div>
                   </button>
-                  <h3 className="text-xs font-bold text-gray-800 mt-4 group-hover:text-gray-900 transition-colors">
+                  <h3 className="text-xs font-semibold text-gray-800 mt-4 group-hover:text-gray-900 transition-colors">
                     {subcategory.label}
                   </h3>
                 </div>
@@ -322,10 +323,7 @@ export default function CategoryPage() {
         </div>
       </main>
 
-      {/* Simple Footer */}
-      <footer className="bg-white border-t border-gray-100 py-6 text-center text-sm text-gray-600">
-        <p>© 2024 DIDA SKIN. Tous droits réservés.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

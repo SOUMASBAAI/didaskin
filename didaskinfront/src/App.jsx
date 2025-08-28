@@ -13,6 +13,9 @@ import LegalNotice from "./pages/LegalNotice";
 import LandingPage from "./pages/landing-page";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SearchResults from "./pages/search-results";
+import AdminResetPassword from "./pages/admin-reset-password";
+import NotFound from "./pages/NotFound";
+
 import "./index.css";
 
 function App() {
@@ -31,6 +34,7 @@ function App() {
         <Route path="/my-appointments" element={<MyAppointmentsPage />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/booking" element={<BookingPage />} />
+        <Route path="*" element={<NotFound />} />
 
 
 
@@ -40,6 +44,7 @@ function App() {
         
         {/* Admin routes */}
         <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin-reset-password" element={<AdminResetPassword />} />
        <Route
           path="/admin-dashboard"
           element={
@@ -47,6 +52,7 @@ function App() {
               <AdminDashboard />
             </ProtectedRoute>
           }
+          
         />
       
         {/* Legal Notice Page */}
