@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Facebook, Instagram } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NewsletterModal from "../components/NewsletterModal";
+import { API_BASE_URL } from "../config/apiConfig";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function LandingPage() {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:8000/categories");
+        const response = await fetch(`${API_BASE_URL}/categories`);
         if (response.ok) {
           const result = await response.json();
           if (result.success) {
@@ -65,7 +66,7 @@ export default function LandingPage() {
     const fetchQuizQuestions = async () => {
       try {
         setQuizLoading(true);
-        const response = await fetch("http://localhost:8000/quizzquestion");
+        const response = await fetch(`${API_BASE_URL}/quizzquestion`);
         if (response.ok) {
           const result = await response.json();
           if (result.success) {
@@ -102,7 +103,7 @@ export default function LandingPage() {
 
   // Hero content
   const [hero, setHero] = useState({
-    title: "BIENVENUE DIDA SKIN",
+    title: "BIENVENUE CHEZ DIDA SKIN",
     description: "Votre sanctuaire de beauté et de bien-être.",
     image: null,
     cta: "DÉCOUVRIR NOS SERVICES",
@@ -111,7 +112,7 @@ export default function LandingPage() {
   useEffect(() => {
     const fetchHero = async () => {
       try {
-        const resp = await fetch("http://localhost:8000/site-content/hero");
+        const resp = await fetch(`${API_BASE_URL}/site-content/hero`);
         if (resp.ok) {
           const json = await resp.json();
           if (json?.success && json?.data) setHero(json.data);
@@ -170,7 +171,7 @@ export default function LandingPage() {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const r = await fetch("http://localhost:8000/services/featured");
+        const r = await fetch(`${API_BASE_URL}/services/featured`);
         const j = await r.json();
         if (j?.success) setFeatured(j.data || []);
       } catch {}
@@ -183,7 +184,7 @@ export default function LandingPage() {
   useEffect(() => {
     const fetchCatalogue = async () => {
       try {
-        const r = await fetch("http://localhost:8000/site-content/catalogue");
+        const r = await fetch(`${API_BASE_URL}/site-content/catalogue`);
         if (r.ok) {
           const j = await r.json();
           if (j?.success && j?.data) {
@@ -203,7 +204,7 @@ export default function LandingPage() {
   useEffect(() => {
     const fetchAbout = async () => {
       try {
-        const r = await fetch("http://localhost:8000/site-content/about");
+        const r = await fetch(`${API_BASE_URL}/site-content/about`);
         if (r.ok) {
           const j = await r.json();
           if (j?.success && j?.data) {
@@ -262,7 +263,7 @@ export default function LandingPage() {
             category.shortDescription ||
             "Découvrez nos services exceptionnels.",
           imageSrc: category.image_link || "/placeholder.svg",
-          callToAction: `LES SOINS ${
+          callToAction: `EXPLORER ${
             category.label?.toUpperCase() || "NOS SERVICES"
           }`,
           categoryId: category.id,
@@ -309,7 +310,7 @@ export default function LandingPage() {
       isQuiz: true,
       categoryId: null, // Pas de catégorie pour le quiz
     },
-    // Section 5: Footer 
+    // Section 5: Footer (ne pas toucher)
     {
       title: "CONTACTEZ-NOUS",
       description:
@@ -470,9 +471,10 @@ export default function LandingPage() {
     return (
       <div className="relative h-screen w-screen overflow-hidden bg-[#F5F1ED] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl md:text-3xl font-light tracking-wider text-gray-800 mb-2">
-            DIDA SKIN
+          <h1 className="text-3xl md:text-4xl font-light tracking-wider text-gray-800 mb-4">
+             DIDA SKIN
           </h1>
+
           <p className="text-sm text-gray-600 mb-6">
             Chargement de l'expérience…
           </p>
@@ -485,7 +487,7 @@ export default function LandingPage() {
   }
 
   return (
-   <div className="landing-root relative h-screen w-screen overflow-hidden bg-transparent">
+    <div className="landing-root relative h-screen w-screen overflow-hidden bg-transparent">
       <Header />
       {/* Render the current section as fixed background */}
       <div
@@ -598,7 +600,7 @@ export default function LandingPage() {
                     />
                     <div className="absolute inset-x-0 bottom-4 flex justify-center md:hidden">
                       <button
-                        className="px-6 py-2 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                        className="px-6 py-2 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
                         onClick={() => navigate("/booking")}
                       >
                         {
@@ -624,7 +626,7 @@ export default function LandingPage() {
                     </p>
                     <div className="mt-6 text-center hidden md:block">
                       <button
-                        className="px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                        className="px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
                         onClick={() => navigate("/booking")}
                       >
                         {
@@ -676,7 +678,7 @@ export default function LandingPage() {
               ) : quizState === "playing" ? (
                 <div className="space-y-4">
                   <div className="text-center mb-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
                       Question {currentQuestionIndex + 1} sur{" "}
                       {quizQuestions.length}
                     </h3>
@@ -777,7 +779,7 @@ export default function LandingPage() {
                     <button
                       onClick={handlePreviousQuestion}
                       disabled={currentQuestionIndex === 0}
-                      className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Précédent
                     </button>
@@ -788,7 +790,7 @@ export default function LandingPage() {
                         userAnswers[quizQuestions[currentQuestionIndex]?.id] ===
                         undefined
                       }
-                      className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {currentQuestionIndex === quizQuestions.length - 1
                         ? "Terminer"
@@ -881,14 +883,14 @@ export default function LandingPage() {
                   <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 mt-6">
                     <button
                       onClick={handleRestartQuiz}
-                      className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                      className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
                     >
                       Recommencer le Quiz
                     </button>
                     <div className="h-2 md:h-0 md:w-2"></div>
                     <button
                       onClick={() => (window.location.href = "/services")}
-                      className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                      className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
                     >
                       Découvrir nos Services
                     </button>
@@ -985,7 +987,7 @@ export default function LandingPage() {
           ) : (
             // Autres sections - Bouton normal
             <button
-              className="px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+              className="px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
               onClick={() =>
                 (() => {
                   const sec =
@@ -1097,7 +1099,7 @@ export default function LandingPage() {
                           />
                           <div className="absolute inset-x-0 bottom-4 flex justify-center md:hidden">
                             <button
-                              className="px-6 py-2 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                              className="px-6 py-2 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
                               onClick={() => navigate("/booking")}
                             >
                               {
@@ -1109,7 +1111,7 @@ export default function LandingPage() {
                         </div>
                         <div>
                           <h3 className="text-xl font-semibold mb-3">
-                            L'INSTITUT
+                           L'INSTITUT
                           </h3>
                           <p className="text-sm md:text-base text-gray-700 leading-relaxed">
                             {
@@ -1119,7 +1121,7 @@ export default function LandingPage() {
                           </p>
                           <div className="mt-6 text-center hidden md:block">
                             <button
-                              className="px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                              className="px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
                               onClick={() => navigate("/booking")}
                             >
                               {
@@ -1243,7 +1245,7 @@ export default function LandingPage() {
                           <button
                             onClick={handlePreviousQuestion}
                             disabled={currentQuestionIndex === 0}
-                            className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             Précédent
                           </button>
@@ -1255,7 +1257,7 @@ export default function LandingPage() {
                                 quizQuestions[currentQuestionIndex]?.id
                               ] === undefined
                             }
-                            className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {currentQuestionIndex === quizQuestions.length - 1
                               ? "Terminer"
@@ -1354,14 +1356,14 @@ export default function LandingPage() {
                         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 mt-6">
                           <button
                             onClick={handleRestartQuiz}
-                            className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                            className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
                           >
                             Recommencer le Quiz
                           </button>
                           <div className="h-2 md:h-0 md:w-2"></div>
                           <button
                             onClick={() => (window.location.href = "/services")}
-                            className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                            className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
                           >
                             Découvrir nos Services
                           </button>
@@ -1465,7 +1467,7 @@ export default function LandingPage() {
                           .description}
                     </p>
                     <button
-                      className="px-8 py-3 bg-[#000000] border border-[#000000] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
+                      className="px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:bg-[#c6b8a7] hover:border-[#c6b8a7] hover:text-black transition-colors duration-300"
                       onClick={() =>
                         (() => {
                           const sec =

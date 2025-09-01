@@ -104,11 +104,15 @@ class EmailService
         $textMessage = $this->generateNewsletterText($newsletter, $user);
         
         // Email headers
+        $fromEmail = $_ENV['MAILER_FROM'] ?? 'hello@didaskin.com';
+        $fromName = $_ENV['MAILER_FROM_NAME'] ?? 'DIDA SKIN';
+        $replyToEmail = $_ENV['MAILER_REPLY_TO'] ?? $fromEmail;
+
         $headers = [
             'MIME-Version: 1.0',
             'Content-type: text/html; charset=UTF-8',
-            'From: DIDA SKIN <noreply@didaskin.com>',
-            'Reply-To: noreply@didaskin.com',
+            'From: ' . $fromName . ' <' . $fromEmail . '>',
+            'Reply-To: ' . $replyToEmail,
             'X-Mailer: PHP/' . phpversion()
         ];
         
@@ -137,13 +141,52 @@ class EmailService
      */
     private function sendWithMailer(Newsletter $newsletter, User $user): bool
     {
+        $backendBase = $_ENV['BACKEND_URL'] ?? 'http://localhost:8000';
+        $secret = $_ENV['APP_SECRET'] ?? 'app-secret';
+        $token = hash_hmac('sha256', $user->getId() . '|' . $user->getEmail(), $secret);
+        $unsubscribeUrl = sprintf('%s/unsubscribe?u=%d&t=%s', rtrim($backendBase, '/'), $user->getId(), urlencode($token));
+
+        // Prepare base template and text
+        $htmlTemplate = $this->generateNewsletterHtml($newsletter, $user);
+        $text = $this->generateNewsletterText($newsletter, $user) . sprintf("\n\nSe désabonner: %s\n", $unsubscribeUrl);
+
+        // Build email first to embed CID assets
+        $fromEmail = $_ENV['MAILER_FROM'] ?? 'hello@didaskin.com';
+        $fromName = $_ENV['MAILER_FROM_NAME'] ?? 'DIDA SKIN';
+        $replyToEmail = $_ENV['MAILER_REPLY_TO'] ?? $fromEmail;
+        $replyToName = $_ENV['MAILER_REPLY_TO_NAME'] ?? $fromName;
+
         $email = (new Email())
-            ->from(new Address('soumiaasbaai@gmail.com', 'DIDA SKIN'))
-            ->replyTo(new Address('noreply@didaskin.com', 'DIDA SKIN'))
+            ->from(new Address($fromEmail, $fromName))
+            ->replyTo(new Address($replyToEmail, $replyToName))
             ->to(new Address($user->getEmail(), $user->getFirstName() . ' ' . $user->getLastName()))
-            ->subject($newsletter->getLabel())
-            ->html($this->generateNewsletterHtml($newsletter, $user))
-            ->text($this->generateNewsletterText($newsletter, $user));
+            ->subject($newsletter->getLabel());
+
+        // Embed logo as CID if local asset exists; otherwise fallback to URL
+        $logoCid = null;
+        $localLogoPath = dirname(__DIR__, 2) . '/didaskinfront/public/assets/logo-dida.png';
+        if (is_file($localLogoPath)) {
+            try {
+                $logoCid = $email->embedFromPath($localLogoPath, 'logo_header', 'image/png');
+            } catch (\Throwable $e) {
+                $logoCid = null;
+            }
+        }
+        // Prefer explicit LOGO_URL (e.g., Cloudinary) when provided
+        $envLogoUrl = $_ENV['LOGO_URL'] ?? null;
+        $defaultLogoUrl = 'http://localhost:5173/assets/logo-dida.png';
+        $logoSrc = $envLogoUrl
+            ? htmlspecialchars($envLogoUrl, ENT_QUOTES, 'UTF-8')
+            : ($logoCid ?: htmlspecialchars($defaultLogoUrl, ENT_QUOTES, 'UTF-8'));
+ 
+        // Inject placeholders
+        $html = str_replace(
+            ['{{UNSUBSCRIBE_URL}}', '{{LOGO_URL}}'],
+            [htmlspecialchars($unsubscribeUrl, ENT_QUOTES, 'UTF-8'), $logoSrc],
+            $htmlTemplate
+        );
+
+        $email->html($html)->text($text);
 
         $this->mailer->send($email);
         
@@ -208,7 +251,7 @@ class EmailService
      */
     private function generateNewsletterHtml(Newsletter $newsletter, User $user): string
     {
-        $templatePath = dirname(__DIR__, 2) . '/templates/emails/newsletter.html';
+        $templatePath = dirname(__DIR__, 2) . '/templates/emails/newsLetter.html';
         $template = file_get_contents($templatePath);
         
         // Replace placeholders with actual content
@@ -220,6 +263,7 @@ class EmailService
             '{{NEWSLETTER_CONTENT}}' => htmlspecialchars($newsletter->getContent()),
             '{{NEWSLETTER_IMAGE}}' => $this->generateImageHtml($newsletter),
             '{{NEWSLETTER_CTA_BUTTON}}' => $this->generateCtaButtonHtml($newsletter)
+            // {{UNSUBSCRIBE_URL}} is injected later per-user in sendWithMailer
         ];
         
         return str_replace(array_keys($replacements), array_values($replacements), $template);
@@ -242,7 +286,10 @@ class EmailService
     private function generateCtaButtonHtml(Newsletter $newsletter): string
     {
         if ($newsletter->getActionCall() && $newsletter->getUrl()) {
-            return '<a href="' . htmlspecialchars($newsletter->getUrl()) . '" class="cta-button">' . htmlspecialchars($newsletter->getActionCall()) . '</a>';
+            $url = htmlspecialchars($newsletter->getUrl(), ENT_QUOTES, 'UTF-8');
+            $label = htmlspecialchars($newsletter->getActionCall(), ENT_QUOTES, 'UTF-8');
+            $style = 'display:inline-block;background-color:#000000;color:#ffffff !important;padding:15px 30px;text-decoration:none;border-radius:0;font-weight:600;font-size:16px;';
+            return '<a href="' . $url . '" style="' . $style . '">' . $label . '</a>';
         }
         return '';
     }

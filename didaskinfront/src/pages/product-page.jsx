@@ -5,6 +5,7 @@ import Header from "../components/header";
 import Footer from "../components/Footer";
 import Card from "../components/card";
 import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../config/apiConfig";
 
 export default function ProductPage() {
   const [products, setProducts] = useState([]);
@@ -15,7 +16,7 @@ export default function ProductPage() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:8000/products");
+        const response = await fetch(`${API_BASE_URL}/products`);
         if (!response.ok) {
           throw new Error("Failed to fetch products");
         }

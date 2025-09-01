@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import Card from "../components/card";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
+import { API_BASE_URL } from "../config/apiConfig";
 
 export default function ServicePage() {
   const location = useLocation();
@@ -38,7 +39,7 @@ export default function ServicePage() {
       const fetchSubcategoryName = async () => {
         try {
           const response = await fetch(
-            `http://localhost:8000/subcategories/${subcategoryId}`
+            `${API_BASE_URL}/subcategories/${subcategoryId}`
           );
           if (response.ok) {
             const result = await response.json();
@@ -66,7 +67,7 @@ export default function ServicePage() {
         setLoading(true);
         setError(null);
         const response = await fetch(
-          `http://localhost:8000/services/subcategory/${subcategoryId}`
+          `${API_BASE_URL}/services/subcategory/${subcategoryId}`
         );
 
         if (!response.ok) {
@@ -145,8 +146,8 @@ export default function ServicePage() {
       <main className="pt-24 pb-12 px-2 md:px-4">
         {/* Search results header */}
         {searchQuery && (
-          <div className="px-2 md:px-4 mb-4">
-            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="px-2 md:px-4 mb-1">
+            <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-100">
               <h3 className="text-lg font-medium text-gray-800 mb-2">
                 Résultats de recherche
               </h3>
@@ -167,11 +168,11 @@ export default function ServicePage() {
           {searchQuery
             ? `RECHERCHE - "${searchQuery}"`
             : subcategoryId
-            ? `SERVICES - ${subcategoryName || "SOUS-CATÉGORIE"}`
-            : "NOS SOINS"}
+            ? `  ${subcategoryName || "SOUS-CATÉGORIE"}`
+            : "NOS SOINS & PRODUITS"}
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[3px] gap-y-[3px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[2px] gap-y-[1px]">
           {filteredServices?.map((service, index) => (
             <Link
               key={service.id || index}

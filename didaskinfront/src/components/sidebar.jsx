@@ -13,7 +13,9 @@ import {
   Folder,
   TrendingUp,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import logo from "../assets/logo-didaskin.png";
+
 
 export default function Sidebar({
   isOpen,
@@ -61,11 +63,9 @@ export default function Sidebar({
               onClick={handleLogoClick}
               className="cursor-pointer hover:opacity-80 transition-opacity duration-200 flex justify-center"
             >
-              <img
-                src="/src/assets/logo-dida.png"
-                alt="DIDA SKIN"
-                className="h-16 w-auto"
-              />
+              <Link to="/" className="block">
+            <img src={logo} alt="DIDA SKIN" className="h-8 w-auto mx-auto" />
+             </Link>
             </div>
             <button
               onClick={() => setIsOpen(false)}

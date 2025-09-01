@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Notification;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,8 +15,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use App\Entity\Notification;
-use App\Repository\UserRepository as RepoUserRepository;
 
 #[Route('/users', name: 'app_users')]
 class UserController extends AbstractController
@@ -25,28 +24,16 @@ class UserController extends AbstractController
         private EntityManagerInterface $entityManager,
         private ValidatorInterface $validator,
         private SerializerInterface $serializer
-    ) {
-    }
+    ) {}
 
-
-    // === GESTION DES UTILISATEURS ===
+    // === UTILISATEURS ===
 
     #[Route('', name: 'list_users', methods: ['GET'])]
     public function listUsers(): JsonResponse
     {
         $users = $this->userRepository->findAllOrderedByCreatedAt();
-        
-        $context = (new ObjectNormalizerContextBuilder())
-            ->withGroups('user:read')
-            ->toArray();
-        
-        $data = $this->serializer->serialize($users, 'json', $context);
-        $data = json_decode($data, true);
-       
-        return $this->json([
-            'success' => true,
-            'data' => $data,
-        ]);
+        $data = $this->serializeUsers($users);
+        return $this->json(['success' => true, 'data' => $data]);
     }
 
     #[Route('/create', name: 'create_user', methods: ['POST'])]
@@ -55,76 +42,41 @@ class UserController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        // Validation des données
         if (!$data || !isset($data['firstName'], $data['lastName'], $data['email'], $data['phoneNumber'])) {
-            return $this->json([
-                'success' => false,
-                'error' => 'Données manquantes'
-            ], Response::HTTP_BAD_REQUEST);
+            return $this->json(['success' => false, 'error' => 'Données manquantes'], Response::HTTP_BAD_REQUEST);
         }
 
-        // Vérifier si l'email existe déjà
-        $existingUser = $this->userRepository->findByEmail($data['email']);
-        if ($existingUser) {
-            return $this->json([
-                'success' => false,
-                'error' => 'Un utilisateur avec cet email existe déjà'
-            ], Response::HTTP_BAD_REQUEST);
+        if ($this->userRepository->findByEmail($data['email'])) {
+            return $this->json(['success' => false, 'error' => 'Un utilisateur avec cet email existe déjà'], Response::HTTP_BAD_REQUEST);
         }
 
-        // Créer le nouvel utilisateur
         $user = new User();
-        $user->setFirstName($data['firstName']);
-        $user->setLastName($data['lastName']);
-        $user->setEmail($data['email']);
-        $user->setPhoneNumber($data['phoneNumber']);
-        $user->setRole($data['role'] ?? 'ROLE_USER');
-        $user->setIsSubscribed($data['is_subscribed'] ?? false);
-        $user->setPassword('temporary_password_' . uniqid());
-        $user->setCreatedAt(new \DateTimeImmutable());
-        $user->setUpdatedAt(new \DateTimeImmutable());
+        $user->setFirstName($data['firstName'])
+             ->setLastName($data['lastName'])
+             ->setEmail($data['email'])
+             ->setPhoneNumber($data['phoneNumber'])
+             ->setRole($data['role'] ?? 'ROLE_USER')
+             ->setIsSubscribed($data['is_subscribed'] ?? false)
+             ->setPassword('temporary_password_' . uniqid())
+             ->setCreatedAt(new \DateTimeImmutable())
+             ->setUpdatedAt(new \DateTimeImmutable());
 
-        // Valider l'entité
         $errors = $this->validator->validate($user);
         if (count($errors) > 0) {
-            return $this->json([
-                'success' => false,
-                'errors' => $this->getErrorsFromValidator($errors)
-            ], Response::HTTP_BAD_REQUEST);
+            return $this->json(['success' => false, 'errors' => $this->getErrorsFromValidator($errors)], Response::HTTP_BAD_REQUEST);
         }
 
-        // Persister l'utilisateur
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        // Notifier les admins si l'utilisateur est créé en tant qu'abonné
+        // Notification si abonné
         if ($user->isSubscribed()) {
-            $admins = $this->userRepository->findByRole('ROLE_ADMIN');
-            if (!empty($admins)) {
-                $notification = (new Notification())
-                    ->setSlug('newsletter_subscribe')
-                    ->setLabel('Nouvelle inscription newsletter')
-                    ->setMessage(sprintf('%s %s s\'est inscrit(e) à la newsletter', $user->getFirstName(), $user->getLastName()))
-                    ->setIsRead(false);
-                foreach ($admins as $admin) {
-                    $notification->addReceiver($admin);
-                }
-                $this->entityManager->persist($notification);
-                $this->entityManager->flush();
-            }
+            $this->notifyAdmins($user);
         }
-
-        // Sérialiser la réponse
-        $context = (new ObjectNormalizerContextBuilder())
-            ->withGroups('user:read')
-            ->toArray();
-        
-        $serializedData = $this->serializer->serialize($user, 'json', $context);
-        $serializedData = json_decode($serializedData, true);
 
         return $this->json([
             'success' => true,
-            'data' => $serializedData,
+            'data' => $this->serializeUsers($user),
             'message' => 'Utilisateur créé avec succès'
         ], Response::HTTP_CREATED);
     }
@@ -133,25 +85,10 @@ class UserController extends AbstractController
     public function showUser(int $id): JsonResponse
     {
         $user = $this->userRepository->find($id);
-
         if (!$user) {
-            return $this->json([
-                'success' => false,
-                'error' => 'Utilisateur non trouvé'
-            ], Response::HTTP_NOT_FOUND);
+            return $this->json(['success' => false, 'error' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
         }
-
-        $context = (new ObjectNormalizerContextBuilder())
-            ->withGroups('user:read')
-            ->toArray();
-        
-        $data = $this->serializer->serialize($user, 'json', $context);
-        $data = json_decode($data, true);
-
-        return $this->json([
-            'success' => true,
-            'data' => $data,
-        ]);
+        return $this->json(['success' => true, 'data' => $this->serializeUsers($user)]);
     }
 
     #[Route('/{id}', name: 'update_user', methods: ['PUT'])]
@@ -162,20 +99,13 @@ class UserController extends AbstractController
         $user = $this->userRepository->find($id);
 
         if (!$user) {
-            return $this->json([
-                'success' => false,
-                'error' => 'Utilisateur non trouvé'
-            ], Response::HTTP_NOT_FOUND);
+            return $this->json(['success' => false, 'error' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
         }
 
-        // Vérifier si l'email existe déjà (sauf pour cet utilisateur)
         if (isset($data['email'])) {
             $existingUser = $this->userRepository->findByEmail($data['email']);
             if ($existingUser && $existingUser->getId() !== $id) {
-                return $this->json([
-                    'success' => false,
-                    'error' => 'Un utilisateur avec cet email existe déjà'
-                ], Response::HTTP_BAD_REQUEST);
+                return $this->json(['success' => false, 'error' => 'Un utilisateur avec cet email existe déjà'], Response::HTTP_BAD_REQUEST);
             }
         }
 
@@ -183,35 +113,11 @@ class UserController extends AbstractController
         $user->setUpdatedAt(new \DateTimeImmutable());
         $user = $this->userRepository->update($user, $data);
 
-        // If subscription turned on now, notify admins
         if (!$wasSubscribed && $user->isSubscribed()) {
-            $admins = $this->userRepository->findByRole('ROLE_ADMIN');
-            if (!empty($admins)) {
-                $notification = (new Notification())
-                    ->setSlug('newsletter_subscribe')
-                    ->setLabel('Nouvelle inscription newsletter')
-                    ->setMessage(sprintf('%s %s s\'est inscrit(e) à la newsletter', $user->getFirstName(), $user->getLastName()))
-                    ->setIsRead(false);
-                foreach ($admins as $admin) {
-                    $notification->addReceiver($admin);
-                }
-                $this->entityManager->persist($notification);
-                $this->entityManager->flush();
-            }
+            $this->notifyAdmins($user);
         }
-        
-        $context = (new ObjectNormalizerContextBuilder())
-            ->withGroups('user:read')
-            ->toArray();
-        
-        $serializedData = $this->serializer->serialize($user, 'json', $context);
-        $serializedData = json_decode($serializedData, true);
 
-        return $this->json([
-            'success' => true,
-            'data' => $serializedData,
-            'message' => 'Utilisateur mis à jour avec succès'
-        ]);
+        return $this->json(['success' => true, 'data' => $this->serializeUsers($user), 'message' => 'Utilisateur mis à jour avec succès']);
     }
 
     #[Route('/{id}', name: 'delete_user', methods: ['DELETE'])]
@@ -219,81 +125,50 @@ class UserController extends AbstractController
     public function deleteUser(int $id): JsonResponse
     {
         $user = $this->userRepository->find($id);
-
         if (!$user) {
-            return $this->json([
-                'success' => false,
-                'error' => 'Utilisateur non trouvé'
-            ], Response::HTTP_NOT_FOUND);
+            return $this->json(['success' => false, 'error' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
         }
 
         $this->userRepository->remove($user, true);
-
-        return $this->json([
-            'success' => true,
-            'message' => 'Utilisateur supprimé avec succès'
-        ]);
+        return $this->json(['success' => true, 'message' => 'Utilisateur supprimé avec succès']);
     }
 
-    // === GESTION NEWSLETTER ===
+    // === NEWSLETTER ===
 
     #[Route('/{id}/subscribe-newsletter', name: 'subscribe_newsletter', methods: ['POST'])]
     public function subscribeToNewsletter(int $id): JsonResponse
     {
         $user = $this->userRepository->find($id);
-
         if (!$user) {
-            return $this->json([
-                'success' => false,
-                'error' => 'Utilisateur non trouvé'
-            ], Response::HTTP_NOT_FOUND);
+            return $this->json(['success' => false, 'error' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($user->isSubscribed()) {
+            return $this->json(['success' => false, 'error' => 'Utilisateur déjà abonné à la newsletter'], Response::HTTP_BAD_REQUEST);
         }
 
         $user->setIsSubscribed(true);
         $user->setUpdatedAt(new \DateTimeImmutable());
         $this->entityManager->flush();
 
-        // Create notification for admins
-        $admins = $this->userRepository->findByRole('ROLE_ADMIN');
-        if (!empty($admins)) {
-            $notification = (new Notification())
-                ->setSlug('newsletter_subscribe')
-                ->setLabel('Nouvelle inscription newsletter')
-                ->setMessage(sprintf('%s %s s\'est inscrit(e) à la newsletter', $user->getFirstName(), $user->getLastName()))
-                ->setIsRead(false);
-            foreach ($admins as $admin) {
-                $notification->addReceiver($admin);
-            }
-            $this->entityManager->persist($notification);
-            $this->entityManager->flush();
-        }
+        $this->notifyAdmins($user);
 
-        return $this->json([
-            'success' => true,
-            'message' => 'Utilisateur abonné à la newsletter avec succès'
-        ]);
+        return $this->json(['success' => true, 'message' => 'Utilisateur abonné à la newsletter avec succès']);
     }
 
     #[Route('/{id}/unsubscribe-newsletter', name: 'unsubscribe_newsletter', methods: ['POST'])]
     public function unsubscribeFromNewsletter(int $id): JsonResponse
     {
         $user = $this->userRepository->find($id);
-
         if (!$user) {
-            return $this->json([
-                'success' => false,
-                'error' => 'Utilisateur non trouvé'
-            ], Response::HTTP_NOT_FOUND);
+            return $this->json(['success' => false, 'error' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
         }
 
         $user->setIsSubscribed(false);
         $user->setUpdatedAt(new \DateTimeImmutable());
         $this->entityManager->flush();
 
-        return $this->json([
-            'success' => true,
-            'message' => 'Utilisateur désabonné de la newsletter avec succès'
-        ]);
+        return $this->json(['success' => true, 'message' => 'Utilisateur désabonné de la newsletter avec succès']);
     }
 
     // === ENDPOINTS UTILITAIRES ===
@@ -302,62 +177,57 @@ class UserController extends AbstractController
     public function getSubscribedUsers(): JsonResponse
     {
         $users = $this->userRepository->findSubscribedUsers();
-        
-        $context = (new ObjectNormalizerContextBuilder())
-            ->withGroups('user:read')
-            ->toArray();
-        
-        $data = $this->serializer->serialize($users, 'json', $context);
-        $data = json_decode($data, true);
-
-        return $this->json([
-            'success' => true,
-            'data' => $data,
-        ]);
+        return $this->json(['success' => true, 'data' => $this->serializeUsers($users)]);
     }
 
     #[Route('/admins', name: 'list_admins', methods: ['GET'])]
     public function listAdmins(): JsonResponse
     {
         $admins = $this->userRepository->findByRole('ROLE_ADMIN');
-        
-        $context = (new ObjectNormalizerContextBuilder())
-            ->withGroups('user:read')
-            ->toArray();
-        
-        $data = $this->serializer->serialize($admins, 'json', $context);
-        $data = json_decode($data, true);
-
-        return $this->json([
-            'success' => true,
-            'data' => $data,
-        ]);
+        return $this->json(['success' => true, 'data' => $this->serializeUsers($admins)]);
     }
 
     #[Route('/by-role/{role}', name: 'users_by_role', methods: ['GET'])]
     public function getUsersByRole(string $role): JsonResponse
     {
         $users = $this->userRepository->findByRole($role);
-        
-        $context = (new ObjectNormalizerContextBuilder())
-            ->withGroups('user:read')
-            ->toArray();
-        
-        $data = $this->serializer->serialize($users, 'json', $context);
-        $data = json_decode($data, true);
-
-        return $this->json([
-            'success' => true,
-            'data' => $data,
-        ]);
+        return $this->json(['success' => true, 'data' => $this->serializeUsers($users)]);
     }
+
+    // === UTILS ===
 
     private function getErrorsFromValidator($errors): array
     {
-        $errorMessages = [];
+        $messages = [];
         foreach ($errors as $error) {
-            $errorMessages[] = $error->getMessage();
+            $messages[] = $error->getMessage();
         }
-        return $errorMessages;
+        return $messages;
     }
-} 
+
+    private function serializeUsers($users): array
+    {
+        $context = (new ObjectNormalizerContextBuilder())->withGroups('user:read')->toArray();
+        $data = $this->serializer->serialize($users, 'json', $context);
+        return json_decode($data, true);
+    }
+
+    private function notifyAdmins(User $user): void
+    {
+        $admins = $this->userRepository->findByRole('ROLE_ADMIN');
+        if (empty($admins)) return;
+
+        $notification = (new Notification())
+            ->setSlug('newsletter_subscribe')
+            ->setLabel('Nouvelle inscription newsletter')
+            ->setMessage(sprintf('%s %s s\'est inscrit(e) à la newsletter', $user->getFirstName(), $user->getLastName()))
+            ->setIsRead(false);
+
+        foreach ($admins as $admin) {
+            $notification->addReceiver($admin);
+        }
+
+        $this->entityManager->persist($notification);
+        $this->entityManager->flush();
+    }
+}

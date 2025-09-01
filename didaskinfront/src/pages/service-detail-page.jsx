@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import BookingButton from "../components/booking-button";
+import { API_BASE_URL } from "../config/apiConfig";
 
 export default function ServiceDetailPage() {
   const { id } = useParams();
@@ -26,7 +27,7 @@ export default function ServiceDetailPage() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`http://localhost:8000/services/${id}`);
+        const response = await fetch(`${API_BASE_URL}/services/${id}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch service");

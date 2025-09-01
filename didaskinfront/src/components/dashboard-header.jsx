@@ -4,6 +4,7 @@ import { Menu, Bell } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/apiConfig";
 
 export default function DashboardHeader({ setSidebarOpen }) {
   const {
@@ -26,7 +27,7 @@ export default function DashboardHeader({ setSidebarOpen }) {
 
     try {
       setLoading(true);
-      const r = await fetch("http://localhost:8000/notifications", {
+      const r = await fetch(`${API_BASE_URL}/notifications`, {
         headers: getAuthHeaders(),
       });
       const j = await handleApiResponse(r);
@@ -59,7 +60,7 @@ export default function DashboardHeader({ setSidebarOpen }) {
   const markRead = async (id) => {
     try {
       await handleApiResponse(
-        await fetch(`http://localhost:8000/notifications/read/${id}`, {
+        await fetch(`${API_BASE_URL}/notifications/read/${id}`, {
           method: "POST",
           headers: getAuthHeaders(),
         })

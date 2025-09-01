@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "../config/apiConfig";
 
 export default function CategoryPage() {
   const location = useLocation();
@@ -23,7 +24,7 @@ export default function CategoryPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("http://localhost:8000/categories");
+        const response = await fetch(`${API_BASE_URL}/categories`);
         if (response.ok) {
           const result = await response.json();
           if (result.success) {
@@ -50,7 +51,7 @@ export default function CategoryPage() {
         setLoading(true);
         setError(null);
         const response = await fetch(
-          `http://localhost:8000/subcategories/category/${categoryId}`
+          `${API_BASE_URL}/subcategories/category/${categoryId}`
         );
 
         if (!response.ok) {
@@ -91,7 +92,7 @@ export default function CategoryPage() {
       const fetchCategoryName = async () => {
         try {
           const response = await fetch(
-            `http://localhost:8000/categories/${categoryId}`
+            `${API_BASE_URL}/categories/${categoryId}`
           );
           if (response.ok) {
             const result = await response.json();
@@ -195,7 +196,7 @@ export default function CategoryPage() {
 
       <main className="flex-grow pt-[100px] pb-12 px-4 md:px-8 lg:px-12">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-xl md:text-2xl font-light text-gray-800 mb-2 tracking-wide text-left">
+          <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-6 tracking-wide text-left">
             {categoryName || ""}
           </h2>
 
@@ -238,7 +239,7 @@ export default function CategoryPage() {
                       />
                     </div>
                   </button>
-                  <h3 className="text-xs font-light text-gray-800 mt-4 group-hover:text-gray-900 transition-colors">
+                  <h3 className="text-xs font-bold text-gray-800 mt-4 group-hover:text-gray-900 transition-colors">
                     {subcategory.label}
                   </h3>
                 </div>
@@ -285,7 +286,7 @@ export default function CategoryPage() {
                       />
                     </div>
                   </button>
-                  <h3 className="text-xs font-semibold text-gray-800 mt-4 group-hover:text-gray-900 transition-colors">
+                  <h3 className="text-xs font-bold text-gray-800 mt-4 group-hover:text-gray-900 transition-colors">
                     {subcategory.label}
                   </h3>
                 </div>

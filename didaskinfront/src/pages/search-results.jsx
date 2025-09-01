@@ -5,6 +5,7 @@ import { useLocation, Link } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Card from "../components/card";
+import { API_BASE_URL } from "../config/apiConfig";
 
 export default function SearchResults() {
   const location = useLocation();
@@ -58,8 +59,8 @@ export default function SearchResults() {
 
         // Fetch services and products in parallel
         const [servicesResponse, productsResponse] = await Promise.all([
-          fetch("http://localhost:8000/services/all"),
-          fetch("http://localhost:8000/products"),
+          fetch(`${API_BASE_URL}/services/all`),
+          fetch(`${API_BASE_URL}/products`),
         ]);
 
         // Handle services response

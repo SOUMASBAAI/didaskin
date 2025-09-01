@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import ImageUpload from "../ui/ImageUpload";
 import { useAuth } from "../../hooks/useAuth";
+import { API_BASE_URL } from "../../config/apiConfig";
 
 export default function AboutEditor({ onClose }) {
   const { getAuthHeaders, handleApiResponse } = useAuth();
   const [form, setForm] = useState({ image: "", description: "" });
   const [saving, setSaving] = useState(false);
-  const API = "http://localhost:8000/site-content/about";
+  const API = `${API_BASE_URL}/site-content/about`;
 
   useEffect(() => {
     (async () => {

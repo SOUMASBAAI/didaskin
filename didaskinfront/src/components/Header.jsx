@@ -4,6 +4,7 @@ import { Search, ShoppingBag, Calendar, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import logo from "../assets/logo-didaskin.png";
+import { API_BASE_URL } from "../config/apiConfig";
 
 export default function Header() {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -60,7 +61,7 @@ export default function Header() {
     let ignore = false;
     (async () => {
       try {
-        const r = await fetch("http://localhost:8000/categories");
+        const r = await fetch(`${API_BASE_URL}/categories`);
         if (!r.ok) return;
         const j = await r.json();
         if (!ignore && j?.success) setCategories(j.data || []);
@@ -81,7 +82,7 @@ export default function Header() {
           categories.map(async (cat) => {
             try {
               const r = await fetch(
-                `http://localhost:8000/subcategories/category/${cat.id}`
+                `${API_BASE_URL}/subcategories/category/${cat.id}`
               );
               const j = await r.json();
               return [cat.id, j?.success ? j.data || [] : []];
@@ -221,7 +222,7 @@ export default function Header() {
         {/* Logo */}
         <div className="text-center pt-2">
           <Link to="/" className="block">
-            <img src={logo} alt="DIDA SKIN" className="h-8 w-auto mx-auto" />
+            <img src={logo} alt="DIDA SKIN" className="h-10 w-auto mx-auto" />
           </Link>
         </div>
         {/* Search */}
@@ -358,7 +359,7 @@ export default function Header() {
         {/* Center Logo - Vraiment centré */}
         <div className="absolute left-1/2 transform -translate-x-1/2 pt-3">
           <Link to="/" className="block">
-            <img src={logo} alt="DIDA SKIN" className="h-8 w-auto" />
+            <img src={logo} alt="DIDA SKIN" className="h-14 w-auto" />
           </Link>
         </div>
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import ImageUpload from "../ui/ImageUpload";
 import { useAuth } from "../../hooks/useAuth";
+import { API_BASE_URL } from "../../config/apiConfig";
 
 export default function HeroEditor({ onClose }) {
   const { getAuthHeaders, handleApiResponse } = useAuth();
@@ -13,7 +14,7 @@ export default function HeroEditor({ onClose }) {
     image: "",
   });
   const [saving, setSaving] = useState(false);
-  const API = "http://localhost:8000/site-content/hero";
+  const API = `${API_BASE_URL}/site-content/hero`;
 
   useEffect(() => {
     (async () => {

@@ -5,6 +5,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import PlanityWidget from "../components/PlanityWidget";
 import { getPlanityConfig } from "../config/planity";
+import { API_BASE_URL } from "../config/apiConfig";
 
 export default function ServiceBookingPage() {
   const { id } = useParams();
@@ -30,9 +31,7 @@ export default function ServiceBookingPage() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(
-          `http://localhost:8000/services/${serviceId}`
-        );
+        const response = await fetch(`${API_BASE_URL}/services/${serviceId}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch service");
@@ -109,7 +108,6 @@ export default function ServiceBookingPage() {
               Réservez votre rendez-vous pour : <strong>{service.label}</strong>
             </p>
           </div>
-
 
           {/* Planity Widget */}
           <div>

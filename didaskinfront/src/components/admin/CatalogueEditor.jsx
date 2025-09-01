@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import ImageUpload from "../ui/ImageUpload";
 import { useAuth } from "../../hooks/useAuth";
+import { API_BASE_URL } from "../../config/apiConfig";
 
 export default function CatalogueEditor({ onClose }) {
   const { getAuthHeaders, handleApiResponse } = useAuth();
   const [form, setForm] = useState({ image: "" });
   const [saving, setSaving] = useState(false);
-  const API = "http://localhost:8000/site-content/catalogue";
+  const API = `${API_BASE_URL}/site-content/catalogue`;
 
   useEffect(() => {
     (async () => {

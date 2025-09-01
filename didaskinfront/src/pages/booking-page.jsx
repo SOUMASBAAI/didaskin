@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import PlanityWidget from "../components/PlanityWidget";
 import { getPlanityConfig } from "../config/planity";
+import { API_BASE_URL } from "../config/apiConfig";
 
 export default function BookingPage() {
   const { id } = useParams();
@@ -29,7 +30,7 @@ export default function BookingPage() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`http://localhost:8000/services/${id}`);
+        const response = await fetch(`${API_BASE_URL}/services/${id}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch service");
@@ -155,7 +156,15 @@ export default function BookingPage() {
             />
           </div>
 
-         
+          {/* Back button */}
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => navigate(-1)}
+              className="px-8 py-3 bg-gray-200 text-gray-800 font-medium rounded-none hover:bg-gray-300 transition-colors"
+            >
+              Retour au service
+            </button>
+          </div>
         </div>
       </main>
 
