@@ -1,83 +1,220 @@
-"use client"
+"use client";
 
-import Header from "../components/header"
-import Card from "../components/card"
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import Card from "../components/card";
+import { useLocation, useNavigate, Link } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { API_BASE_URL } from "../config/apiConfig";
 
 export default function ServicePage() {
-  const services = [
-    {
-      imageSrc:
-        "https://images.unsplash.com/photo-1731514771613-991a02407132?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      title: "SOIN VISAGE HYDRATANT",
-      description: "Hydratation profonde pour une peau éclatante.",
-      price: "85 €",
-    },
-    {
-      imageSrc:
-        "https://images.unsplash.com/photo-1589710751893-f9a6770ad71b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8RVhURU5TSU9OJTIwREUlMjBDSUxTfGVufDB8fDB8fHww",
-      title: "EXTENSION DE CILS VOLUME RUSSE",
-      description: "Volume intense et regard sublimé.",
-      price: "120 €",
-    },
-    {
-      imageSrc:
-        "https://images.unsplash.com/photo-1639162906614-0603b0ae95fd?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8TUFTU0FHRXxlbnwwfHwwfHx8MA%3D%3D",
-      title: "MASSAGE RELAXANT CORPS",
-      description: "Détente absolue et bien-être.",
-      price: "95 €",
-    },
-    {
-      imageSrc:
-        "https://images.unsplash.com/photo-1700760933574-9f0f4ea9aa3b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bGFzZXIlMjBoYWlyfGVufDB8fDB8fHww",
-      title: "ÉPILATION LASER JAMBES",
-      description: "Peau lisse durablement.",
-      price: "150 €",
-    },
-    {
-      imageSrc:
-        "https://plus.unsplash.com/premium_photo-1718626724867-970453587837?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8bWljcm9ibGFkaW5nfGVufDB8fDB8fHww",
-      title: "MICROBLADING SOURCILS",
-      description: "Sourcils parfaitement dessinés.",
-      price: "250 €",
-    },
-    {
-      imageSrc:
-        "https://images.unsplash.com/photo-1620916297397-a4a5402a3c6c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2VydW18ZW58MHx8MHx8fDA%3D",
-      title: "SÉRUM ANTI-ÂGE LUXE",
-      description: "Réduit les signes du vieillissement.",
-      price: "75 €",
-    },
-  ]
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const subcategoryId = searchParams.get("subcategory");
+  const searchQuery = searchParams.get("search");
+
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [subcategoryName, setSubcategoryName] = useState("");
+
+  // Filtered services based on search query
+  const filteredServices = useMemo(() => {
+    if (!searchQuery || !searchQuery.trim()) {
+      return services;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return services.filter(
+      (service) =>
+        service.label?.toLowerCase().includes(query) ||
+        service.shortDescription?.toLowerCase().includes(query) ||
+        service.price?.toString().includes(query)
+    );
+  }, [services, searchQuery]);
+
+  // Fetch subcategory name from backend
+  useEffect(() => {
+    if (subcategoryId) {
+      const fetchSubcategoryName = async () => {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/subcategories/${subcategoryId}`
+          );
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+              setSubcategoryName(result.data.label);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching subcategory:", error);
+        }
+      };
+      fetchSubcategoryName();
+    }
+  }, [subcategoryId]);
+
+  // Fetch services directly from API
+  useEffect(() => {
+    const fetchServices = async () => {
+      if (!subcategoryId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(
+          `${API_BASE_URL}/services/subcategory/${subcategoryId}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch services");
+        }
+
+        const result = await response.json();
+        if (result.success) {
+          console.log("Services fetched:", result.data); // Debug log
+          setServices(result.data);
+        } else {
+          throw new Error("Failed to fetch services");
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error("Error fetching services:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, [subcategoryId]);
+
+  // Debug logs
+  useEffect(() => {
+    console.log("ServicePage - subcategoryId:", subcategoryId);
+    console.log("ServicePage - subcategoryName:", subcategoryName);
+    console.log("ServicePage - services:", services);
+    console.log("ServicePage - searchQuery:", searchQuery);
+    console.log("ServicePage - filteredServices:", filteredServices);
+    console.log("ServicePage - loading:", loading);
+    console.log("ServicePage - error:", error);
+  }, [
+    subcategoryId,
+    subcategoryName,
+    services,
+    searchQuery,
+    filteredServices,
+    loading,
+    error,
+  ]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F5F1ED]">
+        <Header />
+        <main className="pt-24 pb-12 px-2 md:px-4">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-lg text-gray-600">
+              Chargement des services...
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#F5F1ED]">
+        <Header />
+        <main className="pt-24 pb-12 px-2 md:px-4">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-lg text-red-600">Erreur: {error}</div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F1ED]">
       <Header />
 
       <main className="pt-24 pb-12 px-2 md:px-4">
-        {" "}
-        {/* Increased pt for more margin from header */}
-        <h2 className="text-lg font-light text-gray-800 text-left mb-1 tracking-wide px-2 md:px-4">
-          {"NOS SOINS & PRODUITS"}
-        </h2>{" "}
-        {/* Reduced mb to mb-1 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[3px] gap-y-[3px]">
-          {services.map((service, index) => (
-            <Card
-              key={index}
-              imageSrc={service.imageSrc}
-              title={service.title}
-              description={service.description}
-              price={service.price}
-            />
+        {/* Search results header */}
+        {searchQuery && (
+          <div className="px-2 md:px-4 mb-1">
+            <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-100">
+              <h3 className="text-lg font-medium text-gray-800 mb-2">
+                Résultats de recherche
+              </h3>
+              <p className="text-gray-600">
+                Recherche pour :{" "}
+                <span className="font-medium">"{searchQuery}"</span>
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                {filteredServices.length} service
+                {filteredServices.length !== 1 ? "s" : ""} trouvé
+                {filteredServices.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <h2 className="text-lg font-light text-gray-800 text-left mb-0 tracking-wide px-2 md:px-4">
+          {searchQuery
+            ? `RECHERCHE - "${searchQuery}"`
+            : subcategoryId
+            ? `  ${subcategoryName || "SOUS-CATÉGORIE"}`
+            : "NOS SOINS & PRODUITS"}
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[2px] gap-y-[1px]">
+          {filteredServices?.map((service, index) => (
+            <Link
+              key={service.id || index}
+              to={`/service/${service.id}`}
+              className="block"
+            >
+              <Card
+                imageSrc={service.image_link || "/placeholder.svg"}
+                title={service.label}
+                description={service.shortDescription}
+                price={`${service.price} €`}
+              />
+            </Link>
           ))}
         </div>
+
+        {(!filteredServices || filteredServices.length === 0) && (
+          <div className="text-center py-12">
+            <p className="text-gray-600">
+              {searchQuery
+                ? `Aucun service trouvé pour "${searchQuery}".`
+                : subcategoryId
+                ? "Aucun service trouvé pour cette sous-catégorie."
+                : "Aucun service disponible."}
+            </p>
+            {searchQuery && (
+              <div className="mt-4">
+                <Link
+                  to={`/services${
+                    subcategoryId ? `?subcategory=${subcategoryId}` : ""
+                  }`}
+                  className="text-sm text-gray-500 hover:text-gray-700 underline"
+                >
+                  Voir tous les services
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
-      {/* Simple Footer */}
-      <footer className="bg-white border-t border-gray-100 py-6 text-center text-sm text-gray-600">
-        <p>© 2025 DIDA SKIN. Tous droits réservés.</p>
-      </footer>
+      <Footer />
     </div>
-  )
+  );
 }
-

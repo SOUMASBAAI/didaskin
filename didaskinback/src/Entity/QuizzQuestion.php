@@ -31,6 +31,9 @@ class QuizzQuestion
     #[ORM\Column(length: 255)]
     private ?string $explanation = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $choiceD = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -104,6 +107,18 @@ class QuizzQuestion
     public function setExplanation(string $explanation): static
     {
         $this->explanation = $explanation;
+
+        return $this;
+    }
+
+    public function getChoiceD(): ?string
+    {
+        return $this->choiceD;
+    }
+
+    public function setChoiceD(string $choiceD): static
+    {
+        $this->choiceD = $choiceD;
 
         return $this;
     }

@@ -1,29 +1,93 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { X } from "lucide-react"
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
+import { useParams } from "react-router-dom";
 
-import Header from "../components/Header"
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import BookingButton from "../components/booking-button";
+import { API_BASE_URL } from "../config/apiConfig";
 
 export default function ServiceDetailPage() {
-  const [showDetailsPanel, setShowDetailsPanel] = useState(false)
+  const { id } = useParams();
+  const [showDetailsPanel, setShowDetailsPanel] = useState(false);
+  const [service, setService] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const service = {
-    imageSrc:
-      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c29pbiUyMHZpc2FnZXxlbnwwfHwwfHx8MA%3D%3D",
-    title: "SOIN VISAGE HYDRATANT PROFOND",
-    price: "85 €",
-    shortDescription: "Un soin revitalisant pour une peau éclatante et hydratée.",
-    longDescription:
-      "Ce soin du visage complet est conçu pour infuser votre peau d'une hydratation intense, la laissant douce, souple et lumineuse. Il comprend un nettoyage en profondeur, une exfoliation douce, un masque hydratant personnalisé et un massage relaxant du visage, du cou et des épaules. Idéal pour tous les types de peau, en particulier les peaux sèches ou déshydratées.",
-    estimatedDuration: "60 minutes",
-    additionalDetails: [
-      "Type de peau: Convient à tous les types de peau, idéal pour les peaux sèches et déshydratées.",
-      "Bienfaits: Hydratation profonde, amélioration de l'élasticité, réduction des ridules, éclat du teint.",
-      "Ingrédients clés: Acide hyaluronique, vitamines C et E, extraits de plantes apaisantes.",
-      "Fréquence recommandée: Une fois par mois pour des résultats optimaux.",
-      "Conseils post-soin: Appliquer une crème hydratante et un écran solaire.",
-    ],
+  // Fetch service data from API
+  useEffect(() => {
+    const fetchService = async () => {
+      if (!id) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(`${API_BASE_URL}/services/${id}`);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch service");
+        }
+
+        const result = await response.json();
+        if (result.success) {
+          console.log("Service fetched:", result.data); // Debug log
+          setService(result.data);
+        } else {
+          throw new Error("Failed to fetch service");
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error("Error fetching service:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchService();
+  }, [id]);
+
+  // Debug logs
+  useEffect(() => {
+    console.log("ServiceDetailPage - id:", id);
+    console.log("ServiceDetailPage - service:", service);
+    console.log("ServiceDetailPage - loading:", loading);
+    console.log("ServiceDetailPage - error:", error);
+  }, [id, service, loading, error]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#F5F1ED]">
+        <Header />
+        <main className="flex-grow pt-32 pb-12 px-4 md:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto flex justify-center items-center h-64">
+            <div className="text-lg text-gray-600">
+              Chargement du service...
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error || !service) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#F5F1ED]">
+        <Header />
+        <main className="flex-grow pt-32 pb-12 px-4 md:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-2xl font-light text-gray-800 mb-4">
+              Erreur de chargement
+            </h2>
+            <p className="text-gray-600">{error || "Service non trouvé"}</p>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -37,8 +101,8 @@ export default function ServiceDetailPage() {
           <div className="lg:w-1/2 flex justify-center items-start">
             <div className="relative w-full max-w-md aspect-[3/4] bg-gray-100 overflow-hidden">
               <img
-                src={service.imageSrc || "/placeholder.svg"}
-                alt={service.title}
+                src={service.image_link || "/placeholder.svg"}
+                alt={service.label}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -46,20 +110,27 @@ export default function ServiceDetailPage() {
 
           {/* Right Column: Initial Service Details (now scrolls with content) */}
           <div className="lg:w-1/2 flex flex-col justify-start lg:pt-0 pt-8">
-            <h2 className="text-sm font-bold text-gray-800 mb-2 tracking-wide">{service.title}</h2>
-            <p className="text-base font-semibold text-gray-900 mb-4">{service.price}</p>
+            <h2 className="text-sm font-bold text-gray-800 mb-2 tracking-wide">
+              {service.label}
+            </h2>
+            <p className="text-base font-semibold text-gray-900 mb-4">
+              {service.price} €
+            </p>
 
-            <p className="text-sm text-gray-600 mb-6">{service.shortDescription}</p>
+            <p className="text-sm text-gray-600 mb-6">
+              {service.shortDescription}
+            </p>
 
-            <p className="text-base text-gray-700 leading-relaxed mb-8">{service.longDescription}</p>
+            <p className="text-base text-gray-700 leading-relaxed mb-8">
+              {service.longDescription}
+            </p>
 
-            <button className="w-full py-3 px-6 bg-black text-white font-medium tracking-wide rounded-none hover:bg-gray-800 transition-colors duration-200 mb-6">
-              PRENDRE UN RENDEZ-VOUS
-            </button>
+            <BookingButton id={id} type="service" className="mb-6" />
 
             <div className="space-y-4">
               <div className="text-sm text-gray-700">
-                <span className="font-medium">DURÉE ESTIMÉE DU SOIN :</span> {service.estimatedDuration}
+                <span className="font-medium">DURÉE ESTIMÉE DU SOIN :</span>{" "}
+                {service.ServiceDuration} minutes
               </div>
               <button
                 onClick={() => setShowDetailsPanel(true)}
@@ -80,8 +151,13 @@ export default function ServiceDetailPage() {
       >
         <div className="p-8 flex flex-col h-full">
           <div className="flex items-center mb-8">
-            <h3 className="flex-grow text-center text-lg font-medium text-gray-800 tracking-wide">DÉTAILS</h3>
-            <button onClick={() => setShowDetailsPanel(false)} className="text-gray-700 hover:text-gray-900 ml-auto">
+            <h3 className="flex-grow text-center text-lg font-medium text-gray-800 tracking-wide">
+              DÉTAILS
+            </h3>
+            <button
+              onClick={() => setShowDetailsPanel(false)}
+              className="text-gray-700 hover:text-gray-900 ml-auto"
+            >
               <X className="h-6 w-6" />
             </button>
           </div>
@@ -89,13 +165,18 @@ export default function ServiceDetailPage() {
             <div className="max-w-sm mx-auto text-left">
               {" "}
               {/* Centered narrow content */}
-              <p className="text-sm text-gray-700 leading-relaxed mb-6">{service.longDescription}</p>
+              <p className="text-sm text-gray-700 leading-relaxed mb-6">
+                {service.longDescription}
+              </p>
               <ul className="list-disc list-inside space-y-2 text-gray-700 text-xs">
                 {" "}
                 {/* Smaller font for list */}
-                {service.additionalDetails.map((detail, index) => (
-                  <li key={index}>{detail}</li>
-                ))}
+                {service.additionalDetails &&
+                  service.additionalDetails
+                    .split("\n")
+                    .map((detail, index) => (
+                      <li key={index}>{detail.trim()}</li>
+                    ))}
               </ul>
             </div>
           </div>
@@ -104,13 +185,13 @@ export default function ServiceDetailPage() {
 
       {/* Overlay */}
       {showDetailsPanel && (
-        <div className="fixed inset-0 z-40" onClick={() => setShowDetailsPanel(false)} />
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowDetailsPanel(false)}
+        />
       )}
 
-      {/* Simple Footer */}
-      <footer className="bg-white border-t border-gray-100 py-6 text-center text-sm text-gray-600">
-        <p>© 2024 DIDA SKIN. Tous droits réservés.</p>
-      </footer>
+      <Footer />
     </div>
-  )
+  );
 }

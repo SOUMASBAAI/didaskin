@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -16,34 +18,50 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['user:read'])]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['user:read'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 180)]  
+    #[Groups(['user:read'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 80)]
+    #[Ignore]
     private ?string $password = null;
 
     #[ORM\Column(length: 20)]
+    #[Groups(['user:read'])]
     private ?string $phoneNumber = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['user:read'])]
     private ?string $role = null; // ex: "ROLE_ADMIN" ou "ROLE_USER"
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['user:read'])]
     private ?\DateTimeImmutable $created_at = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['user:read'])]
     private ?\DateTimeImmutable $updated_at = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['user:read'])]
     private ?bool $is_subscribed = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $reset_token = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $reset_token_expires_at = null;
 
     // --- Getters / Setters ---
 
@@ -151,6 +169,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getResetToken(): ?string
+    {
+        return $this->reset_token;
+    }
+
+    public function setResetToken(?string $reset_token): static
+    {
+        $this->reset_token = $reset_token;
+        return $this;
+    }
+
+    public function getResetTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->reset_token_expires_at;
+    }
+
+    public function setResetTokenExpiresAt(?\DateTimeImmutable $expiresAt): static
+    {
+        $this->reset_token_expires_at = $expiresAt;
+        return $this;
+    }
+
     // --- Implémentation des interfaces UserInterface et PasswordAuthenticatedUserInterface ---
 
     public function getUserIdentifier(): string
@@ -160,8 +200,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        // Retourne un tableau avec le rôle (ou ROLE_USER par défaut)
-        return [$this->role ?? 'ROLE_USER'];
+        // Ensure we always return an array and handle the role properly
+        $roles = [];
+        
+        if ($this->role) {
+            $roles[] = $this->role;
+        }
+        
+        // Always add ROLE_USER as a base role
+        if (!in_array('ROLE_USER', $roles)) {
+            $roles[] = 'ROLE_USER';
+        }
+        
+        return array_unique($roles);
     }
 
     public function eraseCredentials(): void
@@ -169,3 +220,4 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // Pas d'infos sensibles à effacer ici
     }
 }
+

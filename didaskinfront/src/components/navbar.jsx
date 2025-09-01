@@ -1,5 +1,17 @@
-"use client"
-import { Calendar, Users, Scissors, DollarSign, Settings, BarChart3, Bell, LogOut, X, Menu, Search } from "lucide-react"
+"use client";
+import {
+  Calendar,
+  Users,
+  Scissors,
+  DollarSign,
+  Settings,
+  BarChart3,
+  Bell,
+  LogOut,
+  X,
+  Menu,
+  Search,
+} from "lucide-react";
 
 export default function Navbar({ isOpen, setIsOpen }) {
   const menuItems = [
@@ -10,20 +22,23 @@ export default function Navbar({ isOpen, setIsOpen }) {
     { icon: DollarSign, label: "Finances" },
     { icon: Bell, label: "Notifications", count: 3 },
     { icon: Settings, label: "Paramètres" },
-  ]
+  ];
 
   const currentDate = new Date().toLocaleDateString("fr-FR", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
-  })
+  });
 
   return (
     <>
       {/* Mobile overlay */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={() => setIsOpen(false)} />
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
       )}
 
       {/* Mobile Sidebar (Off-canvas) */}
@@ -36,10 +51,17 @@ export default function Navbar({ isOpen, setIsOpen }) {
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-light tracking-wider text-gray-800">DIDA SKIN</h2>
+              <img
+                src="/src/assets/logo-didaskin.png"
+                alt="DIDA SKIN"
+                className="h-8 w-auto"
+              />
               <p className="text-xs text-gray-500 mt-1">Administration</p>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-gray-500 hover:text-gray-700">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -63,7 +85,9 @@ export default function Navbar({ isOpen, setIsOpen }) {
                     <span className="font-medium">{item.label}</span>
                   </div>
                   {item.count && (
-                    <span className="bg-[#D4A574] text-white text-xs px-2 py-1 rounded-full">{item.count}</span>
+                    <span className="bg-[#D4A574] text-white text-xs px-2 py-1 rounded-full">
+                      {item.count}
+                    </span>
                   )}
                 </a>
               </li>
@@ -93,11 +117,18 @@ export default function Navbar({ isOpen, setIsOpen }) {
       <header className="bg-white shadow-sm border-b border-gray-100 px-6 py-4 flex items-center justify-between lg:flex">
         {/* Left section: Mobile Menu Toggle (only on mobile), Brand, and Desktop Nav Items */}
         <div className="flex items-center space-x-4">
-          <button onClick={() => setIsOpen(true)} className="lg:hidden text-gray-600 hover:text-gray-800">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="lg:hidden text-gray-600 hover:text-gray-800"
+          >
             <Menu className="h-6 w-6" />
           </button>
           <div className="flex-shrink-0">
-            <h2 className="text-xl font-light tracking-wider text-gray-800">DIDA SKIN</h2>
+            <img
+              src="/assets/logo-dida.png"
+              alt="DIDA SKIN"
+              className="h-8 w-auto"
+            />
             <p className="text-xs text-gray-500 mt-1">Administration</p>
           </div>
           {/* Desktop Navigation Items */}
@@ -116,7 +147,9 @@ export default function Navbar({ isOpen, setIsOpen }) {
                     <item.icon className="h-4 w-4" />
                     <span>{item.label}</span>
                     {item.count && (
-                      <span className="bg-[#D4A574] text-white text-xs px-1.5 py-0.5 rounded-full">{item.count}</span>
+                      <span className="bg-[#D4A574] text-white text-xs px-1.5 py-0.5 rounded-full">
+                        {item.count}
+                      </span>
                     )}
                   </a>
                 </li>
@@ -146,7 +179,9 @@ export default function Navbar({ isOpen, setIsOpen }) {
           </button>
 
           {/* Date */}
-          <div className="hidden md:block text-sm text-gray-600">{currentDate}</div>
+          <div className="hidden md:block text-sm text-gray-600">
+            {currentDate}
+          </div>
 
           {/* User section */}
           <div className="flex items-center space-x-3">
@@ -166,5 +201,5 @@ export default function Navbar({ isOpen, setIsOpen }) {
         </div>
       </header>
     </>
-  )
+  );
 }

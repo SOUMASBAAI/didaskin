@@ -1,0 +1,52 @@
+name: Deploy Backend (Symfony)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "didaskinback/**"
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: didaskinback
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, intl, pdo_mysql, openssl
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: ${{ runner.os }}-composer-${{ hashFiles('didaskinback/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-dev --prefer-dist --no-progress --no-interaction --optimize-autoloader
+
+      - name: Build Symfony cache (prod)
+        run: php bin/console cache:clear --env=prod --no-warmup
+
+      - name: Create deployment artifact (zip)
+        run: |
+          cd ..
+          zip -r backend.zip didaskinback \
+            -x "**/.git/**" "**/tests/**" "**/var/cache/**" "**/var/log/**" "**/node_modules/**"
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: didaskin-backend
+          package: backend.zip
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BACK }}

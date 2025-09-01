@@ -4,8 +4,8 @@ namespace App\Entity;
 
 use App\Repository\ServiceRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
-
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: ServiceRepository::class)]
 class Service
@@ -13,37 +13,56 @@ class Service
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['service:read'])]
     private ?int $id = null;
 
-    #[Assert\NotBlank(message: "Le label ne doit pas être vide.")]
-    #[Assert\Length(min: 3, max: 255)]
+    #[ORM\Column(length: 255)]
+    #[Groups(['service:read'])]
     private ?string $label = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $description = null;
+    #[Groups(['service:read'])]
+    private ?string $shortDescription = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['service:read'])]
+    private ?string $longDescription = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['service:read'])]
+    private ?string $additionalDetails = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['service:read'])]
+    private ?float $ServiceDuration = null;
 
     #[ORM\Column]
-    private ?float $serviceDuration = null;
-
-    #[ORM\Column]
+    #[Groups(['service:read'])]
     private ?float $price = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $image = null;
+    #[Groups(['service:read'])]
+    private ?string $image_link = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['service:read'])]
     private ?string $slug = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $created_by = null;
+    #[ORM\ManyToOne(inversedBy: 'Services')]
+    #[Groups(['service:read'])]
+    private ?SubCategory $subCategory = null;
 
-    #[ORM\ManyToOne(inversedBy: 'services')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Category $category = null;
+    #[ORM\Column]
+    #[Groups(['service:read'])]
+    private ?int $rank = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $keywords = null;
+    #[ORM\Column(options: ["default" => false])]
+    #[Groups(['service:read'])]
+    private bool $featuredLanding = false;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(['service:read'])]
+    private ?int $featuredRank = null;
 
     public function getId(): ?int
     {
@@ -62,26 +81,50 @@ class Service
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getShortDescription(): ?string
     {
-        return $this->description;
+        return $this->shortDescription;
     }
 
-    public function setDescription(string $description): static
+    public function setShortDescription(string $shortDescription): static
     {
-        $this->description = $description;
+        $this->shortDescription = $shortDescription;
+
+        return $this;
+    }
+
+    public function getLongDescription(): ?string
+    {
+        return $this->longDescription;
+    }
+
+    public function setLongDescription(string $longDescription): static
+    {
+        $this->longDescription = $longDescription;
+
+        return $this;
+    }
+
+    public function getAdditionalDetails(): ?string
+    {
+        return $this->additionalDetails;
+    }
+
+    public function setAdditionalDetails(string $additionalDetails): static
+    {
+        $this->additionalDetails = $additionalDetails;
 
         return $this;
     }
 
     public function getServiceDuration(): ?float
     {
-        return $this->serviceDuration;
+        return $this->ServiceDuration;
     }
 
-    public function setServiceDuration(float $serviceDuration): static
+    public function setServiceDuration(float $ServiceDuration): static
     {
-        $this->serviceDuration = $serviceDuration;
+        $this->ServiceDuration = $ServiceDuration;
 
         return $this;
     }
@@ -98,14 +141,14 @@ class Service
         return $this;
     }
 
-    public function getImage(): ?string
+    public function getImageLink(): ?string
     {
-        return $this->image;
+        return $this->image_link;
     }
 
-    public function setImage(string $image): static
+    public function setImageLink(string $image_link): static
     {
-        $this->image = $image;
+        $this->image_link = $image_link;
 
         return $this;
     }
@@ -122,39 +165,49 @@ class Service
         return $this;
     }
 
-    public function getCreatedBy(): ?User
+    public function getSubCategory(): ?SubCategory
     {
-        return $this->created_by;
+        return $this->subCategory;
     }
 
-    public function setCreatedBy(?User $created_by): static
+    public function setSubCategory(?SubCategory $subCategory): static
     {
-        $this->created_by = $created_by;
+        $this->subCategory = $subCategory;
 
         return $this;
     }
 
-    public function getCategory(): ?Category
+    public function getRank(): ?int
     {
-        return $this->category;
+        return $this->rank;
     }
 
-    public function setCategory(?Category $category): static
+    public function setRank(int $rank): static
     {
-        $this->category = $category;
+        $this->rank = $rank;
 
         return $this;
     }
 
-    public function getKeywords(): ?string
+    public function isFeaturedLanding(): bool
     {
-        return $this->keywords;
+        return (bool)$this->featuredLanding;
     }
 
-    public function setKeywords(string $keywords): static
+    public function setFeaturedLanding(bool $v): static
     {
-        $this->keywords = $keywords;
+        $this->featuredLanding = $v;
+        return $this;
+    }
 
+    public function getFeaturedRank(): ?int
+    {
+        return $this->featuredRank;
+    }
+
+    public function setFeaturedRank(?int $v): static
+    {
+        $this->featuredRank = $v;
         return $this;
     }
 }

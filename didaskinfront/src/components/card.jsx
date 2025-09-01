@@ -1,11 +1,9 @@
-"use client"
-
-
+"use client";
 
 export default function Card({ imageSrc, title, price, description }) {
   return (
-    <div className="flex flex-col items-center text-center p-4">
-      <div className="relative w-full aspect-[3/4] bg-gray-100 mb-4 overflow-hidden">
+    <div className="flex flex-col items-center text-center p-3 pt-1">
+      <div className="relative w-full aspect-[3/4] bg-gray-100 mb-3 overflow-hidden">
         <img
           src={imageSrc || "/placeholder.svg"}
           alt={title}
@@ -16,5 +14,5 @@ export default function Card({ imageSrc, title, price, description }) {
       <p className="text-sm text-gray-600 mb-2">{description}</p>
       <p className="text-base font-semibold text-gray-900">{price}</p>
     </div>
-  )
+  );
 }

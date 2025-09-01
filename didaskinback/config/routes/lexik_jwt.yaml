@@ -1,2 +1,2 @@
 login_check:
-    path: /api/login
+    path: /auth/login

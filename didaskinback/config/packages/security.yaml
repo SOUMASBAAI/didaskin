@@ -1,7 +1,7 @@
 security:
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         app_user_provider:
@@ -15,41 +15,70 @@ security:
             security: false
 
         login:
-            pattern: ^/api/login$
+            pattern: ^/auth/login$
             stateless: true
             json_login:
-                check_path: /api/login
+                check_path: /auth/login
                 username_path: email
                 password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
         api:
-            pattern: ^/api/
-            stateless: true        # important pour API, pas de session
+            pattern: ^/(categories|products|services|subcategories|newsletters|quizzquestion|users|admin|site-content|notifications)
+            stateless: true # important pour API, pas de session
             provider: app_user_provider
             jwt: ~
+
+        # Routes d'authentification (pas de JWT requis)
+        auth:
+            pattern: ^/api/(login|register|admin/register|forgot-password|reset-password)$
+            stateless: true
+            security: false
 
         main:
             lazy: true
             provider: app_user_provider
 
-    
-
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
 
-            # https://symfony.com/doc/current/security/impersonating_user.html
+            # https://symfony.com/doc/current/security.html#switch_user
             # switch_user: true
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/api/login$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/profile, roles: ROLE_USER }
-
-        
+        - { path: ^/api/register$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/admin/register$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/forgot-password$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/reset-password$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        # Public read-only access for landing page
+        - {
+              path: ^/(categories|products|services|subcategories)(/.*)?$,
+              roles: PUBLIC_ACCESS,
+              methods: [GET],
+          }
+        - { path: ^/quizzquestion(/.*)?$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/site-content(/.*)?$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/subscribe$, roles: PUBLIC_ACCESS, methods: [POST] }
+        - { path: ^/services/featured$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - {
+              path: ^/services/featured/reorder$,
+              roles: ROLE_ADMIN,
+              methods: [POST],
+          }
+        - { path: ^/services/reorder$, roles: ROLE_ADMIN, methods: [POST] }
+        - { path: ^/products/reorder$, roles: ROLE_ADMIN, methods: [POST] }
+        # Admin dashboard
+        - { path: ^/admin$, roles: ROLE_ADMIN }
+        - { path: ^/notifications, roles: ROLE_ADMIN }
+        # General API access for authenticated users (non-GET)
+        - {
+              path: ^/(categories|products|services|subcategories|newsletters|quizzquestion|users),
+              roles: IS_AUTHENTICATED_FULLY,
+          }
 
 when@test:
     security:

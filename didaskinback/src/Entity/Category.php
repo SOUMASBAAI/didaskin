@@ -6,7 +6,8 @@ use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\User; // Il faut importer User car tu l'utilises
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 class Category
@@ -14,30 +15,44 @@ class Category
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['category:read', 'subcategory:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['category:read', 'subcategory:read'])]
+    #[Assert\NotBlank(message: 'Le label ne doit pas être vide')]
     private ?string $label = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $image = null;
+    #[Groups(['category:read'])]
+    #[Assert\NotBlank(message: 'L’image ne doit pas être vide')]
+    private ?string $image_link = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['category:read'])]
+    #[Assert\NotBlank(message: 'Le slug ne doit pas être vide')]
     private ?string $slug = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $createdBy = null; // camelCase recommandé
+    #[ORM\Column(length: 255)]
+    #[Groups(['category:read'])]
+    #[Assert\NotBlank(message: 'La description courte ne doit pas être vide')]
+    private ?string $shortDescription = null;
+
+    #[ORM\Column]
+    #[Groups(['category:read'])]
+    #[Assert\NotNull(message: 'Le rang ne doit pas être nul')]
+    private ?int $rank = null;
 
     /**
-     * @var Collection<int, Service>
+     * @var Collection<int, SubCategory>
      */
-    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Service::class)]
-    private Collection $services;
+    #[ORM\OneToMany(targetEntity: SubCategory::class, mappedBy: 'category', orphanRemoval: true)]
+    #[Groups(['category:read'])]
+    private Collection $subCategories;
 
     public function __construct()
     {
-        $this->services = new ArrayCollection();
+        $this->subCategories = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -56,14 +71,14 @@ class Category
         return $this;
     }
 
-    public function getImage(): ?string
+    public function getImageLink(): ?string
     {
-        return $this->image;
+        return $this->image_link;
     }
 
-    public function setImage(string $image): static
+    public function setImageLink(string $image_link): static
     {
-        $this->image = $image;
+        $this->image_link = $image_link;
         return $this;
     }
 
@@ -78,44 +93,52 @@ class Category
         return $this;
     }
 
-    public function getCreatedBy(): ?User
+    public function getShortDescription(): ?string
     {
-        return $this->createdBy;
+        return $this->shortDescription;
     }
 
-    public function setCreatedBy(?User $createdBy): static
+    public function setShortDescription(string $shortDescription): static
     {
-        $this->createdBy = $createdBy;
+        $this->shortDescription = $shortDescription;
+        return $this;
+    }
+
+    public function getRank(): ?int
+    {
+        return $this->rank;
+    }
+
+    public function setRank(int $rank): static
+    {
+        $this->rank = $rank;
         return $this;
     }
 
     /**
-     * @return Collection<int, Service>
+     * @return Collection<int, SubCategory>
      */
-    public function getServices(): Collection
+    public function getSubCategories(): Collection
     {
-        return $this->services;
+        return $this->subCategories;
     }
 
-    public function addService(Service $service): static
+    public function addSubCategory(SubCategory $subCategory): static
     {
-        if (!$this->services->contains($service)) {
-            $this->services->add($service);
-            $service->setCategory($this);
+        if (!$this->subCategories->contains($subCategory)) {
+            $this->subCategories->add($subCategory);
+            $subCategory->setCategory($this);
         }
-
         return $this;
     }
 
-    public function removeService(Service $service): static
+    public function removeSubCategory(SubCategory $subCategory): static
     {
-        if ($this->services->removeElement($service)) {
-            // set the owning side to null (unless already changed)
-            if ($service->getCategory() === $this) {
-                $service->setCategory(null);
+        if ($this->subCategories->removeElement($subCategory)) {
+            if ($subCategory->getCategory() === $this) {
+                $subCategory->setCategory(null);
             }
         }
-
         return $this;
     }
 }
