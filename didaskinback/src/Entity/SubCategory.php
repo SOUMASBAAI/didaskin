@@ -30,7 +30,7 @@ class SubCategory
     #[Groups(['subcategory:read'])]
     private ?string $slug = null;
 
-    #[ORM\Column]
+    #[ORM\Column(name: '`rank`')]
     #[Groups(['subcategory:read'])]
     private ?int $rank = null;
 

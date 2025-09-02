@@ -38,7 +38,7 @@ class Category
     #[Assert\NotBlank(message: 'La description courte ne doit pas être vide')]
     private ?string $shortDescription = null;
 
-    #[ORM\Column]
+   #[ORM\Column(name: '`rank`')]
     #[Groups(['category:read'])]
     #[Assert\NotNull(message: 'Le rang ne doit pas être nul')]
     private ?int $rank = null;

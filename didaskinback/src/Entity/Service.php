@@ -52,7 +52,7 @@ class Service
     #[Groups(['service:read'])]
     private ?SubCategory $subCategory = null;
 
-    #[ORM\Column]
+    #[ORM\Column(name: '`rank`')]
     #[Groups(['service:read'])]
     private ?int $rank = null;
 
