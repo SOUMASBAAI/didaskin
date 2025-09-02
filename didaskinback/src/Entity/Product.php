@@ -47,7 +47,7 @@ class Product
     #[ORM\Column(length: 255)]
     private ?string $additionalDetails = null;
 
-    #[ORM\Column]
+    #[ORM\Column(name: '`rank`')]
     #[Assert\NotBlank(message: "Le rang ne doit pas être vide")]
     #[Assert\Type(type: 'integer', message: "Le rang doit être un nombre entier.")]
     private ?int $rank = null;
