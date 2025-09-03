@@ -52,9 +52,9 @@ class Service
     #[Groups(['service:read'])]
     private ?SubCategory $subCategory = null;
 
-    #[ORM\Column(name: '`rank`')]
+    #[ORM\Column(name: '`ranked`')]
     #[Groups(['service:read'])]
-    private ?int $rank = null;
+    private ?int $ranked = null;
 
     #[ORM\Column(options: ["default" => false])]
     #[Groups(['service:read'])]
@@ -179,12 +179,12 @@ class Service
 
     public function getRank(): ?int
     {
-        return $this->rank;
+        return $this->ranked;
     }
 
-    public function setRank(int $rank): static
+    public function setRank(int $ranked): static
     {
-        $this->rank = $rank;
+        $this->ranked = $ranked;
 
         return $this;
     }

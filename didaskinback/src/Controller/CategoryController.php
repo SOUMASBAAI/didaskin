@@ -60,9 +60,9 @@ class CategoryController extends AbstractController
         $category = new Category();
         $category->setLabel($data['label'] ?? '');
         $category->setShortDescription($data['shortDescription'] ?? '');
-        // Assign last rank automatically
+        // Assign last ranked automatically
         $maxRank = (int)($this->categoryRepository->createQueryBuilder('c')
-            ->select('MAX(c.rank)')
+            ->select('MAX(c.ranked)')
             ->getQuery()
             ->getSingleScalarResult() ?? 0);
         $category->setRank($maxRank + 1);
@@ -174,7 +174,7 @@ class CategoryController extends AbstractController
         if (!is_array($ids) || empty($ids)) {
             return $this->json(['success' => false, 'error' => 'Liste invalide'], Response::HTTP_BAD_REQUEST);
         }
-        // Reassign rank based on provided order (1-based)
+        // Reassign ranked based on provided order (1-based)
         foreach ($ids as $index => $id) {
             $cat = $this->categoryRepository->find($id);
             if ($cat) {

@@ -222,7 +222,7 @@ export default function Header() {
         {/* Logo */}
         <div className="text-center pt-2">
           <Link to="/" className="block">
-            <img src={logo} alt="DIDA SKIN" className="h-10 w-auto mx-auto" />
+            <img src={logo} alt="DIDA SKIN" className="h-8 w-auto mx-auto" />
           </Link>
         </div>
         {/* Search */}
@@ -359,7 +359,7 @@ export default function Header() {
         {/* Center Logo - Vraiment centré */}
         <div className="absolute left-1/2 transform -translate-x-1/2 pt-3">
           <Link to="/" className="block">
-            <img src={logo} alt="DIDA SKIN" className="h-14 w-auto" />
+            <img src={logo} alt="DIDA SKIN" className="h-8 w-auto" />
           </Link>
         </div>
 

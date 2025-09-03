@@ -38,10 +38,10 @@ class Category
     #[Assert\NotBlank(message: 'La description courte ne doit pas être vide')]
     private ?string $shortDescription = null;
 
-   #[ORM\Column(name: '`rank`')]
+   #[ORM\Column(name: '`ranked`')]
     #[Groups(['category:read'])]
     #[Assert\NotNull(message: 'Le rang ne doit pas être nul')]
-    private ?int $rank = null;
+    private ?int $ranked = null;
 
     /**
      * @var Collection<int, SubCategory>
@@ -106,12 +106,12 @@ class Category
 
     public function getRank(): ?int
     {
-        return $this->rank;
+        return $this->ranked;
     }
 
-    public function setRank(int $rank): static
+    public function setRank(int $ranked): static
     {
-        $this->rank = $rank;
+        $this->ranked = $ranked;
         return $this;
     }
 
