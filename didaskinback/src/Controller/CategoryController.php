@@ -65,7 +65,7 @@ class CategoryController extends AbstractController
             ->select('MAX(c.ranked)')
             ->getQuery()
             ->getSingleScalarResult() ?? 0);
-        $category->setRank($maxRank + 1);
+        $category->setRanked($maxRank + 1);
         $category->setImageLink($data['image_link'] ?? '');
         $category->setSlug($data['slug'] ?? '');
 
@@ -178,7 +178,7 @@ class CategoryController extends AbstractController
         foreach ($ids as $index => $id) {
             $cat = $this->categoryRepository->find($id);
             if ($cat) {
-                $cat->setRank($index + 1);
+                $cat->setRanked($index + 1);
             }
         }
         $this->entityManager->flush();

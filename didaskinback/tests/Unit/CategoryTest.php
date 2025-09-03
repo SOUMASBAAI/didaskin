@@ -24,7 +24,7 @@ class CategoryTest extends KernelTestCase
                  ->setImageLink('soins.jpg')
                  ->setSlug('soins-du-visage')
                  ->setShortDescription('Catégorie dédiée aux soins du visage')
-                 ->setRank(1);
+                 ->setRanked(1);
 
         $subCategory = new SubCategory();
         $subCategory->setLabel('Crèmes hydratantes');

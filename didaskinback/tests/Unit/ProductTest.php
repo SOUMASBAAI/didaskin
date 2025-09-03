@@ -34,7 +34,7 @@ class ProductTest extends KernelTestCase
             ->setShortDescription('Description courte')
             ->setLongDescription('Description longue')
             ->setAdditionalDetails('Détails supplémentaires')
-            ->setRank(1);
+            ->setRanked(1);
             // ->setCreatedBy($user); // si tu n’as pas de relation User dans ton entity, tu peux retirer
     }
 

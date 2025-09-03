@@ -146,12 +146,12 @@ class Product
         return $this;
     }
 
-    public function getRank(): ?int
+    public function getRanked(): ?int
     {
         return $this->ranked;
     }
 
-    public function setRank(int $ranked): static
+    public function setRanked(int $ranked): static
     {
         $this->ranked = $ranked;
         return $this;

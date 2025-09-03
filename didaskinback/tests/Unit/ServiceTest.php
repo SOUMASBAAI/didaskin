@@ -33,7 +33,7 @@ class ServiceTest extends KernelTestCase
             ->setImageLink('image.jpg')
             ->setSlug('service-1')
             ->setSubCategory($subCategory)
-            ->setRank(1);
+            ->setRanked(1);
     }
 
     /**
