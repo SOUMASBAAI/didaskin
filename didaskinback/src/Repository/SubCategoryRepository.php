@@ -43,7 +43,7 @@ class SubCategoryRepository extends ServiceEntityRepository
             }
             
             if(isset($data['ranked'])) {
-                $entity->setRank($data['ranked']);
+                $entity->setRanked($data['ranked']);
             }
             if(isset($data['image_link'])) {
                 $entity->setImageLink($data['image_link']);

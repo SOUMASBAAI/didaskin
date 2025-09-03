@@ -45,7 +45,7 @@ class ProductController extends AbstractController
         $product->setAdditionalDetails($data['additionalDetails'] ?? '');
         $product->setPrice($data['price'] ?? 0);
         // Auto ranked to last
-        $product->setRank($this->productRepository->getNextRank());
+        $product->setRanked($this->productRepository->getNextRank());
         $product->setImageLink($data['image_link'] ?? '');
         $product->setStockQuantity($data['stock_quantity'] ?? '');
         $product->setSlug($data['slug'] ?? '');
@@ -87,7 +87,7 @@ class ProductController extends AbstractController
             'shortDescription' => $product->getShortDescription(),
             'longDescription' => $product->getLongDescription(),
             'AdditionalDetails' => $product->getAdditionalDetails(),
-            'ranked' => $product->getRank(),
+            'ranked' => $product->getRanked(),
             'image_link' => $product->getImageLink(),
         ];
 
@@ -125,7 +125,7 @@ class ProductController extends AbstractController
             $product->setPrice((float) $data['price']);
         }
         if (isset($data['ranked'])) {
-            $product->setRank($data['ranked']);
+            $product->setRanked($data['ranked']);
         }
         if (isset($data['image_link'])) {
             $product->setImageLink($data['image_link']);
@@ -187,7 +187,7 @@ class ProductController extends AbstractController
         foreach ($ids as $id) {
             $prod = $this->productRepository->find($id);
             if ($prod) {
-                $prod->setRank($ranked++);
+                $prod->setRanked($ranked++);
             }
         }
         $this->entityManager->flush();

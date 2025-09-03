@@ -76,7 +76,7 @@ class ServiceController extends AbstractController
         $service->setSlug($data['slug'] ?? '');
         // Auto-assign ranked to last position within the same subcategory (or null group)
         $nextRank = $this->serviceRepository->getNextRankForSubcategory($subCategory?->getId());
-        $service->setRank($nextRank);
+        $service->setRanked($nextRank);
         if (array_key_exists('featuredLanding', $data)) {
             $service->setFeaturedLanding((bool)$data['featuredLanding']);
         }
@@ -300,7 +300,7 @@ class ServiceController extends AbstractController
         foreach ($ids as $id) {
             $svc = $this->serviceRepository->find($id);
             if ($svc) {
-                $svc->setRank($ranked++);
+                $svc->setRanked($ranked++);
             }
         }
         $this->entityManager->flush();
