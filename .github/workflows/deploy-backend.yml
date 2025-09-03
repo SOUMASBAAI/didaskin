@@ -46,15 +46,9 @@ jobs:
           DATABASE_URL: "mysql://root:root@127.0.0.1:3306/app?serverVersion=8.0&charset=utf8mb4"
         run: php bin/console cache:clear --env=prod --no-warmup
 
-      - name: Create deployment artifact (zip)
-        run: |
-          cd ..
-          zip -r backend.zip didaskinback \
-            -x "**/.git/**" "**/tests/**" "**/var/cache/**" "**/var/log/**" "**/node_modules/**"
-
-      - name: Deploy to Azure Web App
+      - name: Deploy to Azure Web App (folder)
         uses: azure/webapps-deploy@v3
         with:
           app-name: didaskin-back
-          package: backend.zip
+          package: didaskinback
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BACK }}
