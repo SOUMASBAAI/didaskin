@@ -462,8 +462,8 @@ export default function ServicesSection() {
                   const [removed] = featured.splice(featuredDragIndex, 1);
                   featured.splice(idx, 0, removed);
                   // reassign featuredRank locally
-                  let rank = 1;
-                  const newMap = new Map(featured.map((x) => [x.id, rank++]));
+                  let ranked = 1;
+                  const newMap = new Map(featured.map((x) => [x.id, ranked++]));
                   const merged = current.map((it) =>
                     newMap.has(it.id)
                       ? { ...it, featuredRank: newMap.get(it.id) }

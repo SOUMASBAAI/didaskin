@@ -47,10 +47,10 @@ class Product
     #[ORM\Column(length: 255)]
     private ?string $additionalDetails = null;
 
-    #[ORM\Column(name: '`rank`')]
+    #[ORM\Column(name: '`ranked`')]
     #[Assert\NotBlank(message: "Le rang ne doit pas être vide")]
     #[Assert\Type(type: 'integer', message: "Le rang doit être un nombre entier.")]
-    private ?int $rank = null;
+    private ?int $ranked = null;
 
     // Getters et setters
     public function getId(): ?int
@@ -148,12 +148,12 @@ class Product
 
     public function getRank(): ?int
     {
-        return $this->rank;
+        return $this->ranked;
     }
 
-    public function setRank(int $rank): static
+    public function setRank(int $ranked): static
     {
-        $this->rank = $rank;
+        $this->ranked = $ranked;
         return $this;
     }
 }

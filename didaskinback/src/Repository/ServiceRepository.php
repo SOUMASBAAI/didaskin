@@ -51,8 +51,8 @@ class ServiceRepository extends ServiceEntityRepository
         if(isset($data['price'])) {
             $entity->setPrice($data['price']);
         }
-        if(isset($data['rank'])) {
-            $entity->setRank($data['rank']);
+        if(isset($data['ranked'])) {
+            $entity->setRank($data['ranked']);
         }
         if(isset($data['image_link'])) {
             $entity->setImageLink($data['image_link']);
@@ -75,7 +75,7 @@ class ServiceRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('s')
             ->andWhere('s.subCategory = :subCategoryId')
             ->setParameter('subCategoryId', $subCategoryId)
-            ->orderBy('s.rank', 'ASC')
+            ->orderBy('s.ranked', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -86,7 +86,7 @@ class ServiceRepository extends ServiceEntityRepository
             ->leftJoin('s.subCategory', 'sc')
             ->addSelect('sc')
             ->orderBy('sc.label', 'ASC')
-            ->addOrderBy('s.rank', 'ASC')
+            ->addOrderBy('s.ranked', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -104,7 +104,7 @@ class ServiceRepository extends ServiceEntityRepository
     public function getNextRankForSubcategory(?int $subCategoryId): int
     {
         $qb = $this->createQueryBuilder('s')
-            ->select('MAX(s.rank) as maxRank');
+            ->select('MAX(s.ranked) as maxRank');
         if ($subCategoryId === null) {
             $qb->andWhere('s.subCategory IS NULL');
         } else {

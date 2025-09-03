@@ -25,7 +25,7 @@ export default function CategoriesSection() {
     label: "",
     image_link: "",
     slug: "",
-    rank: 0,
+    ranked: 0,
     category_id: null,
   });
   const [editCategoryId, setEditCategoryId] = useState(null);
@@ -41,7 +41,7 @@ export default function CategoriesSection() {
     label: "",
     image_link: "",
     slug: "",
-    rank: 0,
+    ranked: 0,
     category_id: null,
   });
 
@@ -182,7 +182,7 @@ export default function CategoriesSection() {
           slug:
             newSubCategory.slug ||
             newSubCategory.label.toLowerCase().replace(/\s+/g, "-"),
-          rank: newSubCategory.rank,
+          ranked: newSubCategory.ranked,
           category_id: addSubCategoryFor,
         }),
       });
@@ -198,7 +198,7 @@ export default function CategoriesSection() {
           label: "",
           image_link: "",
           slug: "",
-          rank: 0,
+          ranked: 0,
           category_id: null,
         });
         setAddSubCategoryFor(null);
@@ -310,7 +310,7 @@ export default function CategoriesSection() {
       label: sub.label || "",
       image_link: sub.image_link || sub.imageLink || "",
       slug: sub.slug || "",
-      rank: sub.rank || 0,
+      ranked: sub.ranked || 0,
       category_id: catId,
     });
   };
@@ -328,7 +328,7 @@ export default function CategoriesSection() {
             label: editSubCategory.label,
             image_link: editSubCategory.image_link,
             slug: editSubCategory.slug,
-            rank: editSubCategory.rank,
+            ranked: editSubCategory.ranked,
             category_id: editSubCategory.category_id,
           }),
         }
@@ -347,7 +347,7 @@ export default function CategoriesSection() {
           label: "",
           image_link: "",
           slug: "",
-          rank: 0,
+          ranked: 0,
           category_id: null,
         });
       } else {
@@ -701,11 +701,11 @@ export default function CategoriesSection() {
                 type="number"
                 min="0"
                 className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                value={newSubCategory.rank}
+                value={newSubCategory.ranked}
                 onChange={(e) =>
                   setNewSubCategory((c) => ({
                     ...c,
-                    rank: parseInt(e.target.value) || 0,
+                    ranked: parseInt(e.target.value) || 0,
                   }))
                 }
               />
@@ -849,7 +849,7 @@ export default function CategoriesSection() {
                   label: "",
                   image_link: "",
                   slug: "",
-                  rank: 0,
+                  ranked: 0,
                   category_id: null,
                 })
               }
@@ -882,11 +882,11 @@ export default function CategoriesSection() {
                 type="number"
                 min="0"
                 className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                value={editSubCategory.rank}
+                value={editSubCategory.ranked}
                 onChange={(e) =>
                   setEditSubCategory((c) => ({
                     ...c,
-                    rank: parseInt(e.target.value) || 0,
+                    ranked: parseInt(e.target.value) || 0,
                   }))
                 }
               />

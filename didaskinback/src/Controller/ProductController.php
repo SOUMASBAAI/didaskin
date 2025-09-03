@@ -44,7 +44,7 @@ class ProductController extends AbstractController
         $product->setLongDescription($data['longDescription'] ?? '');
         $product->setAdditionalDetails($data['additionalDetails'] ?? '');
         $product->setPrice($data['price'] ?? 0);
-        // Auto rank to last
+        // Auto ranked to last
         $product->setRank($this->productRepository->getNextRank());
         $product->setImageLink($data['image_link'] ?? '');
         $product->setStockQuantity($data['stock_quantity'] ?? '');
@@ -87,7 +87,7 @@ class ProductController extends AbstractController
             'shortDescription' => $product->getShortDescription(),
             'longDescription' => $product->getLongDescription(),
             'AdditionalDetails' => $product->getAdditionalDetails(),
-            'rank' => $product->getRank(),
+            'ranked' => $product->getRank(),
             'image_link' => $product->getImageLink(),
         ];
 
@@ -124,8 +124,8 @@ class ProductController extends AbstractController
         if (array_key_exists('price', $data) && $data['price'] !== null && $data['price'] !== '') {
             $product->setPrice((float) $data['price']);
         }
-        if (isset($data['rank'])) {
-            $product->setRank($data['rank']);
+        if (isset($data['ranked'])) {
+            $product->setRank($data['ranked']);
         }
         if (isset($data['image_link'])) {
             $product->setImageLink($data['image_link']);
@@ -183,11 +183,11 @@ class ProductController extends AbstractController
         if (!is_array($ids) || empty($ids)) {
             return $this->json(['success' => false, 'error' => 'Invalid ids'], Response::HTTP_BAD_REQUEST);
         }
-        $rank = 1;
+        $ranked = 1;
         foreach ($ids as $id) {
             $prod = $this->productRepository->find($id);
             if ($prod) {
-                $prod->setRank($rank++);
+                $prod->setRank($ranked++);
             }
         }
         $this->entityManager->flush();

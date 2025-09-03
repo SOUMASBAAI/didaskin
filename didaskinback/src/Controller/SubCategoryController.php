@@ -53,7 +53,7 @@ class SubCategoryController extends AbstractController
         $subCategory->setLabel($data['label'] ?? '');
         $subCategory->setImageLink($data['image_link'] ?? '');
         $subCategory->setSlug($data['slug'] ?? '');
-        $subCategory->setRank($data['rank'] ?? 0);
+        $subCategory->setRank($data['ranked'] ?? 0);
         $subCategory->setCategory($category);
 
         $errors = $this->validator->validate($subCategory);

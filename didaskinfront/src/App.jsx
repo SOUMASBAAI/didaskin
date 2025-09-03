@@ -10,6 +10,7 @@ import BookingPage from "./pages/booking-page";
 import ServiceBookingPage from "./pages/service-booking-page";
 import MyAppointmentsPage from "./pages/my-appointments-page";
 import LegalNotice from "./pages/LegalNotice";  
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import LandingPage from "./pages/landing-page";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SearchResults from "./pages/search-results";
@@ -57,6 +58,7 @@ function App() {
       
         {/* Legal Notice Page */}
         <Route path="/legal-notice" element={<LegalNotice />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       </Routes>
     </>
   );

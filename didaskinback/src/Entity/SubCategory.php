@@ -30,9 +30,9 @@ class SubCategory
     #[Groups(['subcategory:read'])]
     private ?string $slug = null;
 
-    #[ORM\Column(name: '`rank`')]
+    #[ORM\Column(name: '`ranked`')]
     #[Groups(['subcategory:read'])]
-    private ?int $rank = null;
+    private ?int $ranked = null;
 
     /**
      * @var Collection<int, Service>
@@ -93,12 +93,12 @@ class SubCategory
 
     public function getRank(): ?int
     {
-        return $this->rank;
+        return $this->ranked;
     }
 
-    public function setRank(int $rank): static
+    public function setRank(int $ranked): static
     {
-        $this->rank = $rank;
+        $this->ranked = $ranked;
 
         return $this;
     }

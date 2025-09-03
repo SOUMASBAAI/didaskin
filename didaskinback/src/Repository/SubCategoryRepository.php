@@ -42,8 +42,8 @@ class SubCategoryRepository extends ServiceEntityRepository
                 $entity->setLabel($data['label']);
             }
             
-            if(isset($data['rank'])) {
-                $entity->setRank($data['rank']);
+            if(isset($data['ranked'])) {
+                $entity->setRank($data['ranked']);
             }
             if(isset($data['image_link'])) {
                 $entity->setImageLink($data['image_link']);
@@ -61,7 +61,7 @@ class SubCategoryRepository extends ServiceEntityRepository
             return $this->createQueryBuilder('s')
                 ->andWhere('s.category = :categoryId')
                 ->setParameter('categoryId', $categoryId)
-                ->orderBy('s.rank', 'ASC')
+                ->orderBy('s.ranked', 'ASC')
                 ->getQuery()
                 ->getResult();
         }

@@ -76,8 +76,8 @@ export default function ServicePage() {
 
         const result = await response.json();
         if (result.success) {
-          console.log("Services fetched:", result.data); // Debug log
-          setServices(result.data);
+          console.log("Services fetched:", result.data); 
+          setServices(result.data);// stock les services dans le state
         } else {
           throw new Error("Failed to fetch services");
         }

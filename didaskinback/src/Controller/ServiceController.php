@@ -74,7 +74,7 @@ class ServiceController extends AbstractController
         $service->setPrice($data['price'] ?? 0);
         $service->setImageLink($data['image_link'] ?? '');
         $service->setSlug($data['slug'] ?? '');
-        // Auto-assign rank to last position within the same subcategory (or null group)
+        // Auto-assign ranked to last position within the same subcategory (or null group)
         $nextRank = $this->serviceRepository->getNextRankForSubcategory($subCategory?->getId());
         $service->setRank($nextRank);
         if (array_key_exists('featuredLanding', $data)) {
@@ -276,11 +276,11 @@ class ServiceController extends AbstractController
         if (!is_array($ids) || empty($ids)) {
             return $this->json(['success' => false, 'error' => 'Invalid ids'], Response::HTTP_BAD_REQUEST);
         }
-        $rank = 1;
+        $ranked = 1;
         foreach ($ids as $id) {
             $svc = $this->serviceRepository->find($id);
             if ($svc && $svc->isFeaturedLanding()) {
-                $svc->setFeaturedRank($rank++);
+                $svc->setFeaturedRank($ranked++);
             }
         }
         $this->entityManager->flush();
@@ -296,11 +296,11 @@ class ServiceController extends AbstractController
         if (!is_array($ids) || empty($ids)) {
             return $this->json(['success' => false, 'error' => 'Invalid ids'], Response::HTTP_BAD_REQUEST);
         }
-        $rank = 1;
+        $ranked = 1;
         foreach ($ids as $id) {
             $svc = $this->serviceRepository->find($id);
             if ($svc) {
-                $svc->setRank($rank++);
+                $svc->setRank($ranked++);
             }
         }
         $this->entityManager->flush();
