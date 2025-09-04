@@ -1,6 +1,6 @@
 "use client";
 
-import Header from "../components/header";
+import Header from "../components/Header";
 import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Facebook, Instagram } from "lucide-react";
