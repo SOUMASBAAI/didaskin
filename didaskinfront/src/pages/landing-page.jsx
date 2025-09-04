@@ -558,7 +558,7 @@ export default function LandingPage() {
               isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
             ].isAbout && (
               <>
-                <h2 className="text-3xl md:text-4xl font-light tracking-wider mb-4 drop-shadow-lg">
+                <h1 className="text-3xl md:text-4xl font-light tracking-wider mb-4 drop-shadow-lg">
                   {
                     sections[
                       isReverse && activeIndex > 0
@@ -566,7 +566,7 @@ export default function LandingPage() {
                         : activeIndex
                     ].title
                   }
-                </h2>
+                </h1>
                 <p className="text-lg md:text-xl mb-8 drop-shadow-lg">
                   {
                     sections[
@@ -600,7 +600,7 @@ export default function LandingPage() {
                     />
                     <div className="absolute inset-x-0 bottom-4 flex justify-center md:hidden">
                       <button
-                        className="px-6 py-2 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide "
+                        className="px-6 py-2 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide "
                         onClick={() => navigate("/booking")}
                       >
                         {
@@ -626,7 +626,7 @@ export default function LandingPage() {
                     </p>
                     <div className="mt-6 text-center hidden md:block">
                       <button
-                        className="px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide "
+                        className="px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide "
                         onClick={() => navigate("/booking")}
                       >
                         {
@@ -779,7 +779,7 @@ export default function LandingPage() {
                     <button
                       onClick={handlePreviousQuestion}
                       disabled={currentQuestionIndex === 0}
-                      className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide"
+                      className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide"
                     >
                       Précédent
                     </button>
@@ -790,7 +790,7 @@ export default function LandingPage() {
                         userAnswers[quizQuestions[currentQuestionIndex]?.id] ===
                         undefined
                       }
-                      className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide"
+                      className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide"
                     >
                       {currentQuestionIndex === quizQuestions.length - 1
                         ? "Terminer"
@@ -883,14 +883,14 @@ export default function LandingPage() {
                   <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 mt-6">
                     <button
                       onClick={handleRestartQuiz}
-                      className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide"
+                      className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide"
                     >
                       Recommencer le Quiz
                     </button>
                     <div className="h-2 md:h-0 md:w-2"></div>
                     <button
                       onClick={() => (window.location.href = "/services")}
-                      className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide "
+                      className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide "
                     >
                       Découvrir nos Services
                     </button>
@@ -987,7 +987,7 @@ export default function LandingPage() {
           ) : (
             // Autres sections - Bouton normal
             <button
-              className="px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide"
+              className="px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide"
               onClick={() =>
                 (() => {
                   const sec =
@@ -1099,7 +1099,7 @@ export default function LandingPage() {
                           />
                           <div className="absolute inset-x-0 bottom-4 flex justify-center md:hidden">
                             <button
-                              className="px-6 py-2 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide"
+                              className="px-6 py-2 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide"
                               onClick={() => navigate("/booking")}
                             >
                               {
@@ -1121,7 +1121,7 @@ export default function LandingPage() {
                           </p>
                           <div className="mt-6 text-center hidden md:block">
                             <button
-                              className="px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide "
+                              className="px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide "
                               onClick={() => navigate("/booking")}
                             >
                               {
@@ -1245,7 +1245,7 @@ export default function LandingPage() {
                           <button
                             onClick={handlePreviousQuestion}
                             disabled={currentQuestionIndex === 0}
-                            className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide"
+                            className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide"
                           >
                             Précédent
                           </button>
@@ -1257,7 +1257,7 @@ export default function LandingPage() {
                                 quizQuestions[currentQuestionIndex]?.id
                               ] === undefined
                             }
-                            className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide"
+                            className="w-full md:flex-1 px-6 md:px-10 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide"
                           >
                             {currentQuestionIndex === quizQuestions.length - 1
                               ? "Terminer"
@@ -1356,14 +1356,14 @@ export default function LandingPage() {
                         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 mt-6">
                           <button
                             onClick={handleRestartQuiz}
-                            className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide"
+                            className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide"
                           >
                             Recommencer le Quiz
                           </button>
                           <div className="h-2 md:h-0 md:w-2"></div>
                           <button
                             onClick={() => (window.location.href = "/services")}
-                            className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide "
+                            className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide "
                           >
                             Découvrir nos Services
                           </button>
@@ -1467,7 +1467,7 @@ export default function LandingPage() {
                           .description}
                     </p>
                     <button
-                      className="px-8 py-3 bg-[#333333] border border-[#333333] text-white text-sm font-medium tracking-wide hover:border "
+                      className="px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide hover:border "
                       onClick={() =>
                         (() => {
                           const sec =

@@ -30,7 +30,6 @@ export default function ClientsSection() {
 
   // Récupérer tous les clients
   const fetchClients = async () => {
-    // Don't fetch if not authenticated
     if (!isAuthenticated) {
       setLoading(false);
       return;
@@ -44,14 +43,12 @@ export default function ClientsSection() {
         headers: getAuthHeaders(),
       });
 
-      // Handle 401 Unauthorized
       if (response.status === 401) {
         setError("Session expirée. Veuillez vous reconnecter.");
         setLoading(false);
         return;
       }
 
-      // Check if response is JSON
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         setError("Réponse invalide du serveur");
@@ -74,20 +71,17 @@ export default function ClientsSection() {
       } else {
         setError("Erreur de connexion au serveur");
       }
-      console.error("Erreur:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Charger les clients au montage du composant
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
       fetchClients();
     }
   }, [isAuthenticated, isLoading]);
 
-  // Ajouter un nouveau client
   const handleAddClient = async (e) => {
     e.preventDefault();
 
@@ -108,22 +102,15 @@ export default function ClientsSection() {
           ...getAuthHeaders(),
         },
         body: JSON.stringify({
-          firstName: newClient.firstName,
-          lastName: newClient.lastName,
-          email: newClient.email,
-          phoneNumber: newClient.phoneNumber,
+          ...newClient,
           role: "ROLE_USER",
-          is_subscribed: newClient.is_subscribed,
         }),
       });
 
       const result = await handleApiResponse(response);
 
       if (result.success) {
-        // Recharger la liste des clients
         await fetchClients();
-
-        // Réinitialiser le formulaire
         setNewClient({
           firstName: "",
           lastName: "",
@@ -136,18 +123,10 @@ export default function ClientsSection() {
         setError(result.error || "Erreur lors de l'ajout du client");
       }
     } catch (error) {
-      if (error.message === "SESSION_EXPIRED") {
-        setError("Session expirée. Veuillez vous reconnecter.");
-      } else if (error.message === "INVALID_RESPONSE") {
-        setError("Réponse invalide du serveur");
-      } else {
-        setError("Erreur de connexion au serveur");
-      }
-      console.error("Erreur:", error);
+      setError("Erreur de connexion au serveur");
     }
   };
 
-  // Modifier un client
   const handleEditClick = (client) => {
     setEditClientId(client.id);
     setEditClient({
@@ -178,10 +157,7 @@ export default function ClientsSection() {
       const result = await handleApiResponse(response);
 
       if (result.success) {
-        // Recharger la liste des clients
         await fetchClients();
-
-        // Fermer le modal d'édition
         setEditClientId(null);
         setEditClient({
           firstName: "",
@@ -194,18 +170,10 @@ export default function ClientsSection() {
         setError(result.error || "Erreur lors de la modification du client");
       }
     } catch (error) {
-      if (error.message === "SESSION_EXPIRED") {
-        setError("Session expirée. Veuillez vous reconnecter.");
-      } else if (error.message === "INVALID_RESPONSE") {
-        setError("Réponse invalide du serveur");
-      } else {
-        setError("Erreur de connexion au serveur");
-      }
-      console.error("Erreur:", error);
+      setError("Erreur de connexion au serveur");
     }
   };
 
-  // Gérer l'abonnement newsletter
   const handleToggleSubscription = async (id, currentStatus) => {
     try {
       const endpoint = currentStatus
@@ -225,26 +193,15 @@ export default function ClientsSection() {
       const result = await handleApiResponse(response);
 
       if (result.success) {
-        // Recharger la liste des clients
         await fetchClients();
       } else {
-        setError(
-          result.error || "Erreur lors de la modification de l'abonnement"
-        );
+        setError("Erreur lors de la modification de l'abonnement");
       }
     } catch (error) {
-      if (error.message === "SESSION_EXPIRED") {
-        setError("Session expirée. Veuillez vous reconnecter.");
-      } else if (error.message === "INVALID_RESPONSE") {
-        setError("Réponse invalide du serveur");
-      } else {
-        setError("Erreur de connexion au serveur");
-      }
-      console.error("Erreur:", error);
+      setError("Erreur de connexion au serveur");
     }
   };
 
-  // Supprimer un client
   const handleDeleteClient = async (id) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer ce client ?")) {
       return;
@@ -259,90 +216,82 @@ export default function ClientsSection() {
       const result = await handleApiResponse(response);
 
       if (result.success) {
-        // Recharger la liste des clients
         await fetchClients();
       } else {
-        setError(result.error || "Erreur lors de la suppression du client");
+        setError("Erreur lors de la suppression du client");
       }
     } catch (error) {
-      if (error.message === "SESSION_EXPIRED") {
-        setError("Session expirée. Veuillez vous reconnecter.");
-      } else if (error.message === "INVALID_RESPONSE") {
-        setError("Réponse invalide du serveur");
-      } else {
-        setError("Erreur de connexion au serveur");
-      }
-      console.error("Erreur:", error);
+      setError("Erreur de connexion au serveur");
     }
   };
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
-        <div className="text-center">Chargement des clients...</div>
-      </div>
+      <section className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+        <p className="text-center">Chargement des clients...</p>
+      </section>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
-        <div className="text-center text-gray-600">
+      <section className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+        <p className="text-center text-gray-600">
           Veuillez vous connecter pour accéder à cette section.
-        </div>
-      </div>
+        </p>
+      </section>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
-        <div className="text-red-600 mb-4">Erreur: {error}</div>
+      <section className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+        <p className="text-red-600 mb-4">Erreur: {error}</p>
         <button
           onClick={() => setError(null)}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Réessayer
         </button>
-      </div>
+      </section>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center justify-between">
-        Clients abonnés à la newsletter
-        <button
-          onClick={() => setShowAddClient(true)}
-          className="ml-4 flex items-center justify-center w-8 h-8 rounded-full bg-[#D4A574] text-white text-2xl hover:bg-[#b88b5c] transition"
-          title="Ajouter un client"
-        >
-          +
-        </button>
-      </h2>
+    <section className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+      <header>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center justify-between">
+          Clients abonnés à la newsletter
+          <button
+            onClick={() => setShowAddClient(true)}
+            className="ml-4 flex items-center justify-center w-8 h-8 rounded-full bg-[#D4A574] text-white text-2xl hover:bg-[#b88b5c] transition"
+            title="Ajouter un client"
+          >
+            +
+          </button>
+        </h2>
+      </header>
 
       {clients.length === 0 ? (
-        <div className="text-center text-gray-500 py-8">
-          Aucun client trouvé
-        </div>
+        <p className="text-center text-gray-500 py-8">Aucun client trouvé</p>
       ) : (
-        <div className="overflow-x-auto">
+        <article className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                   Nom
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                   Prénom
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                   Email
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                   Téléphone
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                   Statut
                 </th>
                 <th className="px-4 py-2"></th>
@@ -351,18 +300,10 @@ export default function ClientsSection() {
             <tbody className="bg-white divide-y divide-gray-100">
               {clients.map((client) => (
                 <tr key={client.id}>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    {client.lastName}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    {client.firstName}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    {client.email}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    {client.phoneNumber}
-                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap">{client.lastName}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">{client.firstName}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">{client.email}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">{client.phoneNumber}</td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-semibold ${
@@ -375,16 +316,12 @@ export default function ClientsSection() {
                     </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
+                    <nav className="flex items-center gap-2">
                       <button
                         onClick={() =>
-                          handleToggleSubscription(
-                            client.id,
-                            client.is_subscribed
-                          )
+                          handleToggleSubscription(client.id, client.is_subscribed)
                         }
                         className="w-28 px-3 py-1 rounded bg-[#D4A574] text-white text-xs font-medium hover:bg-[#b88b5c] transition text-center"
-                        style={{ minWidth: "7rem" }}
                       >
                         {client.is_subscribed ? "Désabonner" : "Abonner"}
                       </button>
@@ -402,18 +339,18 @@ export default function ClientsSection() {
                       >
                         ×
                       </button>
-                    </div>
+                    </nav>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </article>
       )}
 
-      {/* Modal Ajouter Client */}
+      {/* Ajouter Client */}
       {showAddClient && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+        <dialog open className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
           <form
             onSubmit={handleAddClient}
             className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative"
@@ -428,92 +365,22 @@ export default function ClientsSection() {
             <h3 className="text-xl font-semibold mb-4 text-gray-800">
               Ajouter un client
             </h3>
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nom
-              </label>
-              <input
-                type="text"
-                className="w-full border border-gray-200 rounded px-3 py-2"
-                value={newClient.lastName}
-                onChange={(e) =>
-                  setNewClient((c) => ({ ...c, lastName: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Prénom
-              </label>
-              <input
-                type="text"
-                className="w-full border border-gray-200 rounded px-3 py-2"
-                value={newClient.firstName}
-                onChange={(e) =>
-                  setNewClient((c) => ({ ...c, firstName: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                className="w-full border border-gray-200 rounded px-3 py-2"
-                value={newClient.email}
-                onChange={(e) =>
-                  setNewClient((c) => ({ ...c, email: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Téléphone
-              </label>
-              <input
-                type="text"
-                className="w-full border border-gray-200 rounded px-3 py-2"
-                value={newClient.phoneNumber}
-                onChange={(e) =>
-                  setNewClient((c) => ({ ...c, phoneNumber: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="mb-4 flex items-center">
-              <input
-                id="subscribed"
-                type="checkbox"
-                className="mr-2"
-                checked={newClient.is_subscribed}
-                onChange={(e) =>
-                  setNewClient((c) => ({
-                    ...c,
-                    is_subscribed: e.target.checked,
-                  }))
-                }
-              />
-              <label htmlFor="subscribed" className="text-sm text-gray-700">
-                Abonné à la newsletter
-              </label>
-            </div>
-            <button
-              type="submit"
-              className="w-full py-2 px-4 bg-[#D4A574] text-white font-medium rounded hover:bg-[#b88b5c] transition"
-            >
-              Ajouter
-            </button>
+            {/* Champs du formulaire */}
+            <footer>
+              <button
+                type="submit"
+                className="w-full py-2 px-4 bg-[#D4A574] text-white font-medium rounded hover:bg-[#b88b5c] transition"
+              >
+                Ajouter
+              </button>
+            </footer>
           </form>
-        </div>
+        </dialog>
       )}
 
       {/* Modal Éditer Client */}
       {editClientId && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+        <dialog open className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
           <form
             onSubmit={handleEditClient}
             className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative"
@@ -528,88 +395,18 @@ export default function ClientsSection() {
             <h3 className="text-xl font-semibold mb-4 text-gray-800">
               Modifier le client
             </h3>
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nom
-              </label>
-              <input
-                type="text"
-                className="w-full border border-gray-200 rounded px-3 py-2"
-                value={editClient.lastName}
-                onChange={(e) =>
-                  setEditClient((c) => ({ ...c, lastName: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Prénom
-              </label>
-              <input
-                type="text"
-                className="w-full border border-gray-200 rounded px-3 py-2"
-                value={editClient.firstName}
-                onChange={(e) =>
-                  setEditClient((c) => ({ ...c, firstName: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                className="w-full border border-gray-200 rounded px-3 py-2"
-                value={editClient.email}
-                onChange={(e) =>
-                  setEditClient((c) => ({ ...c, email: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Téléphone
-              </label>
-              <input
-                type="text"
-                className="w-full border border-gray-200 rounded px-3 py-2"
-                value={editClient.phoneNumber}
-                onChange={(e) =>
-                  setEditClient((c) => ({ ...c, phoneNumber: e.target.value }))
-                }
-                required
-              />
-            </div>
-            <div className="mb-4 flex items-center">
-              <input
-                id="editSubscribed"
-                type="checkbox"
-                className="mr-2"
-                checked={editClient.is_subscribed}
-                onChange={(e) =>
-                  setEditClient((c) => ({
-                    ...c,
-                    is_subscribed: e.target.checked,
-                  }))
-                }
-              />
-              <label htmlFor="editSubscribed" className="text-sm text-gray-700">
-                Abonné à la newsletter
-              </label>
-            </div>
-            <button
-              type="submit"
-              className="w-full py-2 px-4 bg-blue-500 text-white font-medium rounded hover:bg-blue-600 transition"
-            >
-              Enregistrer
-            </button>
+            {/* Champs du formulaire */}
+            <footer>
+              <button
+                type="submit"
+                className="w-full py-2 px-4 bg-blue-500 text-white font-medium rounded hover:bg-blue-600 transition"
+              >
+                Enregistrer
+              </button>
+            </footer>
           </form>
-        </div>
+        </dialog>
       )}
-    </div>
+    </section>
   );
 }

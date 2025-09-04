@@ -12,6 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { AUTH_ENDPOINTS, API_BASE_URL } from "../config/apiConfig";
+import Footer from "../components/Footer";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -100,18 +101,22 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#F5F1ED]">
-      <div className="w-full max-w-md">
-        {/* Logo/Brand Section */}
-        <div className="text-center mb-8">
+    <div className="min-h-screen flex flex-col justify-between p-4 bg-[#F5F1ED]">
+     <main
+        className="w-full max-w-md mx-auto flex-grow"
+        role="main"
+        aria-labelledby="admin-login-title"
+      >
+        {/* Logo */}
+        <header className="text-center mb-8">
           <h1 className="text-3xl font-light tracking-wider text-gray-800 mb-2">
             DIDA SKIN
           </h1>
           <p className="text-sm text-gray-500">Administration</p>
-        </div>
+        </header>
 
-        {/* Login Card */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        {/* connexion Card */}
+        <section className="bg-white rounded-lg shadow-lg p-8">
           <div className="mb-6">
             <p className="text-center text-gray-600">
               Accédez à votre espace de gestion
@@ -208,8 +213,8 @@ export default function AdminLogin() {
 
           {showForgot && (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-                <div className="flex items-center justify-between mb-4">
+              <section className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+                <header className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-800">
                     Réinitialiser le mot de passe
                   </h3>
@@ -219,7 +224,7 @@ export default function AdminLogin() {
                   >
                     ✕
                   </button>
-                </div>
+                </header>
                 <p className="text-sm text-gray-600 mb-4">
                   Entrez votre adresse e-mail admin pour recevoir un lien de
                   réinitialisation.
@@ -273,30 +278,20 @@ export default function AdminLogin() {
                     Envoyer le lien
                   </button>
                 </form>
-              </div>
+              </section>
             </div>
           )}
 
-          <div className="mt-6 pt-6 border-t border-gray-100">
+          <footer className="mt-6 pt-6 border-t border-gray-100">
             <p className="text-xs text-center text-gray-500">
               Accès réservé aux administrateurs autorisés
             </p>
-          </div>
-        </div>
+          </footer>
+        </section>
 
-        {/* Footer */}
-        <div className="text-center mt-8">
-          <p className="text-xs text-gray-500">
-            © 2025 DIDA SKIN. Tous droits réservés.
-          </p>
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="mt-2 text-xs text-[#D4A574] hover:text-[#b88b5c] transition-colors"
-          >
-            ← Retour à l'accueil
-          </button>
-        </div>
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }
