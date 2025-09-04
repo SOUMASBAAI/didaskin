@@ -405,7 +405,7 @@ export default function ProductsSection() {
         </div>
       )}
 
-      {/* Modal Ajouter Produit */}
+      {/* Ajouter Produit */}
       {showAddProduct && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50">
           <form
@@ -549,7 +549,7 @@ export default function ProductsSection() {
         </div>
       )}
 
-      {/* Modal Éditer Produit */}
+      {/* Éditer Produit */}
       {editProductId && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50">
           <form

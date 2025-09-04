@@ -99,15 +99,8 @@ export default function BookingPage() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <button
-              onClick={() => navigate(-1)}
-              className="text-sm text-gray-600 hover:text-gray-800 mb-4 flex items-center"
-            >
-              ← Retour
-            </button>
-            <h1 className="text-3xl font-light text-gray-800 mb-2">
-              Réserver votre soin
-            </h1>
+            
+            
             {service && (
               <div className="text-gray-600">
                 Réservez votre rendez-vous pour :{" "}
