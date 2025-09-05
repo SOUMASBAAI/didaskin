@@ -32,7 +32,7 @@ security:
 
         # Routes d'authentification (pas de JWT requis)
         auth:
-            pattern: ^/api/(login|register|admin/register|forgot-password|reset-password)$
+            pattern: ^/api/(login|register|admin/register|admin/login|forgot-password|reset-password)$
             stateless: true
             security: false
 
@@ -52,6 +52,7 @@ security:
         - { path: ^/api/login$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/register$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/admin/register$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/admin/login$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/forgot-password$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/reset-password$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/auth/login$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
