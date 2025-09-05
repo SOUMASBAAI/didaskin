@@ -44,36 +44,41 @@ export default function AdminLogin() {
     setSuccess("");
 
     try {
-      // 1) Authentifier via /auth/login (Lexik JWT)
-      const resp = await fetch(AUTH_ENDPOINTS.LOGIN, {
+      // Use the correct admin login endpoint
+      const resp = await fetch(`${API_BASE_URL}/api/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: email, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const loginJson = await resp.json();
 
       if (!resp.ok) {
         setError(
-          loginJson?.message || loginJson?.error || "Erreur de connexion"
+          loginJson?.error || loginJson?.message || "Erreur de connexion"
         );
         setLoading(false);
         return;
       }
 
-      const token = loginJson?.token || loginJson?.data?.token;
-      if (!token) {
-        setError("Token introuvable dans la réponse d'authentification");
+      // Check if login was successful
+      if (!loginJson.success) {
+        setError(loginJson.error || "Erreur de connexion");
         setLoading(false);
         return;
       }
 
-      // 2) Vérifier que l'utilisateur est ADMIN via l'endpoint protégé /admin
-      const verify = await fetch(`${API_BASE_URL}/admin`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const token = loginJson?.data?.token;
+      const userData = loginJson?.data?.user;
 
-      if (!verify.ok) {
+      if (!token || !userData) {
+        setError("Token ou données utilisateur introuvables dans la réponse");
+        setLoading(false);
+        return;
+      }
+
+      // Verify user is admin
+      if (userData.role !== "ROLE_ADMIN") {
         setError(
           "Accès non autorisé. Seuls les administrateurs peuvent se connecter."
         );
@@ -81,13 +86,7 @@ export default function AdminLogin() {
         return;
       }
 
-      const verifyJson = await verify.json();
-      const userData = {
-        email: verifyJson?.user || email,
-        role: "ROLE_ADMIN",
-      };
-
-      // 3) Enregistrer la session
+      // Save session
       login(userData, token);
 
       setSuccess("Connexion réussie ! Redirection...");
@@ -102,7 +101,7 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen flex flex-col justify-between p-4 bg-[#F5F1ED]">
-     <main
+      <main
         className="w-full max-w-md mx-auto flex-grow"
         role="main"
         aria-labelledby="admin-login-title"
@@ -288,7 +287,6 @@ export default function AdminLogin() {
             </p>
           </footer>
         </section>
-
       </main>
 
       <Footer />
