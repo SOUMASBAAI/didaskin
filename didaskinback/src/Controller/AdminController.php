@@ -60,4 +60,14 @@ final class AdminController extends AbstractController
             'token_info' => $tokenInfo,
         ]);
     }
+
+    #[Route('/admin/test-no-auth', name: 'admin_test_no_auth')]
+    public function testNoAuth(): JsonResponse
+    {
+        return $this->json([
+            'message' => 'This endpoint works without authentication',
+            'timestamp' => time(),
+            'jwt_secret_configured' => $_ENV['JWT_SECRET'] ?? 'NOT_SET' !== 'NOT_SET',
+        ]);
+    }
 }
