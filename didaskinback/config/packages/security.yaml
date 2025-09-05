@@ -14,27 +14,17 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        login:
-            pattern: ^/api/admin/login$
+        # Routes d'authentification (pas de JWT requis)
+        auth:
+            pattern: ^/api/(login|register|admin/register|admin/login|forgot-password|reset-password)$
             stateless: true
-            json_login:
-                check_path: /api/admin/login
-                username_path: email
-                password_path: password
-                success_handler: lexik_jwt_authentication.handler.authentication_success
-                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+            security: false
 
         api:
             pattern: ^/(categories|products|services|subcategories|newsletters|quizzquestion|users|admin|site-content|notifications)
             stateless: true # important pour API, pas de session
             provider: app_user_provider
             jwt: ~
-
-        # Routes d'authentification (pas de JWT requis)
-        auth:
-            pattern: ^/api/(login|register|admin/register|admin/login|forgot-password|reset-password)$
-            stateless: true
-            security: false
 
         main:
             lazy: true
@@ -77,10 +67,11 @@ security:
         # Admin dashboard
         - { path: ^/admin$, roles: ROLE_ADMIN }
         - { path: ^/notifications, roles: ROLE_ADMIN }
-        # General API access for authenticated users (non-GET)
+        # General API access for authenticated users (non-GET methods only)
         - {
               path: ^/(categories|products|services|subcategories|newsletters|quizzquestion|users),
               roles: IS_AUTHENTICATED_FULLY,
+              methods: [POST, PUT, DELETE, PATCH],
           }
 
 when@test:
