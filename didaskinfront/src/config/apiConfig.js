@@ -4,7 +4,7 @@ export const API_BASE_URL =
 
 // Endpoints d'authentification
 export const AUTH_ENDPOINTS = {
-  LOGIN: `${API_BASE_URL}/api/admin/login`,
+  LOGIN: `${API_BASE_URL}/auth/login`,
   REGISTER: `${API_BASE_URL}/api/register`,
   ADMIN_REGISTER: `${API_BASE_URL}/api/admin/register`,
 };
