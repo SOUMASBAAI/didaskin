@@ -187,7 +187,7 @@ class AuthenticationController extends AbstractController
         $this->entityManager->flush();
 
         // Générer un token JWT simple
-        $token = $this->generateSimpleJWT($user);
+         $token = $this->jwtManager->create($user);
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
