@@ -27,7 +27,7 @@ class AuthenticationController extends AbstractController
         private ValidatorInterface $validator,
         private UserPasswordHasherInterface $passwordHasher,
         private SerializerInterface $serializer,
-        private MailerInterface $mailer
+        private MailerInterface $mailer,
         private JWTTokenManagerInterface $jwtManager
     ) {
     }
