@@ -16,6 +16,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 #[Route('/api', name: 'app_auth')]
 class AuthenticationController extends AbstractController
@@ -27,6 +28,7 @@ class AuthenticationController extends AbstractController
         private UserPasswordHasherInterface $passwordHasher,
         private SerializerInterface $serializer,
         private MailerInterface $mailer
+        private JWTTokenManagerInterface $jwtManager
     ) {
     }
 
@@ -78,8 +80,8 @@ class AuthenticationController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        // Générer un token JWT simple (sans bundle pour l'instant)
-        $token = $this->generateSimpleJWT($user);
+        // Générer un token JWT Lexik
+        $token = $this->jwtManager->create($user);
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
@@ -115,8 +117,8 @@ class AuthenticationController extends AbstractController
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Générer un token JWT simple
-        $token = $this->generateSimpleJWT($user);
+        // Générer un token JWT Lexik
+        $token = $this->jwtManager->create($user);
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
@@ -229,8 +231,8 @@ class AuthenticationController extends AbstractController
             ], Response::HTTP_FORBIDDEN);
         }
 
-        // Générer un token JWT simple
-        $token = $this->generateSimpleJWT($user);
+        // Générer un token JWT Lexik
+        $token = $this->jwtManager->create($user);
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
@@ -295,8 +297,8 @@ class AuthenticationController extends AbstractController
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Générer un nouveau token
-        $token = $this->generateSimpleJWT($user);
+        // Générer un token JWT Lexik
+        $token = $this->jwtManager->create($user);
 
         return $this->json([
             'success' => true,
