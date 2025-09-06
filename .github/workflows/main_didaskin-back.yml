@@ -21,23 +21,24 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.4"
+          php-version: '8.4'
 
       - name: Check if composer.json exists
         id: check_files
         uses: andstor/file-existence-action@v1
         with:
-          files: "didaskinback/composer.json"
+          files: 'composer.json'
 
       - name: Run composer install if composer.json exists
         if: steps.check_files.outputs.files_exists == 'true'
-        run: cd didaskinback && composer validate --no-check-publish && composer install --prefer-dist --no-progress --no-scripts
+        run: composer validate --no-check-publish && composer install --prefer-dist --no-progress
+
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: php-app
-          path: didaskinback
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
@@ -51,19 +52,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: php-app
-
+      
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_32CB048CCD5E4EEFACB4F3CBD6EF6306 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_83E142D5F09648C99FB405F19EBB1644 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2672F238D86C4C7A96A268225A292A2F }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_64131395978C493FA456A8C7361928A4 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_1A41A85C291E4C87A4936AB14D0E0822 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_33ED9B8C8ABF46FB82B9DBD576E98F6D }}
 
-      - name: "Deploy to Azure Web App"
+      - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: "didaskin-back"
-          slot-name: "Production"
+          app-name: 'didaskin-back'
+          slot-name: 'Production'
           package: .
-
+          
