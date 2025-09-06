@@ -88,9 +88,11 @@ export const useAuth = () => {
   };
 
   const handleApiResponse = async (response) => {
-    // Handle 401 Unauthorized
+    // Handle 401 Unauthorized - but don't logout immediately
     if (response.status === 401) {
-      logout();
+      console.warn("⚠️ 401 error detected, but not logging out automatically");
+      // Don't logout automatically - let user handle it
+      // logout();
       throw new Error("SESSION_EXPIRED");
     }
 
