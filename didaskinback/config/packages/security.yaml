@@ -24,7 +24,7 @@ security:
         api:
             pattern: ^/(categories|products|services|subcategories|newsletters|quizzquestion|users|admin|site-content|notifications)
             stateless: true
-            custom_authenticator: App\Security\CustomJwtAuthenticator
+            custom_authenticator: App\CustomJwtAuthenticator
 
         main:
             lazy: true
