@@ -20,15 +20,15 @@ class Service
     #[Groups(['service:read'])]
     private ?string $label = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 900)]
     #[Groups(['service:read'])]
     private ?string $shortDescription = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 900)]
     #[Groups(['service:read'])]
     private ?string $longDescription = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 900)]
     #[Groups(['service:read'])]
     private ?string $additionalDetails = null;
 

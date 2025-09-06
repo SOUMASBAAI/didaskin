@@ -19,6 +19,8 @@ export default function Header() {
   const closeTimerRef = useRef(null);
   const [headerHeight, setHeaderHeight] = useState(72);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileMenuView, setMobileMenuView] = useState("main"); // 'main', 'categories', 'subcategories'
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const navLinks = [
     { name: "NOS SERVICES", href: "/services" },
@@ -30,6 +32,8 @@ export default function Header() {
     setIsSearchExpanded(false);
     setSearchQuery("");
     setIsMobileMenuOpen(false);
+    setMobileMenuView("main");
+    setSelectedCategory(null);
   }, [location.pathname]);
 
   // Measure header height for fixed mega menu top
@@ -113,6 +117,8 @@ export default function Header() {
       if (e.key === "Escape") {
         setShowServicesMenu(false);
         setIsMobileMenuOpen(false);
+        setMobileMenuView("main");
+        setSelectedCategory(null);
       }
     };
     document.addEventListener("mousedown", onDown);
@@ -157,6 +163,32 @@ export default function Header() {
     setSearchQuery("");
   };
 
+  // Mobile menu navigation functions
+  const showCategoriesView = () => {
+    setMobileMenuView("categories");
+  };
+
+  const showSubcategoriesView = (category) => {
+    setSelectedCategory(category);
+    setMobileMenuView("subcategories");
+  };
+
+  const goBackToMain = () => {
+    setMobileMenuView("main");
+    setSelectedCategory(null);
+  };
+
+  const goBackToCategories = () => {
+    setMobileMenuView("categories");
+    setSelectedCategory(null);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+    setMobileMenuView("main");
+    setSelectedCategory(null);
+  };
+
   // When search is expanded, show only the search bar
   if (isSearchExpanded) {
     return (
@@ -175,7 +207,7 @@ export default function Header() {
             <button
               type="button"
               onClick={handleSearchClose}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 px-2 py-1"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 px-2 py-1"
             >
               <X className="h-5 w-5" />
             </button>
@@ -239,48 +271,211 @@ export default function Header() {
             onClick={() => setIsMobileMenuOpen(false)}
           ></div>
           <div className="fixed top-0 left-0 h-full w-80 max-w-[85%] bg-[#F5F1ED] z-50 shadow-xl lg:hidden flex flex-col">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
-              <span className="text-sm font-semibold tracking-wide text-gray-900">
-                Menu
-              </span>
-              <button
-                className="text-gray-600 hover:text-gray-800"
-                onClick={() => setIsMobileMenuOpen(false)}
-                aria-label="Fermer le menu"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <nav className="p-4 space-y-2 overflow-y-auto">
-              <Link
-                to="/"
-                className="block px-3 py-2 rounded text-gray-800 hover:bg-gray-100"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Accueil
-              </Link>
-              <Link
-                to="/services"
-                className="block px-3 py-2 rounded text-gray-800 hover:bg-gray-100"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Nos services
-              </Link>
-              <Link
-                to="/products"
-                className="block px-3 py-2 rounded text-gray-800 hover:bg-gray-100"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Nos produits
-              </Link>
-              <Link
-                to="/booking"
-                className="block px-3 py-2 rounded text-gray-800 hover:bg-gray-100"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Réserver un soin
-              </Link>
-            </nav>
+            {/* Vue principale du menu */}
+            {mobileMenuView === "main" && (
+              <>
+                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+                  <span className="text-sm font-semibold tracking-wide text-gray-900">
+                    Menu
+                  </span>
+                  <button
+                    className="text-gray-600 "
+                    onClick={closeMobileMenu}
+                    aria-label="Fermer le menu"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                <nav className="p-4 space-y-2 overflow-y-auto">
+                  <Link
+                    to="/"
+                    className="block px-3 py-2 rounded text-gray-800"
+                    onClick={closeMobileMenu}
+                  >
+                    Accueil
+                  </Link>
+
+                  <button
+                    className="w-full flex items-center justify-between px-3 py-2 rounded text-gray-800"
+                    onClick={showCategoriesView}
+                  >
+                    <span>Nos services</span>
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+
+                  <Link
+                    to="/products"
+                    className="block px-3 py-2 rounded text-gray-800 "
+                    onClick={closeMobileMenu}
+                  >
+                    Nos produits
+                  </Link>
+                  <Link
+                    to="/booking"
+                    className="block px-3 py-2 rounded text-gray-800"
+                    onClick={closeMobileMenu}
+                  >
+                    Réserver un soin
+                  </Link>
+                </nav>
+              </>
+            )}
+
+            {/* Vue des catégories */}
+            {mobileMenuView === "categories" && (
+              <>
+                <div className="flex items-center px-5 py-4 border-b border-gray-200">
+                  <button
+                    className="flex items-center text-gray-600 hover:text-gray-800 mr-3"
+                    onClick={goBackToMain}
+                    aria-label="Retour au menu"
+                  >
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </button>
+                  <span className="text-sm font-semibold tracking-wide text-gray-900">
+                    Nos Services
+                  </span>
+                  <button
+                    className="ml-auto text-gray-600 hover:text-gray-800"
+                    onClick={closeMobileMenu}
+                    aria-label="Fermer le menu"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4">
+                  {categories.length === 0 ? (
+                    <div className="text-center text-gray-600 py-8">
+                      Chargement des catégories...
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {/* Liste des catégories */}
+                      {categories.map((cat) => (
+                        <button
+                          key={cat.id}
+                          className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-800 hover:bg-gray-100 transition-colors"
+                          onClick={() => showSubcategoriesView(cat)}
+                        >
+                          <span className="font-medium">{cat.label}</span>
+                          <svg
+                            className="h-4 w-4 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M9 5l7 7-7 7"
+                            />
+                          </svg>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Vue des sous-catégories */}
+            {mobileMenuView === "subcategories" && selectedCategory && (
+              <>
+                <div className="flex items-center px-5 py-4 border-b border-gray-200">
+                  <button
+                    className="flex items-center text-gray-600 hover:text-gray-800 mr-3"
+                    onClick={goBackToCategories}
+                    aria-label="Retour aux catégories"
+                  >
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </button>
+                  <span className="text-sm font-semibold tracking-wide text-gray-900 truncate">
+                    {selectedCategory.label}
+                  </span>
+                  <button
+                    className="ml-auto text-gray-600 hover:text-gray-800"
+                    onClick={closeMobileMenu}
+                    aria-label="Fermer le menu"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4">
+                  <div className="space-y-3">
+                    {/* Liste des sous-catégories */}
+                    {(subByCat[selectedCategory.id] || []).length === 0 ? (
+                      <div className="text-center text-gray-600 py-8">
+                        Aucune sous-catégorie disponible
+                      </div>
+                    ) : (
+                      <>
+                        {(subByCat[selectedCategory.id] || []).map((sub) => (
+                          <Link
+                            key={sub.id}
+                            to={`/services?subcategory=${sub.id}`}
+                            className="block px-4 py-3 rounded-lg text-gray-800 hover:bg-gray-100 transition-colors"
+                            onClick={closeMobileMenu}
+                          >
+                            <span className="font-medium">{sub.label}</span>
+                            {sub.description && (
+                              <p className="text-sm text-gray-600 mt-1">
+                                {sub.description}
+                              </p>
+                            )}
+                          </Link>
+                        ))}
+
+                        {/* Lien vers toute la catégorie en bas */}
+                        <Link
+                          to={`/categories?category=${selectedCategory.id}`}
+                          className="block bg-black text-white text-center py-3 px-4 rounded-lg font-medium hover:bg-gray-800 transition-colors mt-6"
+                          onClick={closeMobileMenu}
+                        >
+                          Voir tous
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </>
       )}
