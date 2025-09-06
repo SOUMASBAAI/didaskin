@@ -231,8 +231,26 @@ class AuthenticationController extends AbstractController
             ], Response::HTTP_FORBIDDEN);
         }
 
-        // Générer un token JWT Lexik
-        $token = $this->jwtManager->create($user);
+        // Use the SAME JWT secret as Lexik JWT
+        $jwtSecret = $_ENV['JWT_SECRET'] ?? 'DidaskinSecureJWT2024ProductionKey789ABC123XYZ456DEF';
+        
+        // Create JWT token with the SAME format as Lexik JWT expects
+        $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
+        $payload = json_encode([
+            'username' => $user->getEmail(), // Lexik JWT expects 'username'
+            'email' => $user->getEmail(),
+            'roles' => ['ROLE_ADMIN'],
+            'iat' => time(),
+            'exp' => time() + 3600
+        ]);
+
+        $base64Header = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
+        $base64Payload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
+
+        $signature = hash_hmac('sha256', $base64Header . "." . $base64Payload, $jwtSecret, true);
+        $base64Signature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
+
+        $token = $base64Header . "." . $base64Payload . "." . $base64Signature;
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('user:read')
