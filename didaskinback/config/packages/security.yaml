@@ -20,21 +20,15 @@ security:
             stateless: true
             security: false
 
+        # Custom JWT authentication for API
         api:
             pattern: ^/(categories|products|services|subcategories|newsletters|quizzquestion|users|admin|site-content|notifications)
-            stateless: true # important pour API, pas de session
-            provider: app_user_provider
-            jwt: ~
+            stateless: true
+            custom_authenticator: App\Security\CustomJwtAuthenticator
 
         main:
             lazy: true
             provider: app_user_provider
-
-            # activate different ways to authenticate
-            # https://symfony.com/doc/current/security.html#the-firewall
-
-            # https://symfony.com/doc/current/security.html#switch_user
-            # switch_user: true
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
@@ -64,15 +58,6 @@ security:
           }
         - { path: ^/services/reorder$, roles: ROLE_ADMIN, methods: [POST] }
         - { path: ^/products/reorder$, roles: ROLE_ADMIN, methods: [POST] }
-        # Admin dashboard
-        - { path: ^/admin$, roles: ROLE_ADMIN }
-        - { path: ^/notifications, roles: ROLE_ADMIN }
-        # General API access for authenticated users (non-GET methods only)
-        - {
-              path: ^/(categories|products|services|subcategories|newsletters|quizzquestion|users),
-              roles: IS_AUTHENTICATED_FULLY,
-              methods: [POST, PUT, DELETE, PATCH],
-          }
 
 when@test:
     security:
