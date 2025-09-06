@@ -86,11 +86,27 @@ export default function AdminLogin() {
         return;
       }
 
-      // Save session
+      // FORCE STORAGE - Store directly in localStorage
+      console.log("🔄 Storing token directly...");
+      localStorage.setItem("adminToken", token);
+      localStorage.setItem("adminUser", JSON.stringify(userData));
+
+      // Verify storage worked
+      const storedToken = localStorage.getItem("adminToken");
+      const storedUser = localStorage.getItem("adminUser");
+      console.log("✅ Token stored:", !!storedToken);
+      console.log("✅ User stored:", !!storedUser);
+
+      // Also use the login hook as backup
       login(userData, token);
 
       setSuccess("Connexion réussie ! Redirection...");
-      setTimeout(() => navigate("/admin-dashboard"), 600);
+
+      // Redirect after a short delay
+      setTimeout(() => {
+        console.log("🔄 Redirecting to dashboard...");
+        navigate("/admin-dashboard");
+      }, 1000);
     } catch (err) {
       setError("Erreur de connexion au serveur");
       console.error("Login error:", err);
