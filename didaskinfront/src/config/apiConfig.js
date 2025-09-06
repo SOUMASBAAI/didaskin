@@ -1,7 +1,6 @@
 // Configuration des URLs d'API
-export const API_BASE_URL = 
-  import.meta.env.VITE_API_URL || "http://localhost:8000"
-
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 // Endpoints d'authentification
 export const AUTH_ENDPOINTS = {
@@ -42,4 +41,43 @@ export const ERROR_MESSAGES = {
     "Erreur de connexion au serveur. Vérifiez votre connexion internet.",
   VALIDATION_ERROR: "Veuillez vérifier les informations saisies.",
   SERVER_ERROR: "Erreur serveur. Veuillez réessayer plus tard.",
+};
+
+// Simple API helper that always includes token
+export const apiCall = async (url, options = {}) => {
+  const token = localStorage.getItem("adminToken");
+
+  const defaultHeaders = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    defaultHeaders["Authorization"] = `Bearer ${token}`;
+  }
+
+  const config = {
+    ...options,
+    headers: {
+      ...defaultHeaders,
+      ...options.headers,
+    },
+  };
+
+  console.log("🔄 API Call:", url, "with token:", !!token);
+
+  try {
+    const response = await fetch(url, config);
+    console.log("📡 API Response:", response.status, url);
+
+    if (response.ok) {
+      return await response.json();
+    } else {
+      const errorText = await response.text();
+      console.error("❌ API Error:", response.status, errorText);
+      throw new Error(`API Error: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("🚨 API Call Failed:", error);
+    throw error;
+  }
 };
