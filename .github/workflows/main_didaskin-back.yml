@@ -66,3 +66,4 @@ jobs:
           app-name: "didaskin-back"
           slot-name: "Production"
           package: .
+
