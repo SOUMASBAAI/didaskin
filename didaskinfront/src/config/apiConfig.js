@@ -43,15 +43,34 @@ export const ERROR_MESSAGES = {
   SERVER_ERROR: "Erreur serveur. Veuillez réessayer plus tard.",
 };
 
-// Simple API helper that always includes token
-export const apiCall = async (url, options = {}) => {
+// Public endpoints that don't need authentication
+const PUBLIC_ENDPOINTS = [
+  "/categories",
+  "/products",
+  "/services",
+  "/subcategories",
+  "/quizzquestion",
+  "/site-content",
+];
+
+// Check if an endpoint is public
+const isPublicEndpoint = (url) => {
+  return PUBLIC_ENDPOINTS.some(
+    (endpoint) => url.includes(endpoint) && !url.includes("/admin/")
+  );
+};
+
+// Smart API helper that automatically handles authentication
+export const smartApiCall = async (url, options = {}) => {
+  const isPublic = isPublicEndpoint(url);
   const token = localStorage.getItem("adminToken");
 
   const defaultHeaders = {
     "Content-Type": "application/json",
   };
 
-  if (token) {
+  // Only add auth header for non-public endpoints
+  if (!isPublic && token) {
     defaultHeaders["Authorization"] = `Bearer ${token}`;
   }
 
@@ -63,11 +82,14 @@ export const apiCall = async (url, options = {}) => {
     },
   };
 
-  console.log("🔄 API Call:", url, "with token:", !!token);
+  console.log(
+    `🔄 Smart API Call: ${url}`,
+    isPublic ? "(public)" : "(authenticated)"
+  );
 
   try {
     const response = await fetch(url, config);
-    console.log("📡 API Response:", response.status, url);
+    console.log(`📡 Response: ${response.status} ${url}`);
 
     if (response.ok) {
       return await response.json();
@@ -81,3 +103,6 @@ export const apiCall = async (url, options = {}) => {
     throw error;
   }
 };
+
+// Legacy API helper for backward compatibility
+export const apiCall = smartApiCall;
