@@ -64,10 +64,65 @@ final class AdminController extends AbstractController
     #[Route('/admin/test-no-auth', name: 'admin_test_no_auth')]
     public function testNoAuth(): JsonResponse
     {
+        $jwtSecret = $_ENV['JWT_SECRET'] ?? 'NOT_SET';
+        
         return $this->json([
             'message' => 'This endpoint works without authentication',
             'timestamp' => time(),
-            'jwt_secret_configured' => $_ENV['JWT_SECRET'] ?? 'NOT_SET' !== 'NOT_SET',
+            'jwt_secret_configured' => $jwtSecret !== 'NOT_SET',
+            'jwt_secret_length' => strlen($jwtSecret),
+            'jwt_secret_preview' => $jwtSecret !== 'NOT_SET' ? substr($jwtSecret, 0, 8) . '...' : 'NOT_SET',
         ]);
+    }
+
+    #[Route('/admin/validate-token', name: 'admin_validate_token')]
+    public function validateToken(Request $request): JsonResponse
+    {
+        $authHeader = $request->headers->get('Authorization');
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+            return $this->json(['error' => 'No token provided'], 401);
+        }
+        
+        $token = substr($authHeader, 7);
+        $jwtSecret = $_ENV['JWT_SECRET'] ?? 'DidaskinSecureJWT2024ProductionKey789ABC123XYZ456DEF';
+        
+        try {
+            // Manually validate the token
+            $parts = explode('.', $token);
+            if (count($parts) !== 3) {
+                return $this->json(['error' => 'Invalid token format'], 401);
+            }
+            
+            $header = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $parts[0])), true);
+            $payload = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $parts[1])), true);
+            
+            // Verify signature
+            $expectedSignature = hash_hmac('sha256', $parts[0] . '.' . $parts[1], $jwtSecret, true);
+            $expectedBase64Signature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($expectedSignature));
+            
+            if ($parts[2] !== $expectedBase64Signature) {
+                return $this->json([
+                    'error' => 'Invalid signature',
+                    'expected_sig_preview' => substr($expectedBase64Signature, 0, 10) . '...',
+                    'actual_sig_preview' => substr($parts[2], 0, 10) . '...',
+                    'secret_used_length' => strlen($jwtSecret)
+                ], 401);
+            }
+            
+            // Check expiration
+            if (isset($payload['exp']) && $payload['exp'] < time()) {
+                return $this->json(['error' => 'Token expired'], 401);
+            }
+            
+            return $this->json([
+                'success' => true,
+                'message' => 'Token is valid!',
+                'payload' => $payload,
+                'header' => $header
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Token validation failed: ' . $e->getMessage()], 401);
+        }
     }
 }
