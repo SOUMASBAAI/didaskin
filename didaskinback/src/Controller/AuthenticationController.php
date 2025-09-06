@@ -264,7 +264,8 @@ class AuthenticationController extends AbstractController
                 'token' => $token,
                 'expires_in' => 3600
             ],
-            'message' => 'Connexion admin réussie'
+            'message' => 'Connexion admin réussie',
+            'version' => 'CUSTOM_JWT_v2024'
         ]);
     }
 
