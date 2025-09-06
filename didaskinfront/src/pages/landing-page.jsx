@@ -263,7 +263,7 @@ export default function LandingPage() {
             category.shortDescription ||
             "Découvrez nos services exceptionnels.",
           imageSrc: category.image_link || "/placeholder.svg",
-          callToAction: `EXPLORER ${
+          callToAction: ` ${
             category.label?.toUpperCase() || "NOS SERVICES"
           }`,
           categoryId: category.id,
@@ -330,6 +330,10 @@ export default function LandingPage() {
   const [isReverse, setIsReverse] = useState(false); // true if animating out (scroll up)
   const [lastScrollTime, setLastScrollTime] = useState(0); // Pour éviter les scrolls multiples
 
+  // Touch handling for mobile
+  const [touchStartY, setTouchStartY] = useState(0);
+  const [touchEndY, setTouchEndY] = useState(0);
+
   // Navigation handler for category sections
   const handleCategoryClick = (categoryId) => {
     if (categoryId) {
@@ -337,25 +341,24 @@ export default function LandingPage() {
     }
   };
 
-  // Scroll navigation handler
-  const handleWheel = useCallback(
-    (e) => {
+  // Common scroll logic for both wheel and touch
+  const handleScroll = useCallback(
+    (deltaY) => {
       const now = Date.now();
       const timeSinceLastScroll = now - lastScrollTime;
 
       // Protection contre les scrolls trop rapides (minimum 800ms entre chaque scroll)
       if (isAnimating || timeSinceLastScroll < 800) {
-        e.preventDefault();
         return;
       }
 
-      if (e.deltaY > 0 && activeIndex < sectionCount - 1) {
+      if (deltaY > 0 && activeIndex < sectionCount - 1) {
         setLastScrollTime(now);
         setDirection(1);
         setOverlayIndex(activeIndex + 1);
         setIsReverse(false);
         setIsAnimating(true);
-      } else if (e.deltaY < 0 && activeIndex > 0) {
+      } else if (deltaY < 0 && activeIndex > 0) {
         setLastScrollTime(now);
         setDirection(-1);
         setOverlayIndex(activeIndex);
@@ -366,14 +369,60 @@ export default function LandingPage() {
     [activeIndex, sectionCount, isAnimating, lastScrollTime]
   );
 
+  // Scroll navigation handler for mouse wheel
+  const handleWheel = useCallback(
+    (e) => {
+      e.preventDefault();
+      handleScroll(e.deltaY);
+    },
+    [handleScroll]
+  );
+
+  // Touch handlers for mobile
+  const handleTouchStart = useCallback((e) => {
+    setTouchStartY(e.targetTouches[0].clientY);
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    e.preventDefault(); // Prevent default scrolling
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (e) => {
+      const touchEnd = e.changedTouches[0].clientY;
+      setTouchEndY(touchEnd);
+
+      const deltaY = touchStartY - touchEnd;
+      const minSwipeDistance = 50; // Minimum swipe distance to trigger scroll
+
+      if (Math.abs(deltaY) > minSwipeDistance) {
+        handleScroll(deltaY);
+      }
+    },
+    [touchStartY, handleScroll]
+  );
+
   useEffect(() => {
     const onWheel = (e) => {
       e.preventDefault();
       handleWheel(e);
     };
+
+    // Add wheel event for desktop
     window.addEventListener("wheel", onWheel, { passive: false });
-    return () => window.removeEventListener("wheel", onWheel);
-  }, [handleWheel]);
+
+    // Add touch events for mobile
+    window.addEventListener("touchstart", handleTouchStart, { passive: false });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd, { passive: false });
+
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
   // When animation completes, update the active section and clean up overlay
   const handleOverlayAnimationComplete = () => {
@@ -472,7 +521,7 @@ export default function LandingPage() {
       <div className="relative h-screen w-screen overflow-hidden bg-[#F5F1ED] flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-3xl md:text-4xl font-light tracking-wider text-gray-800 mb-4">
-             DIDA SKIN
+            DIDA SKIN
           </h1>
 
           <p className="text-sm text-gray-600 mb-6">
@@ -801,7 +850,7 @@ export default function LandingPage() {
               ) : quizState === "results" ? (
                 <div className="text-center space-y-6">
                   <div className="mb-8">
-                    <div className="text-4xl md:text-6xl font-bold text-[#D4A574] mb-4">
+                    <div className="text-4xl md:text-6xl font-bold text-[#000000] mb-4">
                       {Math.round(
                         (calculateScore() / quizQuestions.length) * 100
                       )}
@@ -821,8 +870,8 @@ export default function LandingPage() {
                     {Math.round(
                       (calculateScore() / quizQuestions.length) * 100
                     ) >= 80 ? (
-                      <div className="text-green-700">
-                        <div className="text-2xl mb-2">🎉 Excellent !</div>
+                      <div className="text-black">
+                        <div className="text-2xl mb-2"> Excellent !</div>
                         <p className="text-sm">
                           Vous maîtrisez parfaitement les bases du skincare.
                           Continuez comme ça !
@@ -832,7 +881,7 @@ export default function LandingPage() {
                         (calculateScore() / quizQuestions.length) * 100
                       ) >= 60 ? (
                       <div className="text-blue-700">
-                        <div className="text-2xl mb-2">👍 Bien joué !</div>
+                        <div className="text-2xl mb-2">Bien joué !</div>
                         <p className="text-sm">
                           Vous avez de bonnes connaissances. Quelques révisions
                           et vous serez parfait !
@@ -842,7 +891,7 @@ export default function LandingPage() {
                         (calculateScore() / quizQuestions.length) * 100
                       ) >= 40 ? (
                       <div className="text-orange-700">
-                        <div className="text-2xl mb-2">📚 Pas mal !</div>
+                        <div className="text-2xl mb-2">Pas mal !</div>
                         <p className="text-sm">
                           Vous avez les bases, mais il y a encore des choses à
                           apprendre. Continuez à vous informer !
@@ -850,9 +899,9 @@ export default function LandingPage() {
                       </div>
                     ) : (
                       <div className="text-red-700">
-                        <div className="text-2xl mb-2">💡 À améliorer !</div>
+                        <div className="text-2xl mb-2"> À améliorer !</div>
                         <p className="text-sm">
-                          Pas de panique ! Le skincare s'apprend. N'hésitez pas
+                          Pas de panique ! La skincare s'apprend. N'hésitez pas
                           à consulter nos conseils experts.
                         </p>
                       </div>
@@ -862,7 +911,7 @@ export default function LandingPage() {
                   {/* Statistiques détaillées */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="bg-white rounded-lg p-4 border border-gray-200">
-                      <div className="text-2xl font-bold text-[#D4A574]">
+                      <div className="text-2xl font-bold text-black">
                         {calculateScore()}
                       </div>
                       <div className="text-sm text-gray-600">
@@ -1111,7 +1160,7 @@ export default function LandingPage() {
                         </div>
                         <div>
                           <h3 className="text-xl font-semibold mb-3">
-                           L'INSTITUT
+                            L'INSTITUT
                           </h3>
                           <p className="text-sm md:text-base text-gray-700 leading-relaxed">
                             {

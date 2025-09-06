@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 import PlanityWidget from "../components/PlanityWidget";
 import { getPlanityConfig } from "../config/planity";
 import { API_BASE_URL } from "../config/apiConfig";
+import bannerImage from "../assets/booking-banner.png";
 
 export default function BookingPage() {
   const { id } = useParams();
@@ -95,12 +96,31 @@ export default function BookingPage() {
     <div className="min-h-screen bg-[#F5F1ED]">
       <Header />
 
-      <main className="pt-32 pb-12 px-4 md:px-6 lg:px-8">
+      {/* Bannière avec photo */}
+      <section className="relative h-[30vh] md:h-[50vh] min-h-[250px] md:min-h-[400px] bg-cover bg-center bg-no-repeat overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${bannerImage})`,
+          }}
+        />
+        <div className="absolute inset-0 " />
+        <div className="relative z-10 flex items-center justify-center h-full px-4 md:px-6 lg:px-8">
+          <div className="text-center text-white max-w-4xl mx-auto">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-light tracking-wider mb-4">
+              RÉSERVATION
+            </h1>
+            <p className="text-lg md:text-xl opacity-90 max-w-2xl mx-auto">
+              Prenez rendez-vous pour votre moment de bien-être et de beauté
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <main className="pt-12 pb-12 px-4 md:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            
-            
             {service && (
               <div className="text-gray-600">
                 Réservez votre rendez-vous pour :{" "}
@@ -149,15 +169,7 @@ export default function BookingPage() {
             />
           </div>
 
-          {/* Back button */}
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => navigate(-1)}
-              className="px-8 py-3 bg-gray-200 text-gray-800 font-medium rounded-none hover:bg-gray-300 transition-colors"
-            >
-              Retour au service
-            </button>
-          </div>
+          
         </div>
       </main>
 

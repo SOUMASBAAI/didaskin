@@ -279,19 +279,34 @@ export default function ClientsSection() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
               <tr>
-                <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th
+                  scope="col"
+                  className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+                >
                   Nom
                 </th>
-                <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th
+                  scope="col"
+                  className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+                >
                   Prénom
                 </th>
-                <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th
+                  scope="col"
+                  className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+                >
                   Email
                 </th>
-                <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th
+                  scope="col"
+                  className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+                >
                   Téléphone
                 </th>
-                <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th
+                  scope="col"
+                  className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+                >
                   Statut
                 </th>
                 <th className="px-4 py-2"></th>
@@ -300,10 +315,18 @@ export default function ClientsSection() {
             <tbody className="bg-white divide-y divide-gray-100">
               {clients.map((client) => (
                 <tr key={client.id}>
-                  <td className="px-4 py-2 whitespace-nowrap">{client.lastName}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{client.firstName}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{client.email}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{client.phoneNumber}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {client.lastName}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {client.firstName}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {client.email}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {client.phoneNumber}
+                  </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-semibold ${
@@ -319,7 +342,10 @@ export default function ClientsSection() {
                     <nav className="flex items-center gap-2">
                       <button
                         onClick={() =>
-                          handleToggleSubscription(client.id, client.is_subscribed)
+                          handleToggleSubscription(
+                            client.id,
+                            client.is_subscribed
+                          )
                         }
                         className="w-28 px-3 py-1 rounded bg-[#D4A574] text-white text-xs font-medium hover:bg-[#b88b5c] transition text-center"
                       >
@@ -350,7 +376,10 @@ export default function ClientsSection() {
 
       {/* Ajouter Client */}
       {showAddClient && (
-        <dialog open className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+        <dialog
+          open
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50"
+        >
           <form
             onSubmit={handleAddClient}
             className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative"
@@ -365,8 +394,85 @@ export default function ClientsSection() {
             <h3 className="text-xl font-semibold mb-4 text-gray-800">
               Ajouter un client
             </h3>
-            {/* Champs du formulaire */}
-            <footer>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Prénom
+                </label>
+                <input
+                  type="text"
+                  value={newClient.firstName}
+                  onChange={(e) =>
+                    setNewClient({ ...newClient, firstName: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D4A574] focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nom
+                </label>
+                <input
+                  type="text"
+                  value={newClient.lastName}
+                  onChange={(e) =>
+                    setNewClient({ ...newClient, lastName: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D4A574] focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={newClient.email}
+                  onChange={(e) =>
+                    setNewClient({ ...newClient, email: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D4A574] focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Téléphone
+                </label>
+                <input
+                  type="tel"
+                  value={newClient.phoneNumber}
+                  onChange={(e) =>
+                    setNewClient({ ...newClient, phoneNumber: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D4A574] focus:border-transparent"
+                  required
+                />
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="newClientSubscribed"
+                  checked={newClient.is_subscribed}
+                  onChange={(e) =>
+                    setNewClient({
+                      ...newClient,
+                      is_subscribed: e.target.checked,
+                    })
+                  }
+                  className="h-4 w-4 text-[#D4A574] focus:ring-[#D4A574] border-gray-300 rounded"
+                />
+                <label
+                  htmlFor="newClientSubscribed"
+                  className="ml-2 block text-sm text-gray-700"
+                >
+                  Abonné à la newsletter
+                </label>
+              </div>
+            </div>
+            <footer className="mt-6">
               <button
                 type="submit"
                 className="w-full py-2 px-4 bg-[#D4A574] text-white font-medium rounded hover:bg-[#b88b5c] transition"
@@ -380,7 +486,10 @@ export default function ClientsSection() {
 
       {/* Modal Éditer Client */}
       {editClientId && (
-        <dialog open className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+        <dialog
+          open
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50"
+        >
           <form
             onSubmit={handleEditClient}
             className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative"
@@ -395,8 +504,88 @@ export default function ClientsSection() {
             <h3 className="text-xl font-semibold mb-4 text-gray-800">
               Modifier le client
             </h3>
-            {/* Champs du formulaire */}
-            <footer>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Prénom
+                </label>
+                <input
+                  type="text"
+                  value={editClient.firstName}
+                  onChange={(e) =>
+                    setEditClient({ ...editClient, firstName: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nom
+                </label>
+                <input
+                  type="text"
+                  value={editClient.lastName}
+                  onChange={(e) =>
+                    setEditClient({ ...editClient, lastName: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={editClient.email}
+                  onChange={(e) =>
+                    setEditClient({ ...editClient, email: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Téléphone
+                </label>
+                <input
+                  type="tel"
+                  value={editClient.phoneNumber}
+                  onChange={(e) =>
+                    setEditClient({
+                      ...editClient,
+                      phoneNumber: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="editClientSubscribed"
+                  checked={editClient.is_subscribed}
+                  onChange={(e) =>
+                    setEditClient({
+                      ...editClient,
+                      is_subscribed: e.target.checked,
+                    })
+                  }
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label
+                  htmlFor="editClientSubscribed"
+                  className="ml-2 block text-sm text-gray-700"
+                >
+                  Abonné à la newsletter
+                </label>
+              </div>
+            </div>
+            <footer className="mt-6">
               <button
                 type="submit"
                 className="w-full py-2 px-4 bg-blue-500 text-white font-medium rounded hover:bg-blue-600 transition"
