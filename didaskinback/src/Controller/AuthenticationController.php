@@ -231,15 +231,13 @@ class AuthenticationController extends AbstractController
             ], Response::HTTP_FORBIDDEN);
         }
 
-        // Use the SAME JWT secret as Lexik JWT
+        // Create JWT token with the SAME secret as CustomJwtAuthenticator
         $jwtSecret = $_ENV['JWT_SECRET'] ?? 'DidaskinSecureJWT2024ProductionKey789ABC123XYZ456DEF';
         
-        // Create JWT token with the SAME format as Lexik JWT expects
         $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
         $payload = json_encode([
-            'username' => $user->getEmail(), // Lexik JWT expects 'username'
             'email' => $user->getEmail(),
-            'roles' => ['ROLE_ADMIN'],
+            'role' => $user->getRole(),
             'iat' => time(),
             'exp' => time() + 3600
         ]);
