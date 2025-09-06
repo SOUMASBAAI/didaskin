@@ -21,24 +21,23 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: "8.4"
 
       - name: Check if composer.json exists
         id: check_files
         uses: andstor/file-existence-action@v1
         with:
-          files: 'composer.json'
+          files: "didaskinback/composer.json"
 
       - name: Run composer install if composer.json exists
         if: steps.check_files.outputs.files_exists == 'true'
-        run: composer validate --no-check-publish && composer install --prefer-dist --no-progress
-
+        run: cd didaskinback && composer validate --no-check-publish && composer install --prefer-dist --no-progress
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: php-app
-          path: .
+          path: didaskinback
 
   deploy:
     runs-on: ubuntu-latest
@@ -52,7 +51,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: php-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -60,11 +59,10 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_83E142D5F09648C99FB405F19EBB1644 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2672F238D86C4C7A96A268225A292A2F }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: "Deploy to Azure Web App"
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: 'didaskin-back'
-          slot-name: 'Production'
+          app-name: "didaskin-back"
+          slot-name: "Production"
           package: .
-          
