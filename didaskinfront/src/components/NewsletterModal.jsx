@@ -23,10 +23,49 @@ export default function NewsletterModal({ isOpen, onClose, imageUrl }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Pour le champ téléphone, ne garder que les chiffres et caractères de formatage
+    if (name === "phone") {
+      const phoneValue = value.replace(/[^0-9\s\-\(\)\+]/g, "");
+      setFormData((prev) => ({ ...prev, [name]: phoneValue }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const handlePhoneKeyDown = (e) => {
+    // Autoriser les touches de contrôle (Backspace, Delete, Tab, etc.)
+    const controlKeys = [
+      "Backspace",
+      "Delete",
+      "Tab",
+      "Escape",
+      "Enter",
+      "Home",
+      "End",
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowUp",
+      "ArrowDown",
+    ];
+
+    // Autoriser Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+    if (e.ctrlKey && ["a", "c", "v", "x"].includes(e.key.toLowerCase())) {
+      return;
+    }
+
+    // Si c'est une touche de contrôle, l'autoriser
+    if (controlKeys.includes(e.key)) {
+      return;
+    }
+
+    // Autoriser seulement les chiffres et certains caractères spéciaux
+    if (!/[0-9\s\-\(\)\+]/.test(e.key)) {
+      e.preventDefault();
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -116,9 +155,19 @@ export default function NewsletterModal({ isOpen, onClose, imageUrl }) {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {[
                   { label: "Email", name: "email", type: "email", icon: Mail },
-                  { label: "Prénom", name: "firstName", type: "text", icon: User },
+                  {
+                    label: "Prénom",
+                    name: "firstName",
+                    type: "text",
+                    icon: User,
+                  },
                   { label: "Nom", name: "lastName", type: "text", icon: User },
-                  { label: "Téléphone", name: "phone", type: "tel", icon: Phone },
+                  {
+                    label: "Téléphone",
+                    name: "phone",
+                    type: "tel",
+                    icon: Phone,
+                  },
                 ].map(({ label, name, type, icon: Icon }) => (
                   <div key={name}>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -131,6 +180,9 @@ export default function NewsletterModal({ isOpen, onClose, imageUrl }) {
                         name={name}
                         value={formData[name]}
                         onChange={handleInputChange}
+                        onKeyDown={
+                          name === "phone" ? handlePhoneKeyDown : undefined
+                        }
                         required
                         className="w-full pl-10 pr-4 py-3 border-b border-gray-300 focus:border-[black] focus:outline-none transition-colors"
                         placeholder={`Votre ${label.toLowerCase()}`}

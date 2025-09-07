@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 final class SubscriptionController extends AbstractController
@@ -80,5 +81,56 @@ final class SubscriptionController extends AbstractController
 			'success' => true,
 			'message' => $created ? 'Inscription réussie' : 'Abonnement mis à jour',
 		]);
+	}
+
+	#[Route('/unsubscribe', name: 'public_unsubscribe', methods: ['GET'])]
+	public function unsubscribe(Request $request): RedirectResponse
+	{
+		$userId = (int) $request->query->get('u', 0);
+		$token = (string) $request->query->get('t', '');
+		$frontendBase = $_ENV['FRONTEND_URL'] ?? 'http://localhost:5173';
+
+		if ($userId <= 0 || $token === '') {
+			$errorUrl = sprintf('%s/unsubscribe?status=error&message=%s', 
+				rtrim($frontendBase, '/'), 
+				urlencode('Lien de désabonnement invalide')
+			);
+			return new RedirectResponse($errorUrl);
+		}
+
+		$user = $this->users->find($userId);
+		if (!$user) {
+			$errorUrl = sprintf('%s/unsubscribe?status=error&message=%s', 
+				rtrim($frontendBase, '/'), 
+				urlencode('Utilisateur non trouvé')
+			);
+			return new RedirectResponse($errorUrl);
+		}
+
+		// Verify token
+		$secret = $_ENV['APP_SECRET'] ?? 'app-secret';
+		$expectedToken = hash_hmac('sha256', $user->getId() . '|' . $user->getEmail(), $secret);
+		
+		if (!hash_equals($expectedToken, $token)) {
+			$errorUrl = sprintf('%s/unsubscribe?status=error&message=%s', 
+				rtrim($frontendBase, '/'), 
+				urlencode('Token de sécurité invalide')
+			);
+			return new RedirectResponse($errorUrl);
+		}
+
+		// Unsubscribe user
+		$user->setIsSubscribed(false);
+		$user->setUpdatedAt(new \DateTimeImmutable());
+		$this->em->flush();
+
+		$successUrl = sprintf('%s/unsubscribe?status=success&firstName=%s&lastName=%s&email=%s', 
+			rtrim($frontendBase, '/'),
+			urlencode($user->getFirstName()),
+			urlencode($user->getLastName()),
+			urlencode($user->getEmail())
+		);
+		
+		return new RedirectResponse($successUrl);
 	}
 } 
