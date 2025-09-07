@@ -263,9 +263,7 @@ export default function LandingPage() {
             category.shortDescription ||
             "Découvrez nos services exceptionnels.",
           imageSrc: category.image_link || "/placeholder.svg",
-          callToAction: ` ${
-            category.label?.toUpperCase() || "NOS SERVICES"
-          }`,
+          callToAction: ` ${category.label?.toUpperCase() || "NOS SERVICES"}`,
           categoryId: category.id,
         }))),
     // Featured services as category-like sections
@@ -518,7 +516,10 @@ export default function LandingPage() {
   // If assets not ready, show full-screen loading layout
   if (!assetsReady) {
     return (
-      <div className="relative h-screen w-screen overflow-hidden bg-[#F5F1ED] flex items-center justify-center">
+      <div
+        className="relative h-screen w-screen overflow-hidden bg-[#F5F1ED] flex items-center justify-center"
+        style={{ height: "100vh", height: "100dvh" }}
+      >
         <div className="text-center">
           <h1 className="text-3xl md:text-4xl font-light tracking-wider text-gray-800 mb-4">
             DIDA SKIN
@@ -536,11 +537,14 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="landing-root relative h-screen w-screen overflow-hidden bg-transparent">
+    <div
+      className="landing-root relative h-screen w-screen overflow-hidden bg-transparent"
+      style={{ height: "100vh", height: "100dvh" }}
+    >
       <Header />
       {/* Render the current section as fixed background */}
       <div
-        className={`fixed top-0 left-0 h-screen w-full flex flex-col bg-cover bg-center pt-[80px] ${
+        className={`fixed top-0 left-0 w-full flex flex-col bg-cover bg-center pt-[80px] ${
           sections[isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex]
             .isQuiz
             ? "items-center justify-center px-4 py-8 md:p-12 text-center"
@@ -555,6 +559,8 @@ export default function LandingPage() {
             : "items-center justify-end p-12 text-center"
         }`}
         style={{
+          height: "100vh",
+          height: "100dvh",
           backgroundImage:
             sections[
               isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
@@ -996,13 +1002,22 @@ export default function LandingPage() {
                     >
                       Souscrire newsletter
                     </div>
-                    <div className="text-xs text-black  cursor-pointer ">
+                    <div
+                      className="text-xs text-black cursor-pointer hover:underline"
+                      onClick={() => navigate("/privacy-policy")}
+                    >
                       Politique de confidentialité
                     </div>
-                    <div className="text-xs text-black  cursor-pointer ">
+                    <div
+                      className="text-xs text-black cursor-pointer hover:underline"
+                      onClick={() => navigate("/privacy-policy")}
+                    >
                       Conditions générales de vente
                     </div>
-                    <div className="text-xs text-black  cursor-pointer ">
+                    <div
+                      className="text-xs text-black cursor-pointer hover:underline"
+                      onClick={() => navigate("/legal-notice")}
+                    >
                       Mentions légales
                     </div>
                   </div>
@@ -1014,21 +1029,42 @@ export default function LandingPage() {
                     RÉSEAUX SOCIAUX
                   </h3>
                   <div className="flex space-x-4">
-                    <div className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer ">
-                      <Facebook className="w-3 h-3 text-black" />
-                    </div>
-                    <div className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer ">
-                      <Instagram className="w-3 h-3 text-black" />
-                    </div>
+                    <a
+                      href="https://www.facebook.com/share/1Zj4Z22sQk/?mibextid=wwXIfr"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer hover:bg-black hover:text-white transition-colors"
+                    >
+                      <Facebook className="w-3 h-3" />
+                    </a>
+                    <a
+                      href="https://www.instagram.com/dida.skin.institut?igsh=eXIxMDFsZHF1bnFj"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer hover:bg-black hover:text-white transition-colors"
+                    >
+                      <Instagram className="w-3 h-3" />
+                    </a>
                   </div>
                 </div>
               </div>
 
               {/* Copyright */}
               <div className="mt-12 pt-8 border-t border-gray-300">
-                <div className="text-center">
+                <div className="text-center space-y-2">
                   <div className="text-xs text-black">
                     ©2025 dida skin tout droit réservés
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    Ce site a été créé par{" "}
+                    <a
+                      href="https://www.instagram.com/isakode_conception/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-black hover:underline font-medium"
+                    >
+                      Soumia
+                    </a>
                   </div>
                 </div>
               </div>
@@ -1078,7 +1114,7 @@ export default function LandingPage() {
               initial="initial"
               animate={isReverse ? "exit" : "animate"}
               exit=""
-              className={`fixed top-0 left-0 h-screen w-full flex flex-col bg-cover bg-center pt-[80px] ${
+              className={`fixed top-0 left-0 w-full flex flex-col bg-cover bg-center pt-[80px] ${
                 sections[isReverse ? activeIndex : overlayIndex] &&
                 sections[isReverse ? activeIndex : overlayIndex].isQuiz
                   ? "items-center justify-center p-12 text-center"
@@ -1091,6 +1127,8 @@ export default function LandingPage() {
                   : "items-center justify-end p-12 text-center"
               }`}
               style={{
+                height: "100vh",
+                height: "100dvh",
                 backgroundImage:
                   (sections[isReverse ? activeIndex : overlayIndex] &&
                     sections[isReverse ? activeIndex : overlayIndex]
@@ -1317,7 +1355,7 @@ export default function LandingPage() {
                     ) : quizState === "results" ? (
                       <div className="text-center space-y-6">
                         <div className="mb-8">
-                          <div className="text-4xl md:text-6xl font-bold text-[#D4A574] mb-4">
+                          <div className="text-4xl md:text-6xl font-bold text-black mb-4">
                             {Math.round(
                               (calculateScore() / quizQuestions.length) * 100
                             )}
@@ -1338,9 +1376,7 @@ export default function LandingPage() {
                             (calculateScore() / quizQuestions.length) * 100
                           ) >= 80 ? (
                             <div className="text-green-700">
-                              <div className="text-2xl mb-2">
-                                🎉 Excellent !
-                              </div>
+                              <div className="text-2xl mb-2">Excellent !</div>
                               <p className="text-sm">
                                 Vous maîtrisez parfaitement les bases du
                                 skincare. Continuez comme ça !
@@ -1350,9 +1386,7 @@ export default function LandingPage() {
                               (calculateScore() / quizQuestions.length) * 100
                             ) >= 60 ? (
                             <div className="text-blue-700">
-                              <div className="text-2xl mb-2">
-                                👍 Bien joué !
-                              </div>
+                              <div className="text-2xl mb-2">Bien joué !</div>
                               <p className="text-sm">
                                 Vous avez de bonnes connaissances. Quelques
                                 révisions et vous serez parfait !
@@ -1362,7 +1396,7 @@ export default function LandingPage() {
                               (calculateScore() / quizQuestions.length) * 100
                             ) >= 40 ? (
                             <div className="text-orange-700">
-                              <div className="text-2xl mb-2">📚 Pas mal !</div>
+                              <div className="text-2xl mb-2"> Pas mal !</div>
                               <p className="text-sm">
                                 Vous avez les bases, mais il y a encore des
                                 choses à apprendre. Continuez à vous informer !
@@ -1370,9 +1404,7 @@ export default function LandingPage() {
                             </div>
                           ) : (
                             <div className="text-red-700">
-                              <div className="text-2xl mb-2">
-                                💡 À améliorer !
-                              </div>
+                              <div className="text-2xl mb-2">À améliorer !</div>
                               <p className="text-sm">
                                 Pas de panique ! Le skincare s'apprend.
                                 N'hésitez pas à consulter nos conseils experts.
@@ -1384,7 +1416,7 @@ export default function LandingPage() {
                         {/* Statistiques détaillées */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                           <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <div className="text-2xl font-bold text-[#D4A574]">
+                            <div className="text-2xl font-bold text-black">
                               {calculateScore()}
                             </div>
                             <div className="text-sm text-gray-600">
@@ -1408,13 +1440,6 @@ export default function LandingPage() {
                             className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide"
                           >
                             Recommencer le Quiz
-                          </button>
-                          <div className="h-2 md:h-0 md:w-2"></div>
-                          <button
-                            onClick={() => (window.location.href = "/services")}
-                            className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide "
-                          >
-                            Découvrir nos Services
                           </button>
                         </div>
                       </div>
@@ -1464,16 +1489,28 @@ export default function LandingPage() {
                           INFOS
                         </h3>
                         <div className="space-y-1">
-                          <div className="text-xs text-black cursor-pointer ">
+                          <div
+                            className="text-xs text-black cursor-pointer hover:underline"
+                            onClick={handleOpenNewsletter}
+                          >
                             Souscrire newsletter
                           </div>
-                          <div className="text-xs text-black  cursor-pointer ">
+                          <div
+                            className="text-xs text-black cursor-pointer hover:underline"
+                            onClick={() => navigate("/privacy-policy")}
+                          >
                             Politique de confidentialité
                           </div>
-                          <div className="text-xs text-black  cursor-pointer ">
+                          <div
+                            className="text-xs text-black cursor-pointer hover:underline"
+                            onClick={() => navigate("/privacy-policy")}
+                          >
                             Conditions générales de vente
                           </div>
-                          <div className="text-xs text-black cursor-pointer ">
+                          <div
+                            className="text-xs text-black cursor-pointer hover:underline"
+                            onClick={() => navigate("/legal-notice")}
+                          >
                             Mentions légales
                           </div>
                         </div>
@@ -1485,31 +1522,52 @@ export default function LandingPage() {
                           RÉSEAUX SOCIAUX
                         </h3>
                         <div className="flex space-x-4">
-                          <div className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer ">
-                            <Facebook className="w-3 h-3 text-black" />
-                          </div>
-                          <div className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer ">
-                            <Instagram className="w-3 h-3 text-black" />
-                          </div>
+                          <a
+                            href="https://www.facebook.com/share/1Zj4Z22sQk/?mibextid=wwXIfr"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer hover:bg-black hover:text-white transition-colors"
+                          >
+                            <Facebook className="w-3 h-3" />
+                          </a>
+                          <a
+                            href="https://www.instagram.com/dida.skin.institut?igsh=eXIxMDFsZHF1bnFj"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-6 h-6 border border-black rounded flex items-center justify-center cursor-pointer hover:bg-black hover:text-white transition-colors"
+                          >
+                            <Instagram className="w-3 h-3" />
+                          </a>
                         </div>
                       </div>
                     </div>
 
                     {/* Copyright */}
                     <div className="mt-12 pt-8 border-t border-gray-300">
-                      <div className="text-center">
+                      <div className="text-center space-y-2">
                         <div className="text-xs text-black">
                           ©2025 dida skin tout droit réservés
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          Ce site a été créé par{" "}
+                          <a
+                            href="https://www.instagram.com/isakode_conception/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-black hover:underline font-medium"
+                          >
+                            Soumia
+                          </a>
                         </div>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <h2 className="text-3xl md:text-4xl font-light tracking-wider mb-4 drop-shadow-lg">
+                    <h1 className="text-3xl md:text-4xl font-light tracking-wider mb-4 drop-shadow-lg">
                       {sections[isReverse ? activeIndex : overlayIndex] &&
                         sections[isReverse ? activeIndex : overlayIndex].title}
-                    </h2>
+                    </h1>
                     <p className="text-lg md:text-xl mb-8 drop-shadow-lg">
                       {sections[isReverse ? activeIndex : overlayIndex] &&
                         sections[isReverse ? activeIndex : overlayIndex]

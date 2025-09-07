@@ -7,7 +7,6 @@ import ServiceDetailPage from "./pages/service-detail-page";
 import CategoryPage from "./pages/category-page";
 import ProductDetailPage from "./pages/product-detail-page";
 import BookingPage from "./pages/booking-page";
-import ServiceBookingPage from "./pages/service-booking-page";
 import LegalNotice from "./pages/LegalNotice";  
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import LandingPage from "./pages/landing-page";
@@ -30,7 +29,7 @@ function App() {
         <Route path="/service/:id" element={<ServiceDetailPage />} />
         <Route path="/product/:id" element={<ProductDetailPage />} />
         <Route path="/booking/:id" element={<BookingPage />} />
-        <Route path="/service-booking/:id" element={<ServiceBookingPage />} />
+        
      
         <Route path="/search" element={<SearchResults />} />
         <Route path="/booking" element={<BookingPage />} />

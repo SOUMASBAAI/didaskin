@@ -117,7 +117,7 @@ export default function CategoryPage() {
       <div className="min-h-screen bg-[#F5F1ED] flex flex-col">
         <Header />
         <main className="flex-grow pt-[100px] pb-8 px-4 md:px-8 lg:px-12">
-          <h2 className="text-2xl md:text-3xl font-light text-gray-800 text-center mb-12 tracking-wide">
+          <h2 className="text-2xl md:text-3xl font-light text-gray-800 text-center mb-1 tracking-wide">
             {categoryName || ""}
           </h2>
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-2">
@@ -196,7 +196,7 @@ export default function CategoryPage() {
 
       <main className="flex-grow pt-[100px] pb-12 px-4 md:px-8 lg:px-12">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-xl md:text-2xl font-light text-gray-800 mb-3 tracking-wide text-left">
+          <h2 className="text-xl md:text-2xl font-light text-gray-800 mb-0 tracking-wide text-left">
             {categoryName || ""}
           </h2>
 
