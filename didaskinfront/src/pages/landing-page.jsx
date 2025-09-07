@@ -367,6 +367,17 @@ export default function LandingPage() {
     [activeIndex, sectionCount, isAnimating, lastScrollTime]
   );
 
+  const scrollToNextSection = useCallback(() => {
+    if (!isAnimating && activeIndex < sectionCount - 1) {
+      const now = Date.now();
+      setLastScrollTime(now);
+      setDirection(1);
+      setOverlayIndex(activeIndex + 1);
+      setIsReverse(false);
+      setIsAnimating(true);
+    }
+  }, [activeIndex, sectionCount, isAnimating]);
+
   // Scroll navigation handler for mouse wheel
   const handleWheel = useCallback(
     (e) => {
@@ -1073,23 +1084,26 @@ export default function LandingPage() {
             // Autres sections - Bouton normal
             <button
               className="px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide"
-              onClick={() =>
-                (() => {
-                  const sec =
-                    sections[
-                      isReverse && activeIndex > 0
-                        ? activeIndex - 1
-                        : activeIndex
-                    ];
-                  if (sec && sec.navigateTo) {
-                    navigate(sec.navigateTo);
-                  } else if (sec && sec.serviceId) {
-                    navigate(`/service/${sec.serviceId}`);
-                  } else {
-                    handleCategoryClick(sec && sec.categoryId);
-                  }
-                })()
-              }
+               onClick={() => {
+                const currentSectionIndex =
+                  isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex;
+
+                // Si on est sur la section hero (index 0), faire défiler vers la section suivante
+                if (currentSectionIndex === 0) {
+                  scrollToNextSection();
+                  return;
+                }
+
+                // Sinon, comportement normal
+                const sec = sections[currentSectionIndex];
+                if (sec && sec.navigateTo) {
+                  navigate(sec.navigateTo);
+                } else if (sec && sec.serviceId) {
+                  navigate(`/service/${sec.serviceId}`);
+                } else {
+                  handleCategoryClick(sec && sec.categoryId);
+                }
+              }}
             >
               {
                 sections[
