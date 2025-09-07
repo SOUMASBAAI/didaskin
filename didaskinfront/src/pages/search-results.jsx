@@ -211,26 +211,7 @@ export default function SearchResults() {
                 Aucun service ou produit ne correspond à votre recherche "
                 {searchQuery}".
               </p>
-              <div className="space-y-2">
-                <Link
-                  to="/booking"
-                  className="block w-full px-4 py-2 bg-black text-white text-center rounded hover:bg-gray-800 transition-colors"
-                >
-                  Voir tous les services
-                </Link>
-                <Link
-                  to="/products"
-                  className="block w-full px-4 py-2 bg-gray-800 text-white text-center rounded hover:bg-gray-700 transition-colors"
-                >
-                  Voir tous les produits
-                </Link>
-                <Link
-                  to="/"
-                  className="block w-full px-4 py-2 border border-black text-black bg-white text-center rounded hover:bg-gray-100 transition-colors"
-                >
-                  Retour à l'accueil
-                </Link>
-              </div>
+              
             </div>
           </div>
         )}

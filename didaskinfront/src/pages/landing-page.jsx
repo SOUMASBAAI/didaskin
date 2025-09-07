@@ -1556,7 +1556,7 @@ export default function LandingPage() {
                             rel="noopener noreferrer"
                             className="text-black hover:underline font-medium"
                           >
-                            Soumia
+                            ISAKODE
                           </a>
                         </div>
                       </div>

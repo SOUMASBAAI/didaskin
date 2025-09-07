@@ -110,7 +110,7 @@ export default function BookingPage() {
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-wider mb-4">
               RÉSERVATION
             </h1>
-            <p className="text-lg md:text-xl opacity-90 max-w-2xl mx-auto">
+            <p className="text-lg md:text-lg opacity-90 max-w-2xl mx-auto">
               Offrez à votre peau le temps qu’elle mérite
             </p>
           </div>

@@ -11,6 +11,7 @@ import LegalNotice from "./pages/LegalNotice";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import LandingPage from "./pages/landing-page";
 import ProtectedRoute from "./components/ProtectedRoute";
+import UnsubscribePage from "./pages/unsubscribe-page";
 import SearchResults from "./pages/search-results";
 import AdminResetPassword from "./pages/admin-reset-password";
 import NotFound from "./pages/NotFound";
@@ -33,6 +34,7 @@ function App() {
      
         <Route path="/search" element={<SearchResults />} />
         <Route path="/booking" element={<BookingPage />} />
+        <Route path="/unsubscribe" element={<UnsubscribePage />} />
         <Route path="*" element={<NotFound />} />
 
 
