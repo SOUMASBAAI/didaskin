@@ -82,9 +82,9 @@ export default function ProductPage() {
 
       <main className="pt-24 pb-12 px-2 md:px-4">
         {/* Titre principal pour le SEO */}
-        <h1 className="text-2xl font-light text-gray-800 mb-0 tracking-wide px-2 md:px-4">
+        <h2 className="text-2xl font-light text-gray-800 mb-0 tracking-wide px-2 md:px-4">
           Nos Produits
-        </h1>
+        </h2>
 
         {/* Grille des produits */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-[3px] gap-y-[3px]">

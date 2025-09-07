@@ -6,6 +6,7 @@ use App\Repository\ServiceRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ServiceRepository::class)]
 class Service
@@ -22,22 +23,27 @@ class Service
 
     #[ORM\Column]
     #[Groups(['service:read'])]
+    #[Assert\NotBlank(message: "Le label ne doit pas être vide")]
     private ?string $shortDescription = null;
 
     #[ORM\Column]
     #[Groups(['service:read'])]
+    #[Assert\NotBlank(message: "Le label ne doit pas être vide")]
     private ?string $longDescription = null;
 
     #[ORM\Column]
     #[Groups(['service:read'])]
+    #[Assert\NotBlank(message: "Le label ne doit pas être vide")]
     private ?string $additionalDetails = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['service:read'])]
+    #[Assert\NotBlank(message: "Le label ne doit pas être vide")]
     private ?float $ServiceDuration = null;
 
     #[ORM\Column]
     #[Groups(['service:read'])]
+    #[Assert\NotBlank(message: "Le label ne doit pas être vide")]
     private ?float $price = null;
 
     #[ORM\Column(length: 255)]

@@ -54,7 +54,7 @@ class ServiceTest extends KernelTestCase
 
     /**
      * Vérifie qu'un label vide ne provoque pas d'erreur (car pas de contrainte dans l'entité)
-     * Si tu ajoutes un @Assert\NotBlank sur label, adapte cette méthode.
+     
      */
     public function testLabelCanBeEmpty(): void
     {

@@ -15,7 +15,7 @@ const LEGAL = {
     publicationManager: "ASBAAI SOUMIA",
   },
   host: {
-    name: "",
+    name: "Cloud Azure",
     address: "[Adresse de l'hébergeur]",
     phone: "[Téléphone de l'hébergeur]",
     website: "[URL de l'hébergeur]",
