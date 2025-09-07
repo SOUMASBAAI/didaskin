@@ -36,15 +36,15 @@ class Product
     #[Assert\NotBlank(message: "Le slug ne doit pas être vide")]
     private ?string $slug = null;
 
-    #[ORM\Column(length: 900)]
+    #[ORM\Column]
     #[Assert\NotBlank(message: "La description courte ne doit pas être vide")]
     private ?string $shortDescription = null;
 
-    #[ORM\Column(length: 900)]
+    #[ORM\Column]
     #[Assert\NotBlank(message: "La description longue ne doit pas être vide")]
     private ?string $longDescription = null;
 
-    #[ORM\Column(length: 900)]
+    #[ORM\Column]
     private ?string $additionalDetails = null;
 
     #[ORM\Column(name: '`ranked`')]

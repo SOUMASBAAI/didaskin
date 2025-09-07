@@ -97,7 +97,7 @@ export default function BookingPage() {
       <Header />
 
       {/* Bannière avec photo */}
-      <section className="relative h-[30vh] md:h-[50vh] min-h-[250px] md:min-h-[400px] bg-cover bg-center bg-no-repeat overflow-hidden">
+      <section className="relative h-[30vh] md:h-[50vh] min-h-[250px] md:min-h-[400px] bg-cover bg-center bg-no-repeat overflow-hidden z-0">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
@@ -106,12 +106,12 @@ export default function BookingPage() {
         />
         <div className="absolute inset-0 " />
         <div className="relative z-10 flex items-center justify-center h-full px-4 md:px-6 lg:px-8">
-          <div className="text-center text-white max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-light tracking-wider mb-4">
+          <div className="text-center text-black max-w-4xl mx-auto">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-wider mb-4">
               RÉSERVATION
             </h1>
             <p className="text-lg md:text-xl opacity-90 max-w-2xl mx-auto">
-              Prenez rendez-vous pour votre moment de bien-être et de beauté
+              Offrez à votre peau le temps qu’elle mérite
             </p>
           </div>
         </div>
