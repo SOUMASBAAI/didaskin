@@ -100,7 +100,7 @@ export default function ServicePage() {
             )}
 
             {/* Page Title */}
-            <h2 className="text-lg font-light text-gray-800 mb-4 tracking-wide">
+            <h2 className="text-lg font-light text-gray-800 mb-0 tracking-wide">
               {searchQuery
                 ? `RECHERCHE - "${searchQuery}"`
                 : subcategoryId
