@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { API_BASE_URL } from "../config/apiConfig";
 
-// Composant réutilisable pour afficher une sous-catégorie
 function SubcategoryCard({ subcategory, onClick }) {
   return (
     <div className="flex flex-col items-center text-center">
@@ -20,6 +19,7 @@ function SubcategoryCard({ subcategory, onClick }) {
             src={subcategory.image_link || "/placeholder.svg"}
             alt={subcategory.label}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
           />
         </div>
       </button>
@@ -38,51 +38,56 @@ export default function CategoryPage() {
 
   const [category, setCategory] = useState(null);
   const [subcategories, setSubcategories] = useState([]);
-  const [categoriesList, setCategoriesList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingCategory, setLoadingCategory] = useState(true);
+  const [loadingSubcategories, setLoadingSubcategories] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch catégorie + sous-catégories
+  const handleSubcategoryClick = useCallback(
+    (id) => navigate(`/services?subcategory=${id}`),
+    [navigate]
+  );
+
+  // Fetch catégorie
   useEffect(() => {
-    if (!categoryId) {
-      setLoading(false);
-      return;
-    }
+    if (!categoryId) return;
 
-    const fetchData = async () => {
+    const fetchCategory = async () => {
       try {
-        setLoading(true);
-        setError(null);
-
-        const [catRes, subRes, listRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/categories/${categoryId}`),
-          fetch(`${API_BASE_URL}/subcategories/category/${categoryId}`),
-          fetch(`${API_BASE_URL}/categories`),
-        ]);
-
-        if (!catRes.ok || !subRes.ok || !listRes.ok) throw new Error("Erreur de chargement");
-
-        const catData = await catRes.json();
-        const subData = await subRes.json();
-        const listData = await listRes.json();
-
-        if (catData.success) setCategory(catData.data);
-        if (subData.success) setSubcategories(subData.data);
-        if (listData.success) setCategoriesList(listData.data);
-
+        setLoadingCategory(true);
+        const res = await fetch(`${API_BASE_URL}/categories/${categoryId}`);
+        if (!res.ok) throw new Error("Erreur de chargement de la catégorie");
+        const data = await res.json();
+        if (data.success) setCategory(data.data);
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false);
+        setLoadingCategory(false);
       }
     };
 
-    fetchData();
+    fetchCategory();
   }, [categoryId]);
 
-  const handleSubcategoryClick = (id) => {
-    navigate(`/services?subcategory=${id}`);
-  };
+  // Fetch sous-catégories
+  useEffect(() => {
+    if (!categoryId) return;
+
+    const fetchSubcategories = async () => {
+      try {
+        setLoadingSubcategories(true);
+        const res = await fetch(`${API_BASE_URL}/subcategories/category/${categoryId}`);
+        if (!res.ok) throw new Error("Erreur de chargement des sous-catégories");
+        const data = await res.json();
+        if (data.success) setSubcategories(data.data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoadingSubcategories(false);
+      }
+    };
+
+    fetchSubcategories();
+  }, [categoryId]);
 
   // Cas : pas de catégorie sélectionnée
   if (!categoryId) {
@@ -102,8 +107,8 @@ export default function CategoryPage() {
     );
   }
 
-  // Loader
-  if (loading) {
+  // Loader principal
+  if (loadingCategory && !category) {
     return (
       <div className="min-h-screen bg-[#F5F1ED] flex flex-col">
         <Header />
@@ -146,19 +151,25 @@ export default function CategoryPage() {
                   src={category.image_link}
                   alt={category.label}
                   className="w-full h-full object-cover transition-transform duration-300"
+                  loading="lazy"
                 />
               </div>
             </div>
           )}
-          <div className="grid grid-cols-2 gap-2">
-            {subcategories.map((sub) => (
-              <SubcategoryCard
-                key={sub.id}
-                subcategory={sub}
-                onClick={() => handleSubcategoryClick(sub.id)}
-              />
-            ))}
-          </div>
+
+          {loadingSubcategories ? (
+            <p className="text-gray-600 text-center">Chargement des sous-catégories...</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {subcategories.map((sub) => (
+                <SubcategoryCard
+                  key={sub.id}
+                  subcategory={sub}
+                  onClick={() => handleSubcategoryClick(sub.id)}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Version Desktop */}
@@ -170,24 +181,31 @@ export default function CategoryPage() {
                   src={category?.image_link || "/placeholder.svg"}
                   alt={category.label || "Catégorie"}
                   className="w-full h-full object-cover transition-transform duration-300"
+                  loading="lazy"
                 />
               </div>
             </div>
           </div>
 
           <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {subcategories.slice(0, 6).map((sub) => (
-              <SubcategoryCard
-                key={sub.id}
-                subcategory={sub}
-                onClick={() => handleSubcategoryClick(sub.id)}
-              />
-            ))}
+            {loadingSubcategories ? (
+              <p className="text-gray-600 col-span-2 text-center">
+                Chargement des sous-catégories...
+              </p>
+            ) : (
+              subcategories.slice(0, 6).map((sub) => (
+                <SubcategoryCard
+                  key={sub.id}
+                  subcategory={sub}
+                  onClick={() => handleSubcategoryClick(sub.id)}
+                />
+              ))
+            )}
           </div>
         </div>
 
         {/* Sous-catégories restantes Desktop */}
-        {subcategories.length > 6 && (
+        {!loadingSubcategories && subcategories.length > 6 && (
           <div className="hidden lg:block mt-8 max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {subcategories.slice(6).map((sub) => (
               <SubcategoryCard
@@ -200,7 +218,7 @@ export default function CategoryPage() {
         )}
 
         {/* Cas : aucune sous-catégorie */}
-        {subcategories.length === 0 && (
+        {!loadingSubcategories && subcategories.length === 0 && (
           <p className="text-gray-600 text-center mt-8">
             Aucune sous-catégorie trouvée pour cette catégorie.
           </p>
