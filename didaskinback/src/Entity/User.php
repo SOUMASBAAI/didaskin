@@ -2,12 +2,14 @@
 
 namespace App\Entity;
 
+use Assert\NotBlank;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -23,14 +25,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 50)]
     #[Groups(['user:read'])]
+     #[Assert\NotBlank(message: "Le label ne doit pas être vide")]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 50)]
     #[Groups(['user:read'])]
+    #[Assert\NotBlank(message: "Le label ne doit pas être vide")]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 180)]  
     #[Groups(['user:read'])]
+    #[Assert\NotBlank(message: "Le label ne doit pas être vide")]
     private ?string $email = null;
 
     #[ORM\Column(length: 80)]
