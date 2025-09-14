@@ -367,6 +367,7 @@ export default function LandingPage() {
     [activeIndex, sectionCount, isAnimating, lastScrollTime]
   );
 
+  // Function to scroll to next section (for hero button)
   const scrollToNextSection = useCallback(() => {
     if (!isAnimating && activeIndex < sectionCount - 1) {
       const now = Date.now();
@@ -417,6 +418,11 @@ export default function LandingPage() {
       handleWheel(e);
     };
 
+    // Disable global scroll listeners while modal is open to allow modal scrolling
+    if (showSubscribe) {
+      return;
+    }
+
     // Add wheel event for desktop
     window.addEventListener("wheel", onWheel, { passive: false });
 
@@ -431,7 +437,13 @@ export default function LandingPage() {
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd]);
+  }, [
+    handleWheel,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    showSubscribe,
+  ]);
 
   // When animation completes, update the active section and clean up overlay
   const handleOverlayAnimationComplete = () => {
@@ -1081,36 +1093,45 @@ export default function LandingPage() {
               </div>
             </div>
           ) : (
-            // Autres sections - Bouton normal
-            <button
-              className="px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide"
-               onClick={() => {
-                const currentSectionIndex =
-                  isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex;
+            <>
+              {(isReverse && activeIndex > 0
+                ? activeIndex - 1
+                : activeIndex) !== 0 && (
+                <button
+                  className="px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide"
+                  onClick={() => {
+                    const currentSectionIndex =
+                      isReverse && activeIndex > 0
+                        ? activeIndex - 1
+                        : activeIndex;
 
-                // Si on est sur la section hero (index 0), faire défiler vers la section suivante
-                if (currentSectionIndex === 0) {
-                  scrollToNextSection();
-                  return;
-                }
+                    // Si on est sur la section hero (index 0), faire défiler vers la section suivante
+                    if (currentSectionIndex === 0) {
+                      scrollToNextSection();
+                      return;
+                    }
 
-                // Sinon, comportement normal
-                const sec = sections[currentSectionIndex];
-                if (sec && sec.navigateTo) {
-                  navigate(sec.navigateTo);
-                } else if (sec && sec.serviceId) {
-                  navigate(`/service/${sec.serviceId}`);
-                } else {
-                  handleCategoryClick(sec && sec.categoryId);
-                }
-              }}
-            >
-              {
-                sections[
-                  isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
-                ].callToAction
-              }
-            </button>
+                    // Sinon, comportement normal
+                    const sec = sections[currentSectionIndex];
+                    if (sec && sec.navigateTo) {
+                      navigate(sec.navigateTo);
+                    } else if (sec && sec.serviceId) {
+                      navigate(`/service/${sec.serviceId}`);
+                    } else {
+                      handleCategoryClick(sec && sec.categoryId);
+                    }
+                  }}
+                >
+                  {
+                    sections[
+                      isReverse && activeIndex > 0
+                        ? activeIndex - 1
+                        : activeIndex
+                    ].callToAction
+                  }
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -1587,26 +1608,28 @@ export default function LandingPage() {
                         sections[isReverse ? activeIndex : overlayIndex]
                           .description}
                     </p>
-                    <button
-                      className="px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide hover:border "
-                      onClick={() =>
-                        (() => {
-                          const sec =
-                            sections[isReverse ? activeIndex : overlayIndex];
-                          if (sec && sec.navigateTo) {
-                            navigate(sec.navigateTo);
-                          } else if (sec && sec.serviceId) {
-                            navigate(`/service/${sec.serviceId}`);
-                          } else {
-                            handleCategoryClick(sec && sec.categoryId);
-                          }
-                        })()
-                      }
-                    >
-                      {sections[isReverse ? activeIndex : overlayIndex] &&
-                        sections[isReverse ? activeIndex : overlayIndex]
-                          .callToAction}
-                    </button>
+                    {(isReverse ? activeIndex : overlayIndex) !== 0 && (
+                      <button
+                        className="px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide hover:border "
+                        onClick={() =>
+                          (() => {
+                            const sec =
+                              sections[isReverse ? activeIndex : overlayIndex];
+                            if (sec && sec.navigateTo) {
+                              navigate(sec.navigateTo);
+                            } else if (sec && sec.serviceId) {
+                              navigate(`/service/${sec.serviceId}`);
+                            } else {
+                              handleCategoryClick(sec && sec.categoryId);
+                            }
+                          })()
+                        }
+                      >
+                        {sections[isReverse ? activeIndex : overlayIndex] &&
+                          sections[isReverse ? activeIndex : overlayIndex]
+                            .callToAction}
+                      </button>
+                    )}
                   </>
                 )}
               </div>

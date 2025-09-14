@@ -40,11 +40,11 @@ class Product
     #[Assert\NotBlank(message: "La description courte ne doit pas être vide")]
     private ?string $shortDescription = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'text', nullable: true)]
     #[Assert\NotBlank(message: "La description longue ne doit pas être vide")]
     private ?string $longDescription = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $additionalDetails = null;
 
     #[ORM\Column(name: '`ranked`')]

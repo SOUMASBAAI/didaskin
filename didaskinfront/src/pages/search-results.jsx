@@ -127,7 +127,7 @@ export default function SearchResults() {
       <main className="pt-24 pb-12 px-2 md:px-4">
         {/* Search results header */}
         <div className="px-2 md:px-4 mb-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <div className="bg-[#F5F1ED] p-6 rounded-lg shadow-sm border border-gray-100">
             <h1 className="text-2xl font-light text-gray-800 mb-2">
               Résultats de recherche
             </h1>
@@ -203,7 +203,7 @@ export default function SearchResults() {
         {/* No results */}
         {totalResults === 0 && (
           <div className="text-center py-12">
-            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 max-w-md mx-auto">
+            <div className="bg-[#F5F1ED]p-8 rounded-lg shadow-sm border border-gray-100 max-w-md mx-auto">
               <h3 className="text-lg font-medium text-gray-800 mb-2">
                 Aucun résultat trouvé
               </h3>
@@ -222,13 +222,13 @@ export default function SearchResults() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/booking"
-                className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 bg-[#F5F1ED] rounded-lg hover:bg-gray-50 "
               >
                 ← Voir tous les services
               </Link>
               <Link
                 to="/products"
-                className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 bg-[#F5F1ED] rounded-lg hover:bg-gray-50 "
               >
                 Voir tous les produits →
               </Link>

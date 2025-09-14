@@ -111,10 +111,15 @@ export default function NewsletterModal({ isOpen, onClose, imageUrl }) {
 
   const handleModalScroll = (e) => e.stopPropagation();
 
+  const stopTouchPropagation = (e) => e.stopPropagation();
+
   return (
     <div
       className="fixed inset-0 bg-black/20 backdrop-blur-sm md:backdrop-blur-md flex items-center justify-center z-50 p-4"
       onWheel={handleModalScroll}
+      onTouchStart={stopTouchPropagation}
+      onTouchMove={stopTouchPropagation}
+      onTouchEnd={stopTouchPropagation}
     >
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header image */}
@@ -134,8 +139,11 @@ export default function NewsletterModal({ isOpen, onClose, imageUrl }) {
 
         {/* Form / Success message */}
         <div
-          className="p-8 overflow-y-auto flex-1"
+          className="p-8 overflow-y-auto flex-1 overscroll-contain touch-pan-y"
           onScroll={handleModalScroll}
+          onTouchStart={stopTouchPropagation}
+          onTouchMove={stopTouchPropagation}
+          onTouchEnd={stopTouchPropagation}
         >
           {!isSuccess ? (
             <>

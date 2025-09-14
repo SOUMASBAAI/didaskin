@@ -26,12 +26,12 @@ class Service
     #[Assert\NotBlank(message: "Le label ne doit pas être vide")]
     private ?string $shortDescription = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'text', nullable: true)]
     #[Groups(['service:read'])]
     #[Assert\NotBlank(message: "Le label ne doit pas être vide")]
     private ?string $longDescription = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'text', nullable: true)]
     #[Groups(['service:read'])]
     #[Assert\NotBlank(message: "Le label ne doit pas être vide")]
     private ?string $additionalDetails = null;
