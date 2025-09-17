@@ -82,7 +82,7 @@ export default function ProductPage() {
 
       <main className="pt-24 pb-12 px-2 md:px-4">
         {/* Titre principal pour le SEO */}
-        <h2 className="text-2xl font-light text-gray-800 mb-0 tracking-wide px-2 md:px-4">
+        <h2 className="text-xl font-light text-gray-800 mb-0 tracking-wide px-2 md:px-4">
           Nos Produits
         </h2>
 
