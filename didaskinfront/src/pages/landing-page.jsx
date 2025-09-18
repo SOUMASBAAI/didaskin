@@ -966,12 +966,7 @@ export default function LandingPage() {
                       Recommencer le Quiz
                     </button>
                     <div className="h-2 md:h-0 md:w-2"></div>
-                    <button
-                      onClick={() => (window.location.href = "/services")}
-                      className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide "
-                    >
-                      Découvrir nos Services
-                    </button>
+                    
                   </div>
                 </div>
               ) : null}

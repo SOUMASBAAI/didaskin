@@ -378,10 +378,10 @@ export default function Header() {
                       {categories.map((cat) => (
                         <button
                           key={cat.id}
-                          className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-800 hover:bg-gray-100 transition-colors"
+                          className="w-full flex items-center justify-between px-3 py-1 rounded text-gray-800 text-sm"
                           onClick={() => showSubcategoriesView(cat)}
                         >
-                          <span className="font-medium">{cat.label}</span>
+                          <span>{cat.label}</span>
                           <svg
                             className="h-4 w-4 text-gray-400"
                             fill="none"
@@ -450,10 +450,10 @@ export default function Header() {
                           <Link
                             key={sub.id}
                             to={`/services?subcategory=${sub.id}`}
-                            className="block px-4 py-3 rounded-lg text-gray-800 hover:bg-gray-100 transition-colors"
+                            className="block px-3 py-1 rounded text-gray-800 text-sm"
                             onClick={closeMobileMenu}
                           >
-                            <span className="font-medium">{sub.label}</span>
+                            <span>{sub.label}</span>
                             {sub.description && (
                               <p className="text-sm text-gray-600 mt-1">
                                 {sub.description}
