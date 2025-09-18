@@ -75,8 +75,11 @@ export default function CategoryPage() {
     const fetchSubcategories = async () => {
       try {
         setLoadingSubcategories(true);
-        const res = await fetch(`${API_BASE_URL}/subcategories/category/${categoryId}`);
-        if (!res.ok) throw new Error("Erreur de chargement des sous-catégories");
+        const res = await fetch(
+          `${API_BASE_URL}/subcategories/category/${categoryId}`
+        );
+        if (!res.ok)
+          throw new Error("Erreur de chargement des sous-catégories");
         const data = await res.json();
         if (data.success) setSubcategories(data.data);
       } catch (err) {
@@ -158,7 +161,9 @@ export default function CategoryPage() {
           )}
 
           {loadingSubcategories ? (
-            <p className="text-gray-600 text-center">Chargement des sous-catégories...</p>
+            <p className="text-gray-600 text-center">
+              Chargement des sous-catégories...
+            </p>
           ) : (
             <div className="grid grid-cols-2 gap-2">
               {subcategories.map((sub) => (
@@ -187,33 +192,37 @@ export default function CategoryPage() {
             </div>
           </div>
 
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8 h-[45.5rem] content-between">
             {loadingSubcategories ? (
               <p className="text-gray-600 col-span-2 text-center">
                 Chargement des sous-catégories...
               </p>
             ) : (
-              subcategories.slice(0, 6).map((sub) => (
-                <SubcategoryCard
-                  key={sub.id}
-                  subcategory={sub}
-                  onClick={() => handleSubcategoryClick(sub.id)}
-                />
-              ))
+              subcategories
+                .slice(0, 6)
+                .map((sub) => (
+                  <SubcategoryCard
+                    key={sub.id}
+                    subcategory={sub}
+                    onClick={() => handleSubcategoryClick(sub.id)}
+                  />
+                ))
             )}
           </div>
         </div>
 
         {/* Sous-catégories restantes Desktop */}
         {!loadingSubcategories && subcategories.length > 6 && (
-          <div className="hidden lg:block mt-8 max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {subcategories.slice(6).map((sub) => (
-              <SubcategoryCard
-                key={sub.id}
-                subcategory={sub}
-                onClick={() => handleSubcategoryClick(sub.id)}
-              />
-            ))}
+          <div className="hidden lg:block mt-8">
+            <div className="max-w-6xl mx-auto grid grid-cols-4 gap-4">
+              {subcategories.slice(6).map((sub) => (
+                <SubcategoryCard
+                  key={sub.id}
+                  subcategory={sub}
+                  onClick={() => handleSubcategoryClick(sub.id)}
+                />
+              ))}
+            </div>
           </div>
         )}
 

@@ -18,13 +18,13 @@ class Newsletter
     private ?int $id = null;
 
    
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $content = null;
 
     #[ORM\Column(length: 255)]
     private ?string $image_link = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $shortDescription = null;
 
     #[ORM\Column(length: 255)]
