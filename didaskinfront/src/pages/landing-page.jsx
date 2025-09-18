@@ -544,7 +544,7 @@ export default function LandingPage() {
         style={{ height: "100vh", height: "100dvh" }}
       >
         <div className="text-center">
-          <h1 className="text-3xl md:text-4xl font-light tracking-wider text-gray-800 mb-4">
+          <h1 className="text-2xl md:text-3xl font-light tracking-wider text-gray-800 mb-4">
             DIDA SKIN
           </h1>
 
@@ -636,7 +636,7 @@ export default function LandingPage() {
               isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
             ].isAbout && (
               <>
-                <h1 className="text-3xl md:text-4xl font-light tracking-wider mb-4 drop-shadow-lg">
+                <h1 className="text-2xl md:text-3xl font-light tracking-wider mb-0 drop-shadow-lg">
                   {
                     sections[
                       isReverse && activeIndex > 0
@@ -645,7 +645,7 @@ export default function LandingPage() {
                     ].title
                   }
                 </h1>
-                <p className="text-lg md:text-xl mb-8 drop-shadow-lg">
+                <p className="text-lg md:text-lg mb-8 drop-shadow-lg">
                   {
                     sections[
                       isReverse && activeIndex > 0
@@ -1594,11 +1594,11 @@ export default function LandingPage() {
                   </div>
                 ) : (
                   <>
-                    <h1 className="text-3xl md:text-4xl font-light tracking-wider mb-4 drop-shadow-lg">
+                    <h1 className="text-2xl md:text-3xl font-light tracking-wider mb-0 drop-shadow-lg">
                       {sections[isReverse ? activeIndex : overlayIndex] &&
                         sections[isReverse ? activeIndex : overlayIndex].title}
                     </h1>
-                    <p className="text-lg md:text-xl mb-8 drop-shadow-lg">
+                    <p className="text-lg md:text-lg mb-8 drop-shadow-lg">
                       {sections[isReverse ? activeIndex : overlayIndex] &&
                         sections[isReverse ? activeIndex : overlayIndex]
                           .description}
