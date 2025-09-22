@@ -122,7 +122,7 @@ export default function ServiceDetailPage() {
             </p>
 
             {service.longDescription && (
-              <p className="text-base text-gray-700 leading-relaxed mb-8 whitespace-pre-line">
+              <p className="text-base text-gray-700 leading-relaxed mb-8 ">
                 {service.longDescription}
               </p>
             )}

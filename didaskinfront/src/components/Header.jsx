@@ -221,7 +221,7 @@ export default function Header() {
   return (
     <header
       ref={headerRef}
-      className="bg-[#F5F1ED] border-b border-gray-100 py-2 md:py-3 px-6 md:px-12 flex items-center justify-between sticky top-0 z-10 relative"
+      className="bg-[#F5F1ED] border-b border-gray-100 py-6 md:py-5 px-6 md:px-12 flex items-center justify-between sticky top-0 z-10 relative"
     >
       {/* Left Nav - Hidden on desktop, shown on mobile */}
       <nav className="hidden lg:flex space-x-16 flex-nowrap">
@@ -254,7 +254,7 @@ export default function Header() {
         {/* Logo */}
         <div className="text-center pt-2">
           <Link to="/" className="block">
-            <img src={logo} alt="DIDA SKIN" className="h-10 w-auto mx-auto" />
+            <img src={logo} alt="DIDA SKIN" className="h-11 w-auto mx-auto" />
           </Link>
         </div>
         {/* Search */}
@@ -328,6 +328,24 @@ export default function Header() {
                     onClick={closeMobileMenu}
                   >
                     Réserver un soin
+                  </Link>
+                  <Link
+                    to="/#quiz"
+                    className="block px-3 py-2 rounded text-gray-800"
+                    onClick={(e) => {
+                      // Check if we're on the landing page
+                      if (window.location.pathname === "/") {
+                        e.preventDefault();
+                        closeMobileMenu();
+                        // Scroll to quiz section by dispatching a custom event
+                        window.dispatchEvent(new CustomEvent("scrollToQuiz"));
+                      } else {
+                        closeMobileMenu();
+                        // If not on landing page, let the Link navigate normally to /#quiz
+                      }
+                    }}
+                  >
+                    Test beauté
                   </Link>
                 </nav>
               </>
@@ -554,7 +572,7 @@ export default function Header() {
         {/* Center Logo - Vraiment centré */}
         <div className="absolute left-1/2 transform -translate-x-1/2 pt-3">
           <Link to="/" className="block">
-            <img src={logo} alt="DIDA SKIN" className="h-10 w-auto" />
+            <img src={logo} alt="DIDA SKIN" className="h-11 w-auto" />
           </Link>
         </div>
 
@@ -571,6 +589,22 @@ export default function Header() {
             className="hidden md:block text-sm font-medium text-gray-800 hover:text-black transition-colors whitespace-nowrap"
           >
             RESERVER UN SOIN
+          </Link>
+
+          <Link
+            to="/#quiz"
+            onClick={(e) => {
+              // Check if we're on the landing page
+              if (window.location.pathname === "/") {
+                e.preventDefault();
+                // Scroll to quiz section by dispatching a custom event
+                window.dispatchEvent(new CustomEvent("scrollToQuiz"));
+              }
+              // If not on landing page, let the Link navigate normally to /#quiz
+            }}
+            className="hidden md:block text-sm font-medium text-gray-800 hover:text-black transition-colors whitespace-nowrap"
+          >
+            TEST BEAUTÉ
           </Link>
         </div>
       </div>
