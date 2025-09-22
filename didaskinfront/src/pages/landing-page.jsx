@@ -467,6 +467,36 @@ export default function LandingPage() {
     };
   }, []);
 
+   useEffect(() => {
+    const handleScrollToQuiz = () => {
+      // Find the quiz section index
+      const quizSectionIndex = sections.findIndex((section) => section.isQuiz);
+      if (quizSectionIndex !== -1 && quizSectionIndex !== activeIndex) {
+        // Scroll to quiz section
+        const now = Date.now();
+        setLastScrollTime(now);
+        setDirection(quizSectionIndex > activeIndex ? 1 : -1);
+        setOverlayIndex(quizSectionIndex);
+        setIsReverse(quizSectionIndex < activeIndex);
+        setIsAnimating(true);
+      }
+    };
+
+    // Listen for custom event from header
+    window.addEventListener("scrollToQuiz", handleScrollToQuiz);
+
+    // Check for hash on page load
+    if (window.location.hash === "#quiz") {
+      setTimeout(() => {
+        handleScrollToQuiz();
+      }, 1000); // Delay to ensure sections are loaded
+    }
+
+    return () => {
+      window.removeEventListener("scrollToQuiz", handleScrollToQuiz);
+    };
+  }, [sections, activeIndex, isAnimating]);
+
   // Fonctions pour gérer le quiz
   const handleAnswerSelect = (questionId, answerIndex) => {
     if (quizQuestions.length === 0) return;
@@ -645,7 +675,7 @@ export default function LandingPage() {
                     ].title
                   }
                 </h1>
-                <p className="text-lg md:text-lg mb-8 drop-shadow-lg">
+                <p className="text-lg md:text-lg mb-4 drop-shadow-lg">
                   {
                     sections[
                       isReverse && activeIndex > 0
@@ -1202,7 +1232,7 @@ export default function LandingPage() {
                 {/* Affichage conditionnel : About, Quiz, Footer ou bouton normal */}
                 {sections[isReverse ? activeIndex : overlayIndex] &&
                 sections[isReverse ? activeIndex : overlayIndex].isAbout ? (
-                  <div className="flex items-center justify-center px-4 py-8 md:p-12">
+                  <div className="flex items-center justify-center px-4 py-8 md:p-0">
                     <div className="bg-[#F5F1ED] rounded-lg my-6 md:my-10 p-4 md:p-8 max-w-5xl mx-auto text-gray-800">
                       <div className="grid md:grid-cols-2 gap-6 items-center">
                         <div className="relative w-full h-[60vh] md:h-[70vh] overflow-hidden">
@@ -1598,7 +1628,7 @@ export default function LandingPage() {
                       {sections[isReverse ? activeIndex : overlayIndex] &&
                         sections[isReverse ? activeIndex : overlayIndex].title}
                     </h1>
-                    <p className="text-lg md:text-lg mb-8 drop-shadow-lg">
+                    <p className="text-lg md:text-lg mb-4 drop-shadow-lg">
                       {sections[isReverse ? activeIndex : overlayIndex] &&
                         sections[isReverse ? activeIndex : overlayIndex]
                           .description}
