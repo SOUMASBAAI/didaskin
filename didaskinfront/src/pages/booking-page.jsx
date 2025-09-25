@@ -107,9 +107,7 @@ export default function BookingPage() {
         <div className="absolute inset-0 " />
         <div className="relative z-10 flex items-center justify-center h-full px-4 md:px-6 lg:px-8">
           <div className="text-center text-black max-w-4xl mx-auto">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-wider mb-4">
-              RÉSERVATION
-            </h1>
+            
            
           </div>
         </div>
