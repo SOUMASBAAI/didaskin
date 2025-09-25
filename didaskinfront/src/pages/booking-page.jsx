@@ -97,21 +97,17 @@ export default function BookingPage() {
       <Header />
 
       {/* Bannière avec photo */}
-      <section className="relative h-[30vh] md:h-[50vh] min-h-[250px] md:min-h-[400px] bg-cover bg-center bg-no-repeat overflow-hidden z-0">
+      <section className="relative h-[30vh] md:h-[50vh] min-h-[250px] md:min-h-[400px] bg-cover bg-no-repeat overflow-hidden z-0">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-no-repeat"
           style={{
             backgroundImage: `url(${bannerImage})`,
+            backgroundPosition: "center 30%",
           }}
         />
         <div className="absolute inset-0 " />
         <div className="relative z-10 flex items-center justify-center h-full px-4 md:px-6 lg:px-8">
-          <div className="text-center text-black max-w-4xl mx-auto">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-wider mb-4">
-              RÉSERVATION
-            </h1>
-           
-          </div>
+          <div className="text-center text-black max-w-4xl mx-auto"></div>
         </div>
       </section>
 
@@ -166,8 +162,6 @@ export default function BookingPage() {
               primaryColor={planityConfig.primaryColor}
             />
           </div>
-
-          
         </div>
       </main>
 

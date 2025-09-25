@@ -106,6 +106,8 @@ export default function LandingPage() {
     title: "BIENVENUE CHEZ DIDA SKIN",
     description: "Votre sanctuaire de beauté et de bien-être.",
     image: null,
+    video:
+      "https://res.cloudinary.com/dl6gb7cwm/video/upload/Dida_Skin_Branding_los7bp.mp4", // Hardcoded Cloudinary video URL
     cta: "DÉCOUVRIR NOS SERVICES",
   });
 
@@ -115,7 +117,13 @@ export default function LandingPage() {
         const resp = await fetch(`${API_BASE_URL}/site-content/hero`);
         if (resp.ok) {
           const json = await resp.json();
-          if (json?.success && json?.data) setHero(json.data);
+          if (json?.success && json?.data) {
+            setHero((prevHero) => ({
+              ...json.data,
+              // Keep the hardcoded video if backend doesn't provide one
+              video: json.data.video || prevHero.video,
+            }));
+          }
         }
       } catch (e) {
         // keep defaults
@@ -126,32 +134,51 @@ export default function LandingPage() {
     fetchHero();
   }, []);
 
-  // Preload images (hero + category thumbnails) before showing page
+  // Preload images and videos (hero + category thumbnails) before showing page
   useEffect(() => {
     if (!heroFetched || loading) return;
 
     const fallbackHero =
       "https://media.istockphoto.com/id/1304547222/photo/glamour-portrait-of-beautiful-woman.jpg?s=612x612&w=0&k=20&c=kiRKdJDxdqEz-lXRCqAuDzEoNsTk-_NZ-SsB2OLGM8Y=";
 
-    const urls = [];
-    // Prefer hero image if set; otherwise fallback
-    urls.push(hero.image || fallbackHero);
-    // Preload first 3 category images if available
-    categories.slice(0, 3).forEach((c) => {
-      if (c?.image_link) urls.push(c.image_link);
-    });
+    const preloadPromises = [];
 
-    const preload = (src) =>
-      new Promise((resolve) => {
-        if (!src) return resolve();
+    // Preload hero video if available
+    if (hero.video) {
+      const videoPreload = new Promise((resolve) => {
+        const video = document.createElement("video");
+        video.preload = "metadata";
+        video.onloadedmetadata = () => resolve();
+        video.onerror = () => resolve();
+        video.src = hero.video;
+      });
+      preloadPromises.push(videoPreload);
+    } else {
+      // Preload hero image if no video
+      const imagePreload = new Promise((resolve) => {
         const img = new Image();
         img.onload = () => resolve();
         img.onerror = () => resolve();
-        img.src = src;
+        img.src = hero.image || fallbackHero;
       });
+      preloadPromises.push(imagePreload);
+    }
 
-    Promise.all(urls.map(preload)).then(() => setAssetsReady(true));
-  }, [heroFetched, loading, hero.image, categories]);
+    // Preload first 3 category images if available
+    categories.slice(0, 3).forEach((c) => {
+      if (c?.image_link) {
+        const imagePreload = new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          img.src = c.image_link;
+        });
+        preloadPromises.push(imagePreload);
+      }
+    });
+
+    Promise.all(preloadPromises).then(() => setAssetsReady(true));
+  }, [heroFetched, loading, hero.image, hero.video, categories]);
 
   // Subscription modal state for form success/errors handled in component
   const [showSubscribe, setShowSubscribe] = useState(false);
@@ -225,11 +252,14 @@ export default function LandingPage() {
     {
       title: hero.title,
       description: hero.description,
-      imageSrc:
-        hero.image ||
-        "https://media.istockphoto.com/id/1304547222/photo/glamour-portrait-of-beautiful-woman.jpg?s=612x612&w=0&k=20&c=kiRKdJDxdqEz-lXRCqAuDzEoNsTk-_NZ-SsB2OLGM8Y=",
+      imageSrc: hero.video
+        ? "none"
+        : hero.image ||
+          "https://media.istockphoto.com/id/1304547222/photo/glamour-portrait-of-beautiful-woman.jpg?s=612x612&w=0&k=20&c=kiRKdJDxdqEz-lXRCqAuDzEoNsTk-_NZ-SsB2OLGM8Y=",
+      videoSrc: hero.video, // Add video source
       callToAction: hero.cta,
       categoryId: null,
+      isHero: true, // Mark as hero section
     },
     // Sections 1-3: Catégories dynamiques du backend (ou placeholders pendant le chargement)
     ...(loading
@@ -263,7 +293,7 @@ export default function LandingPage() {
             category.shortDescription ||
             "Découvrez nos services exceptionnels.",
           imageSrc: category.image_link || "/placeholder.svg",
-          callToAction: ` ${category.label?.toUpperCase() || "NOS SERVICES"}`,
+          callToAction: "DÉCOUVRIR",
           categoryId: category.id,
         }))),
     // Featured services as category-like sections
@@ -331,6 +361,14 @@ export default function LandingPage() {
   // Touch handling for mobile
   const [touchStartY, setTouchStartY] = useState(0);
   const [touchEndY, setTouchEndY] = useState(0);
+
+  // Debug: Log current section and video URL
+  useEffect(() => {
+    const currentSection = sections[activeIndex];
+    console.log("Current section:", currentSection);
+    console.log("Video URL:", currentSection?.videoSrc);
+    console.log("Image URL:", currentSection?.imageSrc);
+  }, [sections, activeIndex]);
 
   // Navigation handler for category sections
   const handleCategoryClick = (categoryId) => {
@@ -467,7 +505,8 @@ export default function LandingPage() {
     };
   }, []);
 
-   useEffect(() => {
+  // Listen for scroll to quiz event from header
+  useEffect(() => {
     const handleScrollToQuiz = () => {
       // Find the quiz section index
       const quizSectionIndex = sections.findIndex((section) => section.isQuiz);
@@ -617,7 +656,10 @@ export default function LandingPage() {
           backgroundImage:
             sections[
               isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
-            ].imageSrc === "none"
+            ].imageSrc === "none" ||
+            sections[
+              isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
+            ].videoSrc
               ? "none"
               : `url(${
                   sections[
@@ -633,6 +675,31 @@ export default function LandingPage() {
           zIndex: 1,
         }}
       >
+        {/* Video background for hero section */}
+        {sections[isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex]
+          ?.videoSrc && (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ zIndex: 1 }}
+            onLoadStart={() => console.log("Video loading started")}
+            onCanPlay={() => console.log("Video can play")}
+            onError={(e) => console.log("Video error:", e)}
+          >
+            <source
+              src={
+                sections[
+                  isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
+                ].videoSrc
+              }
+              type="video/mp4"
+            />
+            Votre navigateur ne supporte pas les vidéos HTML5.
+          </video>
+        )}
         <div
           className={`absolute inset-0 ${
             sections[
@@ -652,7 +719,7 @@ export default function LandingPage() {
                   isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
                 ].isFooter
               ? "w-full mt-16"
-              : "mb-12"
+              : "mb-6"
           }`}
         >
           {/* Affichage conditionnel : Titre et description seulement si pas sur la section Quiz, Footer ou About */}
@@ -675,7 +742,7 @@ export default function LandingPage() {
                     ].title
                   }
                 </h1>
-                <p className="text-lg md:text-lg mb-4 drop-shadow-lg">
+                <p className="text-lg md:text-xl mb-4 drop-shadow-lg">
                   {
                     sections[
                       isReverse && activeIndex > 0
@@ -996,7 +1063,12 @@ export default function LandingPage() {
                       Recommencer le Quiz
                     </button>
                     <div className="h-2 md:h-0 md:w-2"></div>
-                    
+                    <button
+                      onClick={() => (window.location.href = "/services")}
+                      className="w-full md:flex-1 px-6 md:px-8 py-3 bg-[#000000] border border-[#333333] text-white text-sm font-medium tracking-wide "
+                    >
+                      Découvrir nos Services
+                    </button>
                   </div>
                 </div>
               ) : null}
@@ -1192,7 +1264,9 @@ export default function LandingPage() {
                 backgroundImage:
                   (sections[isReverse ? activeIndex : overlayIndex] &&
                     sections[isReverse ? activeIndex : overlayIndex]
-                      .imageSrc) === "none"
+                      .imageSrc) === "none" ||
+                  (sections[isReverse ? activeIndex : overlayIndex] &&
+                    sections[isReverse ? activeIndex : overlayIndex].videoSrc)
                     ? "none"
                     : `url(${
                         sections[isReverse ? activeIndex : overlayIndex] &&
@@ -1209,6 +1283,25 @@ export default function LandingPage() {
               }}
               onAnimationComplete={handleOverlayAnimationComplete}
             >
+              {/* Video background for hero section in overlay */}
+              {sections[isReverse ? activeIndex : overlayIndex]?.videoSrc && (
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover"
+                  style={{ zIndex: 0 }}
+                >
+                  <source
+                    src={
+                      sections[isReverse ? activeIndex : overlayIndex].videoSrc
+                    }
+                    type="video/mp4"
+                  />
+                  Votre navigateur ne supporte pas les vidéos HTML5.
+                </video>
+              )}
               <div
                 className={`absolute inset-0 ${
                   (sections[isReverse ? activeIndex : overlayIndex] &&
@@ -1226,13 +1319,13 @@ export default function LandingPage() {
                     : sections[isReverse ? activeIndex : overlayIndex] &&
                       sections[isReverse ? activeIndex : overlayIndex].isFooter
                     ? "w-full mt-16"
-                    : "mb-12"
+                    : "mb-6"
                 }`}
               >
                 {/* Affichage conditionnel : About, Quiz, Footer ou bouton normal */}
                 {sections[isReverse ? activeIndex : overlayIndex] &&
                 sections[isReverse ? activeIndex : overlayIndex].isAbout ? (
-                  <div className="flex items-center justify-center px-4 py-8 md:p-0">
+                  <div className="flex items-center justify-center px-4 py-8 md:p-12">
                     <div className="bg-[#F5F1ED] rounded-lg my-6 md:my-10 p-4 md:p-8 max-w-5xl mx-auto text-gray-800">
                       <div className="grid md:grid-cols-2 gap-6 items-center">
                         <div className="relative w-full h-[60vh] md:h-[70vh] overflow-hidden">
@@ -1628,7 +1721,7 @@ export default function LandingPage() {
                       {sections[isReverse ? activeIndex : overlayIndex] &&
                         sections[isReverse ? activeIndex : overlayIndex].title}
                     </h1>
-                    <p className="text-lg md:text-lg mb-4 drop-shadow-lg">
+                    <p className="text-lg md:text-xl mb-4 drop-shadow-lg">
                       {sections[isReverse ? activeIndex : overlayIndex] &&
                         sections[isReverse ? activeIndex : overlayIndex]
                           .description}
