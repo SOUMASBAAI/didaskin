@@ -742,7 +742,7 @@ export default function LandingPage() {
                     ].title
                   }
                 </h1>
-                <p className="text-lg md:text-xl mb-4 drop-shadow-lg">
+                <p className="text-lg md:text-xl mb-1 drop-shadow-lg">
                   {
                     sections[
                       isReverse && activeIndex > 0
@@ -1721,7 +1721,7 @@ export default function LandingPage() {
                       {sections[isReverse ? activeIndex : overlayIndex] &&
                         sections[isReverse ? activeIndex : overlayIndex].title}
                     </h1>
-                    <p className="text-lg md:text-xl mb-4 drop-shadow-lg">
+                    <p className="text-lg md:text-xl mb-1 drop-shadow-lg">
                       {sections[isReverse ? activeIndex : overlayIndex] &&
                         sections[isReverse ? activeIndex : overlayIndex]
                           .description}
