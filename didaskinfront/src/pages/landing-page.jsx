@@ -103,8 +103,8 @@ export default function LandingPage() {
 
   // Hero content
   const [hero, setHero] = useState({
-    title: "BIENVENUE CHEZ DIDA SKIN",
-    description: "Votre sanctuaire de beauté et de bien-être.",
+    title: "",
+    description: "",
     image: null,
     video:
       "https://res.cloudinary.com/dl6gb7cwm/video/upload/Dida_Skin_Branding_los7bp.mp4", // Hardcoded Cloudinary video URL
@@ -293,7 +293,7 @@ export default function LandingPage() {
             category.shortDescription ||
             "Découvrez nos services exceptionnels.",
           imageSrc: category.image_link || "/placeholder.svg",
-          callToAction: "DÉCOUVRIR",
+          callToAction: "Découvrir",
           categoryId: category.id,
         }))),
     // Featured services as category-like sections
@@ -301,7 +301,7 @@ export default function LandingPage() {
       title: s.label,
       description: "",
       imageSrc: s.image_link || "/placeholder.svg",
-      callToAction: "VOIR LE SERVICE",
+      callToAction: "Découvrir",
       serviceId: s.id,
     })),
     // Section: Explorer catalogue produits
@@ -613,7 +613,7 @@ export default function LandingPage() {
         style={{ height: "100vh", height: "100dvh" }}
       >
         <div className="text-center">
-          <h1 className="text-2xl md:text-3xl font-light tracking-wider text-gray-800 mb-4">
+          <h1 className="text-xl md:text-2xl font-light tracking-wider text-gray-800 mb-4">
             DIDA SKIN
           </h1>
 
@@ -733,7 +733,7 @@ export default function LandingPage() {
               isReverse && activeIndex > 0 ? activeIndex - 1 : activeIndex
             ].isAbout && (
               <>
-                <h1 className="text-2xl md:text-3xl font-light tracking-wider mb-0 drop-shadow-lg">
+                <h1 className="text-xl md:text-2xl font-light tracking-wider mb-0 drop-shadow-lg">
                   {
                     sections[
                       isReverse && activeIndex > 0
@@ -1717,7 +1717,7 @@ export default function LandingPage() {
                   </div>
                 ) : (
                   <>
-                    <h1 className="text-2xl md:text-3xl font-light tracking-wider mb-0 drop-shadow-lg">
+                    <h1 className="text-xl md:text-2xl font-light tracking-wider mb-0 drop-shadow-lg">
                       {sections[isReverse ? activeIndex : overlayIndex] &&
                         sections[isReverse ? activeIndex : overlayIndex].title}
                     </h1>
