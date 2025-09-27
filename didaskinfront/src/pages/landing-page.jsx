@@ -107,7 +107,7 @@ export default function LandingPage() {
     description: "",
     image: null,
     video:
-      "https://res.cloudinary.com/dl6gb7cwm/video/upload/didaskin_fckhwj.mp4", // Hardcoded Cloudinary video URL
+      "https://res.cloudinary.com/dl6gb7cwm/video/upload/7022033_Attractive_Beautiful_3840x2160_fcyuo2.mp4", // Hardcoded Cloudinary video URL
     cta: "DÉCOUVRIR NOS SERVICES",
   });
 
@@ -1290,7 +1290,7 @@ export default function LandingPage() {
                   muted
                   loop
                   playsInline
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover "
                   style={{ zIndex: 0 }}
                 >
                   <source
