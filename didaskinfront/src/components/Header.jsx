@@ -276,7 +276,7 @@ export default function Header() {
               <>
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
                   <span className="text-sm font-semibold tracking-wide text-gray-900">
-                    Menu
+                    MENU
                   </span>
                   <button
                     className="text-gray-600 "
@@ -286,68 +286,66 @@ export default function Header() {
                     <X className="h-6 w-6" />
                   </button>
                 </div>
-                <nav className="p-4 space-y-2 overflow-y-auto">
-                  <Link
-                    to="/"
-                    className="block px-3 py-2 rounded text-gray-800"
-                    onClick={closeMobileMenu}
-                  >
-                    Accueil
-                  </Link>
+               <nav className="p-4 space-y-2 overflow-y-auto text-sm">
+  <Link
+    to="/"
+    className="block px-3 py-2 rounded text-gray-800"
+    onClick={closeMobileMenu}
+  >
+    ACCUEIL
+  </Link>
 
-                  <button
-                    className="w-full flex items-center justify-between px-3 py-2 rounded text-gray-800"
-                    onClick={showCategoriesView}
-                  >
-                    <span>Nos services</span>
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
+  <button
+    className="w-full flex items-center justify-between px-3 py-2 rounded text-gray-800"
+    onClick={showCategoriesView}
+  >
+    <span>NOS SERVICES</span>
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M9 5l7 7-7 7"
+      />
+    </svg>
+  </button>
 
-                  <Link
-                    to="/products"
-                    className="block px-3 py-2 rounded text-gray-800 "
-                    onClick={closeMobileMenu}
-                  >
-                    Nos produits
-                  </Link>
-                  <Link
-                    to="/booking"
-                    className="block px-3 py-2 rounded text-gray-800"
-                    onClick={closeMobileMenu}
-                  >
-                    Réserver un soin
-                  </Link>
-                  <Link
-                    to="/#quiz"
-                    className="block px-3 py-2 rounded text-gray-800"
-                    onClick={(e) => {
-                      // Check if we're on the landing page
-                      if (window.location.pathname === "/") {
-                        e.preventDefault();
-                        closeMobileMenu();
-                        // Scroll to quiz section by dispatching a custom event
-                        window.dispatchEvent(new CustomEvent("scrollToQuiz"));
-                      } else {
-                        closeMobileMenu();
-                        // If not on landing page, let the Link navigate normally to /#quiz
-                      }
-                    }}
-                  >
-                    Test beauté
-                  </Link>
-                </nav>
+  <Link
+    to="/products"
+    className="block px-3 py-2 rounded text-gray-800"
+    onClick={closeMobileMenu}
+  >
+    NOS PRODUITS
+  </Link>
+  <Link
+    to="/booking"
+    className="block px-3 py-2 rounded text-gray-800"
+    onClick={closeMobileMenu}
+  >
+    RÉSERVER UN SOIN
+  </Link>
+  <Link
+    to="/#quiz"
+    className="block px-3 py-2 rounded text-gray-800"
+    onClick={(e) => {
+      if (window.location.pathname === "/") {
+        e.preventDefault();
+        closeMobileMenu();
+        window.dispatchEvent(new CustomEvent("scrollToQuiz"));
+      } else {
+        closeMobileMenu();
+      }
+    }}
+  >
+    TEST BEAUTÉ
+  </Link>
+</nav>
+
               </>
             )}
 
@@ -375,7 +373,7 @@ export default function Header() {
                     </svg>
                   </button>
                   <span className="text-sm font-semibold tracking-wide text-gray-900">
-                    Nos Services
+                    NOS SERVICES
                   </span>
                   <button
                     className="ml-auto text-gray-600 hover:text-gray-800"
@@ -588,7 +586,7 @@ export default function Header() {
             to="/booking"
             className="hidden md:block text-sm font-medium text-gray-800 hover:text-black transition-colors whitespace-nowrap"
           >
-            RESERVER UN SOIN
+            RÉSERVER UN SOIN
           </Link>
 
           <Link
