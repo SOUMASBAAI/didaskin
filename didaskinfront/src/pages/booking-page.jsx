@@ -97,14 +97,15 @@ export default function BookingPage() {
       <Header />
 
       {/* Bannière avec photo */}
-      <section className="relative h-[30vh] md:h-[50vh] min-h-[250px] md:min-h-[400px] bg-cover bg-no-repeat overflow-hidden z-0">
-        <div
-          className="absolute inset-0 bg-cover bg-no-repeat"
-          style={{
-            backgroundImage: `url(${bannerImage})`,
-            backgroundPosition: "center 30%",
-          }}
-        />
+     <section className="relative h-[50vh] md:h-[70vh] min-h-[300px] md:min-h-[500px] bg-cover bg-no-repeat overflow-hidden z-0">
+
+        <section className="relative overflow-hidden z-0">
+  <img
+    src={bannerImage}
+    alt="Visages"
+    className="w-full h-[400px] object-contain md:h-[600px] mx-auto"
+  />
+</section>
         <div className="absolute inset-0 " />
         <div className="relative z-10 flex items-center justify-center h-full px-4 md:px-6 lg:px-8">
           <div className="text-center text-black max-w-4xl mx-auto"></div>

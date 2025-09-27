@@ -141,7 +141,7 @@ export default function CategoryPage() {
       <Header />
 
       <main className="flex-grow pt-[100px] pb-12 px-4 md:px-8 lg:px-12 max-w-6xl mx-auto">
-        <h2 className="text-xl md:text-2xl font-light text-gray-800 mb-1 tracking-wide">
+        <h2 className="text-lg md:text-xl font-light text-gray-800 mb-1 tracking-wide">
           {category?.label || ""}
         </h2>
 
