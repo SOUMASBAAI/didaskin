@@ -1290,7 +1290,7 @@ export default function LandingPage() {
                   muted
                   loop
                   playsInline
-                  className="absolute inset-0 w-full h-full object-cover md:object-top"
+                  className="absolute inset-0 w-full h-full object-cover "
                   style={{ zIndex: 0 }}
                 >
                   <source
