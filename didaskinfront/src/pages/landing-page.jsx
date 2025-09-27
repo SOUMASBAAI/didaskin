@@ -107,7 +107,7 @@ export default function LandingPage() {
     description: "",
     image: null,
     video:
-      "https://res.cloudinary.com/dl6gb7cwm/video/upload/Dida_Skin_Branding_los7bp.mp4", // Hardcoded Cloudinary video URL
+      "https://res.cloudinary.com/dl6gb7cwm/video/upload/didaskin_fckhwj.mp4", // Hardcoded Cloudinary video URL
     cta: "DÉCOUVRIR NOS SERVICES",
   });
 
