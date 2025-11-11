@@ -107,7 +107,7 @@ export default function LandingPage() {
     description: "",
     image: null,
     video:
-      "https://res.cloudinary.com/dl6gb7cwm/video/upload/7022033_Attractive_Beautiful_3840x2160_fcyuo2.mp4", // Hardcoded Cloudinary video URL
+      "https://res.cloudinary.com/dl6gb7cwm/video/upload/v1762893874/292417_small_ug6fek.mp4", // Hardcoded Cloudinary video URL
     cta: "DÉCOUVRIR NOS SERVICES",
   });
 
